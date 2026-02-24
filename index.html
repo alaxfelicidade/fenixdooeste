@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -322,6 +323,24 @@
         <p style="margin:0 0 15px;font-size:12px;color:#64748b;font-weight:600;">
             Mês: <span id="modalMesLabel" style="color:var(--primary);font-weight:800;"></span>
         </p>
+        <!-- ── METAS GERAIS DO MÊS ── -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;">
+                <div style="font-size:9px;font-weight:800;color:#6366f1;text-transform:uppercase;margin-bottom:6px;">🎯 Meta Geral da Equipe</div>
+                <input type="number" id="metaGeralInput" min="0"
+                    style="width:100%;border:1.5px solid #6366f1;border-radius:6px;padding:7px 10px;font-size:15px;font-weight:900;color:#6366f1;font-family:inherit;text-align:center;">
+            </div>
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;">
+                <div style="font-size:9px;font-weight:800;color:#f97316;text-transform:uppercase;margin-bottom:6px;">🔥 Meta Reno</div>
+                <input type="number" id="metaRenoInput" min="0"
+                    style="width:100%;border:1.5px solid #f97316;border-radius:6px;padding:7px 10px;font-size:15px;font-weight:900;color:#f97316;font-family:inherit;text-align:center;">
+            </div>
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;">
+                <div style="font-size:9px;font-weight:800;color:#06b6d4;text-transform:uppercase;margin-bottom:6px;">💎 Meta A5 Pro</div>
+                <input type="number" id="metaA5Input" min="0"
+                    style="width:100%;border:1.5px solid #06b6d4;border-radius:6px;padding:7px 10px;font-size:15px;font-weight:900;color:#06b6d4;font-family:inherit;text-align:center;">
+            </div>
+        </div>
         <div style="display:grid;grid-template-columns:2fr 0.7fr 0.7fr 0.7fr 0.7fr 1.3fr 40px;gap:6px;padding:8px;font-weight:bold;font-size:10px;color:#64748b;text-align:center;background:#f8fafc;border-radius:6px;">
             <div style="text-align:left;">NOME</div><div>CAPA</div><div>META</div><div>REAL</div><div>RENO</div>
             <div style="color:var(--a5pro);">LINHA A PRO</div><div></div>
@@ -636,6 +655,9 @@ document.addEventListener('click', e => {
 function openModal() {
     document.getElementById('editModal').style.display = 'block';
     document.getElementById('modalMesLabel').innerText = meses[mesSelecionado] + " " + new Date().getFullYear();
+    document.getElementById('metaGeralInput').value = fenixData.metaGeral || 629;
+    document.getElementById('metaRenoInput').value  = fenixData.metaReno  || 69;
+    document.getElementById('metaA5Input').value    = fenixData.metaA5    || 69;
     renderForm();
 }
 function renderForm() {
@@ -657,6 +679,9 @@ function addRow()     { fenixData.promotores.push({nome:"",capa:0,meta:0,real:0,
 function removeRow(i) { fenixData.promotores.splice(i,1); renderForm(); }
 function closeModal() { document.getElementById('editModal').style.display = 'none'; }
 function saveAll() {
+    fenixData.metaGeral = parseInt(document.getElementById('metaGeralInput').value) || 629;
+    fenixData.metaReno  = parseInt(document.getElementById('metaRenoInput').value)  || 69;
+    fenixData.metaA5    = parseInt(document.getElementById('metaA5Input').value)    || 69;
     fenixData.promotores = fenixData.promotores.map((p,i) => ({
         nome: document.getElementById(`n_${i}`).value,
         capa: parseInt(document.getElementById(`c_${i}`).value)  || 0,
