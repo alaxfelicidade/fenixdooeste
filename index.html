@@ -217,6 +217,87 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
 
 @media print{body *{visibility:hidden;}#painelModal,#painelModal *{visibility:visible;}#painelModal{position:absolute;top:0;left:0;background:white;padding:0;}.painel-content{border-radius:0;box-shadow:none;padding:16px;}.btn-print,.btn-fechar-painel{display:none;}}
 @media(max-width:768px){.promotor-card{grid-template-columns:44px 1fr;}.promotor-card>div:nth-child(3),.promotor-card>div:nth-child(4){grid-column:1/-1;}header h1{font-size:14px;}.banner-popover{width:calc(100vw - 40px);}.graficos-content,.painel-content,.modal-content{padding:16px;}.meta-group{grid-template-columns:repeat(4,1fr);}}
+
+/* ── MODO TV ── */
+body.tv-mode { background: #0a0f1e; }
+body.tv-mode header { background: #050810; border-bottom-color: #6366f1; }
+body.tv-mode .container { max-width: 100%; padding: 0 24px; }
+.tv-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9000;
+    background: #0a0f1e; overflow: hidden; flex-direction: column;
+}
+.tv-overlay.active { display: flex; }
+.tv-header {
+    background: linear-gradient(135deg, #0f172a, #1e1b4b);
+    padding: 14px 32px; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 2px solid #6366f1; flex-shrink: 0;
+}
+.tv-title { font-size: 22px; font-weight: 900; color: white; letter-spacing: -0.5px; }
+.tv-stats { display: flex; gap: 28px; align-items: center; }
+.tv-stat { text-align: center; }
+.tv-stat-val { font-size: 26px; font-weight: 900; color: #6366f1; line-height: 1; }
+.tv-stat-lbl { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+.tv-body { flex: 1; overflow: hidden; padding: 20px 32px; display: flex; flex-direction: column; gap: 10px; }
+.tv-card {
+    background: linear-gradient(135deg, #0f172a, #111827);
+    border-radius: 14px; padding: 14px 20px;
+    display: grid; grid-template-columns: 60px 2fr 3fr 1fr 1fr 1fr;
+    align-items: center; gap: 16px; border-left: 6px solid #334155;
+    animation: tvSlideIn 0.5s ease both;
+}
+@keyframes tvSlideIn { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:none; } }
+.tv-rank { font-size: 26px; font-weight: 900; text-align: center; }
+.tv-name { font-size: 16px; font-weight: 800; color: white; }
+.tv-capa { font-size: 10px; color: #64748b; font-weight: 700; margin-top: 2px; }
+.tv-bar-wrap { position: relative; }
+.tv-bar-bg { height: 14px; background: #1e293b; border-radius: 10px; overflow: hidden; }
+.tv-bar-fill { height: 100%; border-radius: 10px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
+.tv-pct { font-size: 11px; font-weight: 900; margin-top: 4px; }
+.tv-num { text-align: center; }
+.tv-num-val { font-size: 22px; font-weight: 900; color: white; }
+.tv-num-lbl { font-size: 9px; color: #64748b; font-weight: 700; text-transform: uppercase; }
+.tv-diaria-pill { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 14px; font-weight: 900; }
+.tv-close { position: absolute; top: 16px; right: 20px; background: rgba(255,255,255,0.1); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 9001; }
+.tv-ticker { background: #0f172a; border-top: 1px solid #1e293b; padding: 8px 24px; font-size: 11px; color: #64748b; font-weight: 700; flex-shrink: 0; white-space: nowrap; overflow: hidden; }
+.tv-ticker-inner { display: inline-block; animation: ticker 30s linear infinite; }
+@keyframes ticker { from { transform: translateX(100vw); } to { transform: translateX(-100%); } }
+
+/* ── HISTÓRICO DIÁRIO ── */
+.hist-content { background: white; max-width: 960px; margin: auto; padding: 24px 28px; border-radius: 15px; }
+.hist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 16px; }
+.hist-card { background: #f8fafc; border-radius: 10px; padding: 14px; border-top: 3px solid #e2e8f0; }
+.hist-card-name { font-size: 11px; font-weight: 800; color: #1e293b; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hist-day-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; border-bottom: 1px solid #f1f5f9; font-size: 11px; }
+.hist-day-lbl { color: #64748b; font-weight: 600; }
+.hist-day-val { font-weight: 900; color: #1e293b; }
+.hist-day-delta { font-size: 10px; font-weight: 800; }
+.hist-add-btn { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 12px; font-family: inherit; display: flex; align-items: center; gap: 6px; }
+.hist-add-btn:hover { background: #4f46e5; }
+.hist-input-row { display: grid; grid-template-columns: 2fr 1fr 80px; gap: 8px; align-items: center; margin-bottom: 8px; }
+.hist-input-row input { padding: 8px 10px; border: 1px solid #e2e8f0; border-radius: 7px; font-family: inherit; font-size: 12px; }
+.hist-chart-wrap { position: relative; height: 200px; margin-top: 10px; }
+
+/* ── SOM / CELEBRAÇÃO ── */
+.celebracao-overlay {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.85); align-items: center; justify-content: center;
+    flex-direction: column;
+}
+.celebracao-overlay.show { display: flex; animation: fadeInCel 0.3s ease; }
+@keyframes fadeInCel { from { opacity:0; } to { opacity:1; } }
+.celebracao-box {
+    background: linear-gradient(135deg, #1e1b4b, #0f172a);
+    border: 2px solid #6366f1; border-radius: 20px; padding: 40px 60px;
+    text-align: center; position: relative; overflow: hidden;
+}
+.cel-emoji { font-size: 64px; animation: bounce 0.6s ease infinite alternate; }
+@keyframes bounce { from { transform: scale(1); } to { transform: scale(1.15); } }
+.cel-titulo { font-size: 28px; font-weight: 900; color: white; margin: 12px 0 6px; }
+.cel-nome { font-size: 20px; font-weight: 800; color: #a5b4fc; margin-bottom: 8px; }
+.cel-sub { font-size: 14px; color: #64748b; font-weight: 600; }
+.confetti { position: absolute; width: 10px; height: 10px; border-radius: 2px; animation: confettifall 2s ease-in forwards; }
+@keyframes confettifall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1;} 100%{transform:translateY(400px) rotate(720deg);opacity:0;} }
+
 </style>
 </head>
 <body>
@@ -229,6 +310,8 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
         </div>
         <h1>FÊNIX DO OESTE — <span id="mesAtual"></span></h1>
         <div class="header-buttons">
+            <button class="btn-hdr" style="background:#7c3aed;color:white;" onclick="openTv()">📺 TV</button>
+            <button class="btn-hdr" style="background:#0369a1;color:white;" onclick="openHist()">📈 DIAS</button>
             <button class="btn-hdr btn-hdr-wpp"     onclick="openWpp()">📲 WPP</button>
             <button class="btn-hdr btn-hdr-chart"   onclick="openGraficos()">📊</button>
             <button class="btn-hdr" style="background:#1d4ed8;color:white;" onclick="openComparativo()">📅 HISTÓRICO</button>
@@ -319,15 +402,84 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
     <div id="listaPromotores"></div>
 </div>
 
+
+<!-- ══ TV MODE ══ -->
+<div class="tv-overlay" id="tvOverlay">
+    <button class="tv-close" onclick="closeTv()" title="Fechar (ESC)">✕</button>
+    <div class="tv-header">
+        <div class="tv-title">🦅 FÊNIX DO OESTE &nbsp;<span id="tvMes" style="color:#6366f1;font-size:16px;"></span></div>
+        <div class="tv-stats">
+            <div class="tv-stat"><div class="tv-stat-val" id="tvReal">0</div><div class="tv-stat-lbl">Realizado</div></div>
+            <div class="tv-stat"><div class="tv-stat-val" id="tvMeta" style="color:#f59e0b;">0</div><div class="tv-stat-lbl">Meta</div></div>
+            <div class="tv-stat"><div class="tv-stat-val" id="tvPct" style="color:#10b981;">0%</div><div class="tv-stat-lbl">Atingimento</div></div>
+            <div class="tv-stat"><div class="tv-stat-val" id="tvDiaria" style="color:#ef4444;">0</div><div class="tv-stat-lbl">Diária/equipe</div></div>
+        </div>
+    </div>
+    <div class="tv-body" id="tvBody"></div>
+    <div class="tv-ticker"><span class="tv-ticker-inner" id="tvTicker"></span></div>
+</div>
+
+<!-- ══ CELEBRAÇÃO ══ -->
+<div class="celebracao-overlay" id="celebracaoOverlay" onclick="fecharCelebracao()">
+    <div class="celebracao-box" id="celebracaoBox">
+        <div class="cel-emoji">🏆</div>
+        <div class="cel-titulo">META BATIDA!</div>
+        <div class="cel-nome" id="celNome">Promotor</div>
+        <div class="cel-sub" id="celSub">Parabéns pela conquista!</div>
+    </div>
+</div>
+
+<!-- ══ HISTÓRICO DIÁRIO ══ -->
+<div id="histModal" class="modal-overlay">
+    <div class="hist-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div>
+                <div style="font-size:16px;font-weight:900;color:#0f172a;">📈 HISTÓRICO DIÁRIO — <span id="histMes" style="color:var(--primary);"></span></div>
+                <div style="font-size:11px;color:#64748b;font-weight:600;margin-top:2px;">Registro de vendas por dia por promotor</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button class="hist-add-btn" onclick="abrirRegistroDia()">➕ Registrar dia</button>
+                <button class="btn-fechar-painel" onclick="closeHist()">✕ Fechar</button>
+            </div>
+        </div>
+
+        <!-- Form registro -->
+        <div id="histFormWrap" style="display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;margin-bottom:10px;">📅 Registrar vendas do dia</div>
+            <div style="display:grid;grid-template-columns:160px 1fr;gap:10px;margin-bottom:12px;">
+                <div>
+                    <label style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;display:block;margin-bottom:4px;">Data</label>
+                    <input type="date" id="histData" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:7px;font-family:inherit;font-size:12px;width:100%;">
+                </div>
+            </div>
+            <div id="histInputsPromotores"></div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+                <button onclick="salvarDia()" style="background:var(--success-dark);color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:800;cursor:pointer;font-family:inherit;font-size:12px;">💾 Salvar</button>
+                <button onclick="document.getElementById('histFormWrap').style.display='none'" style="background:none;border:1px solid #e2e8f0;color:#64748b;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px;">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- Gráfico evolução equipe -->
+        <div style="background:#f8fafc;border-radius:10px;padding:16px;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;margin-bottom:10px;">📊 Evolução acumulada da equipe</div>
+            <div class="hist-chart-wrap"><canvas id="chartHistEquipe"></canvas></div>
+        </div>
+
+        <!-- Cards por promotor -->
+        <div class="hist-grid" id="histCards"></div>
+    </div>
+</div>
+
 <!-- ══ MODAL GESTÃO ══ -->
 <div id="editModal" class="modal-overlay">
     <div class="modal-content">
         <h2 style="margin:0 0 4px;font-size:18px;">Configuração da Equipe</h2>
         <p style="margin:0 0 15px;font-size:12px;color:#64748b;font-weight:600;">Mês: <span id="modalMesLabel" style="color:var(--primary);font-weight:800;"></span></p>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
-            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;">
-                <div style="font-size:9px;font-weight:800;color:#6366f1;text-transform:uppercase;margin-bottom:6px;">🎯 Meta Geral</div>
-                <input type="number" id="metaGeralInput" min="0" style="width:100%;border:1.5px solid #6366f1;border-radius:6px;padding:7px 10px;font-size:15px;font-weight:900;color:#6366f1;font-family:inherit;text-align:center;">
+            <div style="background:#f8fafc;border:1px solid #6366f1;border-radius:8px;padding:10px;">
+                <div style="font-size:9px;font-weight:800;color:#6366f1;text-transform:uppercase;margin-bottom:6px;">🎯 Meta Geral (soma automática)</div>
+                <div id="somaMetaModal" style="width:100%;border:1.5px solid #6366f1;border-radius:6px;padding:7px 10px;font-size:22px;font-weight:900;color:#6366f1;font-family:inherit;text-align:center;background:white;">0</div>
+                <div style="font-size:9px;color:#94a3b8;font-weight:600;text-align:center;margin-top:4px;">Atualiza ao digitar as metas</div>
             </div>
             <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;">
                 <div style="font-size:9px;font-weight:800;color:#f97316;text-transform:uppercase;margin-bottom:6px;">🔥 Meta Reno</div>
@@ -501,7 +653,7 @@ function selecionarMes(idx) {
 function atualizarHeader() {
     const label = meses[mesSelecionado]+' '+new Date().getFullYear();
     document.getElementById('mesAtual').innerText = label;
-    document.getElementById('metaGeralLabel').innerText = fenixData.metaGeral||629;
+    // metaGeralLabel is set by render() using sum of individual metas
     document.getElementById('metaRenoLabel').innerText  = fenixData.metaReno||69;
     document.getElementById('metaA5Label').innerText    = fenixData.metaA5||69;
     const ml=document.getElementById('modalMesLabel'); if(ml) ml.innerText=label;
@@ -605,7 +757,18 @@ document.addEventListener('click',e=>{const p=document.getElementById('bannerPop
 // ══════════════════════════════════════════
 //  MODAL GESTÃO
 // ══════════════════════════════════════════
-function openModal(){document.getElementById('editModal').style.display='block';document.getElementById('modalMesLabel').innerText=meses[mesSelecionado]+' '+new Date().getFullYear();document.getElementById('metaGeralInput').value=fenixData.metaGeral||629;document.getElementById('metaRenoInput').value=fenixData.metaReno||69;document.getElementById('metaA5Input').value=fenixData.metaA5||69;renderForm();}
+function openModal(){document.getElementById('editModal').style.display='block';document.getElementById('modalMesLabel').innerText=meses[mesSelecionado]+' '+new Date().getFullYear();document.getElementById('metaRenoInput').value=fenixData.metaReno||69;document.getElementById('metaA5Input').value=fenixData.metaA5||69;renderForm();setTimeout(atualizarSomaMeta,50);}
+function atualizarSomaMeta() {
+    let soma = 0;
+    fenixData.promotores.forEach((p, i) => {
+        const el = document.getElementById('m_' + i);
+        const fbtn = document.getElementById('fbtn_' + i);
+        const emFerias = fbtn ? fbtn.classList.contains('on') : (p.ferias || false);
+        if (!emFerias && el) soma += parseInt(el.value) || 0;
+    });
+    const el = document.getElementById('somaMetaModal');
+    if (el) el.innerText = soma;
+}
 function renderForm(){
     let html='';
     fenixData.promotores.forEach((p,i)=>{
@@ -613,7 +776,7 @@ function renderForm(){
         html+=`<div class="edit-row" id="erow_${i}" style="${p.ferias?'opacity:0.65;background:#f0fdf4;border-radius:8px;padding:4px;':''}">
             <input type="text" value="${p.nome}" id="n_${i}">
             <input type="number" value="${p.capa}" id="c_${i}" min="0">
-            <input type="number" value="${p.meta}" id="m_${i}" min="0">
+            <input type="number" value="${p.meta}" id="m_${i}" min="0" oninput="atualizarSomaMeta()">
             <input type="number" value="${p.real}" id="r_${i}" min="0">
             <input type="number" value="${p.reno}" id="re_${i}" min="0">
             <input type="number" value="${p.a5}"   id="a_${i}" min="0">
@@ -625,19 +788,19 @@ function renderForm(){
     });
     document.getElementById('formLista').innerHTML=html;
 }
-function toggleFeriasModal(i){const btn=document.getElementById(`fbtn_${i}`),row=document.getElementById(`erow_${i}`),isOn=btn.classList.contains('on');if(isOn){btn.classList.replace('on','off');btn.textContent='🏖️ Férias';row.style.cssText='';}else{btn.classList.replace('off','on');btn.textContent='🏖️ Ativo';row.style.cssText='opacity:0.65;background:#f0fdf4;border-radius:8px;padding:4px;';}}
+function toggleFeriasModal(i){const btn=document.getElementById(`fbtn_${i}`),row=document.getElementById(`erow_${i}`),isOn=btn.classList.contains('on');if(isOn){btn.classList.replace('on','off');btn.textContent='🏖️ Férias';row.style.cssText='';}else{btn.classList.replace('off','on');btn.textContent='🏖️ Ativo';row.style.cssText='opacity:0.65;background:#f0fdf4;border-radius:8px;padding:4px;';}atualizarSomaMeta();}
 function addRow(){fenixData.promotores.push({nome:'',capa:0,meta:0,real:0,reno:0,a5:0,ferias:false});renderForm();}
 function removeRow(i){fenixData.promotores.splice(i,1);renderForm();}
 function closeModal(){document.getElementById('editModal').style.display='none';}
 function saveAll(){
-    fenixData.metaGeral=parseInt(document.getElementById('metaGeralInput').value)||629;
+    fenixData.metaGeral=fenixData.promotores.filter(p=>!p.ferias).reduce((a,b)=>a+(parseInt(document.getElementById('m_'+fenixData.promotores.indexOf(b))?.value)||0),0);
     fenixData.metaReno=parseInt(document.getElementById('metaRenoInput').value)||69;
     fenixData.metaA5=parseInt(document.getElementById('metaA5Input').value)||69;
     fenixData.promotores=fenixData.promotores.map((p,i)=>{
         const fbtn=document.getElementById(`fbtn_${i}`);
         return {nome:document.getElementById(`n_${i}`).value,capa:parseInt(document.getElementById(`c_${i}`).value)||0,meta:parseInt(document.getElementById(`m_${i}`).value)||0,real:parseInt(document.getElementById(`r_${i}`).value)||0,reno:parseInt(document.getElementById(`re_${i}`).value)||0,a5:parseInt(document.getElementById(`a_${i}`).value)||0,ferias:fbtn?fbtn.classList.contains('on'):(p.ferias||false)};
     });
-    saveMesData(mesSelecionado,fenixData); closeModal(); render();
+    saveMesData(mesSelecionado,fenixData); closeModal(); render(); metasJaCelebradas=new Set(JSON.parse(localStorage.getItem('fenixCelebradas2026')||'[]'));
 }
 
 // ══════════════════════════════════════════
@@ -887,6 +1050,320 @@ function buildChartProdutos(){
     chartInstances['chartProdBar']=new Chart(document.getElementById('chartProdBar'),{type:'bar',data:{labels:top8.map(p=>primeiroNome(p.nome)),datasets:[{label:'Reno',data:top8.map(p=>p.reno||0),backgroundColor:'#f97316',borderRadius:4},{label:'A5 Pro',data:top8.map(p=>p.a5||0),backgroundColor:'#06b6d4',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:10},boxWidth:12}}},scales:{x:{stacked:false,ticks:{font:{size:9}},grid:{display:false}},y:{beginAtZero:true,ticks:{font:{size:10}},grid:{color:'#f1f5f9'}}}}});
 }
 
+
+// ══════════════════════════════════════════
+//  SOM — Web Audio API (sem arquivos externos)
+// ══════════════════════════════════════════
+function tocarSomMeta() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const notas = [523, 659, 784, 1047]; // C5 E5 G5 C6
+        notas.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.value = freq;
+            osc.type = 'sine';
+            const t = ctx.currentTime + i * 0.15;
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.4, t + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+            osc.start(t); osc.stop(t + 0.4);
+        });
+    } catch(e) {}
+}
+
+function tocarSomAlerta() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        [440, 380].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.value = freq;
+            osc.type = 'square';
+            const t = ctx.currentTime + i * 0.2;
+            gain.gain.setValueAtTime(0.15, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+            osc.start(t); osc.stop(t + 0.2);
+        });
+    } catch(e) {}
+}
+
+// ══════════════════════════════════════════
+//  CELEBRAÇÃO — quando alguém bate a meta
+// ══════════════════════════════════════════
+let metasJaCelebradas = new Set(JSON.parse(localStorage.getItem('fenixCelebradas2026')||'[]'));
+
+function verificarMetas(promotores) {
+    promotores.forEach(p => {
+        if (!p.meta || p.meta === 0 || p.ferias) return;
+        const key = mesSelecionado + '_' + p.nome;
+        if (p.real >= p.meta && !metasJaCelebradas.has(key)) {
+            metasJaCelebradas.add(key);
+            localStorage.setItem('fenixCelebradas2026', JSON.stringify([...metasJaCelebradas]));
+            setTimeout(() => mostrarCelebracao(p), 400);
+        }
+    });
+}
+
+function mostrarCelebracao(p) {
+    tocarSomMeta();
+    document.getElementById('celNome').textContent = primeiroNome(p.nome);
+    document.getElementById('celSub').textContent = `${p.real} vendas — ${calcPct(p.real,p.meta)}% da meta! 🎉`;
+    const box = document.getElementById('celebracaoBox');
+    // Confetti
+    box.querySelectorAll('.confetti').forEach(c=>c.remove());
+    const cores = ['#6366f1','#f97316','#10b981','#f59e0b','#06b6d4','#ef4444','#a855f7'];
+    for (let i=0;i<30;i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.cssText = `left:${Math.random()*100}%;top:-10px;background:${cores[i%cores.length]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;animation-delay:${Math.random()*1}s;animation-duration:${1.5+Math.random()}s;`;
+        box.appendChild(c);
+    }
+    document.getElementById('celebracaoOverlay').classList.add('show');
+    setTimeout(fecharCelebracao, 5000);
+}
+
+function fecharCelebracao() {
+    document.getElementById('celebracaoOverlay').classList.remove('show');
+}
+
+// ══════════════════════════════════════════
+//  MODO TV
+// ══════════════════════════════════════════
+function openTv() {
+    document.getElementById('tvMes').textContent = meses[mesSelecionado] + ' ' + new Date().getFullYear();
+    document.getElementById('tvOverlay').classList.add('active');
+    renderTv();
+    document.addEventListener('keydown', tvKeyHandler);
+    if(tvInterval) clearInterval(tvInterval);
+    tvInterval = setInterval(renderTv, 30000); // refresh a cada 30s
+}
+
+let tvInterval = null;
+function closeTv() {
+    document.getElementById('tvOverlay').classList.remove('active');
+    document.removeEventListener('keydown', tvKeyHandler);
+    if(tvInterval){clearInterval(tvInterval);tvInterval=null;}
+}
+
+function tvKeyHandler(e) { if (e.key === 'Escape') closeTv(); }
+
+function renderTv() {
+    const dias = getDiasUteisRestantes();
+    const ativos = fenixData.promotores.filter(p=>!p.ferias);
+    const rT = ativos.reduce((a,b)=>a+(b.real||0),0);
+    const somaM = ativos.reduce((a,b)=>a+(b.meta||0),0);
+    const pctEq = calcPct(rT, somaM);
+
+    document.getElementById('tvReal').textContent = rT;
+    document.getElementById('tvMeta').textContent = somaM;
+    document.getElementById('tvPct').textContent  = pctEq + '%';
+    document.getElementById('tvDiaria').textContent = calcDiaria(somaM, rT, dias);
+
+    const sorted = [...fenixData.promotores]
+        .filter(p => !p.ferias && p.meta > 0)
+        .sort((a,b) => scoreRanking(b,dias) - scoreRanking(a,dias));
+
+    const rankEmoji = ['🥇','🥈','🥉'];
+    const body = document.getElementById('tvBody');
+    body.innerHTML = '';
+
+    // Limita cards para caber na tela
+    const maxCards = Math.min(sorted.length, 8);
+    sorted.slice(0, maxCards).forEach((p, i) => {
+        const pct = calcPct(p.real, p.meta);
+        const dr  = calcDiaria(p.meta, p.real, dias);
+        const cor = pct>=100?'#10b981':pct>=70?'#6366f1':pct>=50?'#f59e0b':'#ef4444';
+        const diariaClass = dr===0?'diaria-ok':dr<=2?'diaria-ok':dr<=4?'diaria-warn':'diaria-bad';
+
+        const card = document.createElement('div');
+        card.className = 'tv-card';
+        card.style.borderLeftColor = cor;
+        card.style.animationDelay = (i*0.08)+'s';
+        card.innerHTML = `
+            <div class="tv-rank">${i<3?rankEmoji[i]:`${i+1}º`}</div>
+            <div>
+                <div class="tv-name">${p.nome}</div>
+                <div class="tv-capa">CAPA ${p.capa}</div>
+            </div>
+            <div class="tv-bar-wrap">
+                <div class="tv-bar-bg"><div class="tv-bar-fill" style="width:${Math.min(pct,100)}%;background:${cor}"></div></div>
+                <div class="tv-pct" style="color:${cor}">${pct}% da meta</div>
+            </div>
+            <div class="tv-num"><div class="tv-num-val">${p.real}</div><div class="tv-num-lbl">Realizado</div></div>
+            <div class="tv-num"><div class="tv-num-val" style="color:#f59e0b;">${p.meta}</div><div class="tv-num-lbl">Meta</div></div>
+            <div class="tv-num"><span class="tv-diaria-pill ${diariaClass}">${dr===0?'✅ OK':dr+'/dia'}</span><div class="tv-num-lbl" style="margin-top:4px;">Diária</div></div>
+        `;
+        body.appendChild(card);
+    });
+
+    // Ticker
+    const top3 = sorted.slice(0,3).map((p,i)=>`${rankEmoji[i]||'⭐'} ${primeiroNome(p.nome)}: ${calcPct(p.real,p.meta)}%`).join('   ·   ');
+    const renoT = ativos.reduce((a,b)=>a+(b.reno||0),0);
+    const a5T   = ativos.reduce((a,b)=>a+(b.a5||0),0);
+    document.getElementById('tvTicker').textContent =
+        `🦅 FÊNIX DO OESTE   ·   ${meses[mesSelecionado]}   ·   EQUIPE: ${rT}/${somaM} (${pctEq}%)   ·   🔥 Reno: ${renoT}   ·   💎 A5 Pro: ${a5T}   ·   ${top3}   ·   `;
+}
+
+// ══════════════════════════════════════════
+//  HISTÓRICO DIÁRIO
+// ══════════════════════════════════════════
+let histChart = null;
+
+function getHistKey() { return 'fenixHist2026_mes_' + mesSelecionado; }
+
+function loadHist() {
+    const s = localStorage.getItem(getHistKey());
+    return s ? JSON.parse(s) : {};
+    // estrutura: { "2026-03-01": { "Nome Promotor": 5, ... }, ... }
+}
+
+function saveHist(data) {
+    localStorage.setItem(getHistKey(), JSON.stringify(data));
+    if (window._fbSet) window._fbSet('fenix2026/hist_mes_' + mesSelecionado, data);
+}
+
+function openHist() {
+    document.getElementById('histMes').textContent = meses[mesSelecionado] + ' ' + new Date().getFullYear();
+    document.getElementById('histModal').style.display = 'block';
+    // Set default date to today
+    const hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('histData').value = hoje;
+    renderHistCards();
+}
+
+function closeHist() {
+    document.getElementById('histModal').style.display = 'none';
+    if (histChart) { histChart.destroy(); histChart = null; }
+}
+
+document.addEventListener('change', e => { if(e.target.id==='histData') renderHistInputs(); });
+function abrirRegistroDia() {
+    const wrap = document.getElementById('histFormWrap');
+    wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+    if (wrap.style.display === 'block') renderHistInputs();
+}
+
+function renderHistInputs() {
+    const ativos = fenixData.promotores.filter(p => !p.ferias && p.meta > 0);
+    const data   = document.getElementById('histData').value;
+    const hist   = loadHist();
+    const diaData = hist[data] || {};
+
+    let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">';
+    ativos.forEach(p => {
+        const val = diaData[p.nome] || 0;
+        html += `<div style="background:white;border:1px solid #e2e8f0;border-radius:8px;padding:10px;">
+            <div style="font-size:10px;font-weight:800;color:#64748b;margin-bottom:4px;">${primeiroNome(p.nome)}</div>
+            <input type="number" min="0" value="${val}" id="hinput_${p.nome.replace(/\s/g,'_')}"
+                style="width:100%;border:1.5px solid #e2e8f0;border-radius:6px;padding:6px 10px;font-size:16px;font-weight:900;text-align:center;font-family:inherit;"
+                placeholder="0">
+        </div>`;
+    });
+    html += '</div>';
+    document.getElementById('histInputsPromotores').innerHTML = html;
+}
+
+function salvarDia() {
+    const data   = document.getElementById('histData').value;
+    if (!data) { alert('Selecione uma data!'); return; }
+    const hist   = loadHist();
+    if (!hist[data]) hist[data] = {};
+    const ativos = fenixData.promotores.filter(p => !p.ferias && p.meta > 0);
+    ativos.forEach(p => {
+        const el = document.getElementById('hinput_' + p.nome.replace(/\s/g,'_'));
+        if (el) hist[data][p.nome] = parseInt(el.value) || 0;
+    });
+    saveHist(hist);
+    document.getElementById('histFormWrap').style.display = 'none';
+    renderHistCards();
+    showSync('📅 Dia registrado!', 'verde');
+}
+
+function renderHistCards() {
+    const hist   = loadHist();
+    const ativos = fenixData.promotores.filter(p => !p.ferias && p.meta > 0);
+    const datas  = Object.keys(hist).sort();
+
+    // Gráfico equipe acumulado
+    if (histChart) { histChart.destroy(); histChart = null; }
+    if (datas.length > 0) {
+        const labels = datas.map(d => { const [y,m,dia]=d.split('-'); return `${dia}/${m}`; });
+        let acum = 0;
+        const vals = datas.map(d => {
+            const total = Object.values(hist[d]||{}).reduce((a,b)=>a+b,0);
+            acum += total;
+            return acum;
+        });
+        const meta = ativos.reduce((a,b)=>a+(b.meta||0),0);
+        histChart = new Chart(document.getElementById('chartHistEquipe'), {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    { label:'Acumulado', data:vals, borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,0.1)', fill:true, tension:0.3, pointRadius:5, pointBackgroundColor:'#6366f1' },
+                    { label:'Meta', data:datas.map(()=>meta), borderColor:'#ef4444', borderDash:[6,3], pointRadius:0, borderWidth:2 }
+                ]
+            },
+            options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top',labels:{font:{size:10},boxWidth:12}}}, scales:{ y:{beginAtZero:true,ticks:{font:{size:10}},grid:{color:'#f1f5f9'}}, x:{ticks:{font:{size:10}},grid:{display:false}} } }
+        });
+    }
+
+    // Cards por promotor
+    let html = '';
+    ativos.forEach(p => {
+        const cor = '#6366f1';
+        let rows = '';
+        let acum = 0;
+        let prevAcum = 0;
+        datas.forEach((d, i) => {
+            const val = (hist[d]||{})[p.nome] || 0;
+            prevAcum = acum;
+            acum += val;
+            const delta = val;
+            const [y,m,dia] = d.split('-');
+            const deltaHtml = delta > 0
+                ? `<span class="hist-day-delta trend-up">+${delta}</span>`
+                : `<span class="hist-day-delta trend-eq">—</span>`;
+            rows += `<div class="hist-day-row">
+                <span class="hist-day-lbl">${dia}/${m}</span>
+                <span class="hist-day-val">${acum}</span>
+                ${deltaHtml}
+            </div>`;
+        });
+        if (!rows) rows = '<div style="font-size:11px;color:#94a3b8;padding:8px 0;">Sem registros ainda</div>';
+        const pct = calcPct(acum, p.meta);
+        const corTop = pct>=100?'#10b981':pct>=70?'#6366f1':pct>=50?'#f59e0b':'#ef4444';
+        html += `<div class="hist-card" style="border-top-color:${corTop}">
+            <div class="hist-card-name">📌 ${p.nome}</div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:#64748b;font-weight:700;margin-bottom:6px;">
+                <span>Acumulado: <b style="color:${corTop}">${acum}</b></span>
+                <span>Meta: <b>${p.meta}</b> (${pct}%)</span>
+            </div>
+            <div style="height:4px;background:#f1f5f9;border-radius:4px;overflow:hidden;margin-bottom:8px;">
+                <div style="height:100%;width:${Math.min(pct,100)}%;background:${corTop};border-radius:4px;"></div>
+            </div>
+            ${rows}
+        </div>`;
+    });
+    document.getElementById('histCards').innerHTML = html || '<div style="color:#94a3b8;font-size:13px;padding:20px;text-align:center;">Nenhum registro ainda. Clique em ➕ Registrar dia para começar.</div>';
+}
+
+// Sync histórico do Firebase
+function setupHistFirebaseSync() {
+    if (!window._fbListen) return;
+    for (let m=0;m<12;m++) {
+        (function(mi){
+            window._fbListen('fenix2026/hist_mes_'+mi, (data) => {
+                if (!data) return;
+                localStorage.setItem('fenixHist2026_mes_'+mi, JSON.stringify(data));
+            });
+        })(m);
+    }
+}
+
 // ══════════════════════════════════════════
 //  RENDER PRINCIPAL
 // ══════════════════════════════════════════
@@ -902,14 +1379,15 @@ function render() {
     document.getElementById("renoGeral").innerText    = rnT;
     document.getElementById("a5Geral").innerText      = a5T;
     document.getElementById("marketGeral").innerText  = calcPct(rT,cT)+"%";
-    document.getElementById("pctGeral").innerText     = calcPct(rT,fenixData.metaGeral||629)+"%";
-    document.getElementById("diariaEquipe").innerText = calcDiaria(fenixData.metaGeral||629,rT,dias);
-    document.getElementById("metaGeralLabel").innerText = fenixData.metaGeral||629;
+    const somaMetasGeral = ativos.reduce((a,b)=>a+(parseInt(b.meta)||0),0);
+    document.getElementById("pctGeral").innerText     = calcPct(rT, somaMetasGeral)+"%";
+    document.getElementById("diariaEquipe").innerText = calcDiaria(somaMetasGeral, rT, dias);
+    document.getElementById("metaGeralLabel").innerText = somaMetasGeral;
     document.getElementById("metaRenoLabel").innerText  = fenixData.metaReno||69;
     document.getElementById("metaA5Label").innerText    = fenixData.metaA5||69;
 
     atualizarHeader();
-    atualizarAlerta(rT, fenixData.metaGeral||629, dias);
+    atualizarAlerta(rT, somaMetasGeral, dias);
 
     const sorted=[...fenixData.promotores].sort((a,b)=>scoreRanking(b,dias)-scoreRanking(a,dias));
     const rankClass=['rank-1','rank-2','rank-3'],rankEmoji=['🥇','🥈','🥉'];
@@ -972,11 +1450,12 @@ function render() {
     });
 
     document.getElementById("listaPromotores").innerHTML=html;
+    verificarMetas(fenixData.promotores);
 }
 
 render();
-if(window._firebaseReady){setupFirebaseSync();}
-else{window.addEventListener('firebaseReady',setupFirebaseSync);}
+if(window._firebaseReady){setupFirebaseSync();setupHistFirebaseSync();}
+else{window.addEventListener('firebaseReady',()=>{setupFirebaseSync();setupHistFirebaseSync();});}
 </script>
 </body>
 </html>
