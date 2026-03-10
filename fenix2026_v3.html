@@ -970,10 +970,10 @@ function gerarWpp(tipo) {
             const pct = calcPct(p.real, p.meta);
             const m = i<3?medals[i]:`${i+1}º`;
             const bar = Math.round(pct/10);
-            const barra = '█'.repeat(Math.min(bar,10))+'░'.repeat(Math.max(10-bar,0));
+            const barra = '🟩'.repeat(Math.min(bar,10))+'⬜'.repeat(Math.max(10-bar,0));
             txt += `${m} *${primeiroNome(p.nome)}*\n`;
             txt += `   ${barra} ${pct}%\n`;
-            txt += `   📦 ${p.real}/${p.meta} vendas\n\n`;
+            txt += `   📱 ${p.real}/${p.meta} vendas\n\n`;
         });
         txt += `${'─'.repeat(30)}\n`;
         txt += `🎯 *Equipe: ${rT}/${mG} (${pctEq}%)*\n`;
@@ -1007,7 +1007,7 @@ function gerarWpp(tipo) {
         txt += `📅 ${hoje}\n`;
         txt += `${'─'.repeat(30)}\n\n`;
         txt += `🎯 *Meta da equipe:* ${mG}\n`;
-        txt += `📦 *Realizado:* ${rT} _(${pctEq}%)_\n`;
+        txt += `📱 *Realizado:* ${rT} _(${pctEq}%)_\n`;
         txt += `⚡ *Diária necessária:* ${calcDiaria(mG,rT,dias)}/dia\n\n`;
         txt += `🔥 *Reno vendidos:* ${rnT}/${fenixData.metaReno||69}\n`;
         txt += `💎 *A5 Pro vendidos:* ${a5T}/${fenixData.metaA5||69}\n`;
