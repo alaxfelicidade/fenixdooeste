@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -219,47 +218,66 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
 @media(max-width:768px){.promotor-card{grid-template-columns:44px 1fr;}.promotor-card>div:nth-child(3),.promotor-card>div:nth-child(4){grid-column:1/-1;}header h1{font-size:14px;}.banner-popover{width:calc(100vw - 40px);}.graficos-content,.painel-content,.modal-content{padding:16px;}.meta-group{grid-template-columns:repeat(4,1fr);}}
 
 /* ── MODO TV ── */
-body.tv-mode { background: #0a0f1e; }
-body.tv-mode header { background: #050810; border-bottom-color: #6366f1; }
-body.tv-mode .container { max-width: 100%; padding: 0 24px; }
 .tv-overlay {
     display: none; position: fixed; inset: 0; z-index: 9000;
-    background: #0a0f1e; overflow: hidden; flex-direction: column;
+    background: #f1f5f9; overflow: hidden; flex-direction: column;
 }
 .tv-overlay.active { display: flex; }
 .tv-header {
-    background: linear-gradient(135deg, #0f172a, #1e1b4b);
-    padding: 14px 32px; display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 2px solid #6366f1; flex-shrink: 0;
+    background: white;
+    padding: 14px 28px; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 3px solid #6366f1; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.08);
 }
-.tv-title { font-size: 22px; font-weight: 900; color: white; letter-spacing: -0.5px; }
-.tv-stats { display: flex; gap: 28px; align-items: center; }
-.tv-stat { text-align: center; }
-.tv-stat-val { font-size: 26px; font-weight: 900; color: #6366f1; line-height: 1; }
-.tv-stat-lbl { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
-.tv-body { flex: 1; overflow: hidden; padding: 20px 32px; display: flex; flex-direction: column; gap: 10px; }
+.tv-title { font-size: 22px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; display:flex; align-items:center; gap:10px; }
+.tv-stats { display: flex; gap: 20px; align-items: center; }
+.tv-stat {
+    text-align: center; background: #f8fafc; border-radius: 10px;
+    padding: 8px 18px; border: 1px solid #e2e8f0;
+}
+.tv-stat-val { font-size: 24px; font-weight: 900; line-height: 1; }
+.tv-stat-lbl { font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.tv-body { flex: 1; overflow: hidden; padding: 16px 28px; display: flex; flex-direction: column; gap: 8px; }
 .tv-card {
-    background: linear-gradient(135deg, #0f172a, #111827);
-    border-radius: 14px; padding: 14px 20px;
-    display: grid; grid-template-columns: 60px 2fr 3fr 1fr 1fr 1fr;
-    align-items: center; gap: 16px; border-left: 6px solid #334155;
-    animation: tvSlideIn 0.5s ease both;
+    background: white;
+    border-radius: 12px; padding: 12px 20px;
+    display: grid; grid-template-columns: 56px 2fr 3fr 90px 90px 110px;
+    align-items: center; gap: 16px; border-left: 7px solid #e2e8f0;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    animation: tvSlideIn 0.4s ease both;
 }
-@keyframes tvSlideIn { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:none; } }
-.tv-rank { font-size: 26px; font-weight: 900; text-align: center; }
-.tv-name { font-size: 16px; font-weight: 800; color: white; }
-.tv-capa { font-size: 10px; color: #64748b; font-weight: 700; margin-top: 2px; }
+/* cores alternadas por posição */
+.tv-card.tv-pos-0 { background: linear-gradient(135deg,#fffbeb,#fef9c3); }
+.tv-card.tv-pos-1 { background: linear-gradient(135deg,#f8fafc,#f1f5f9); }
+.tv-card.tv-pos-2 { background: linear-gradient(135deg,#fff7ed,#ffedd5); }
+.tv-card.tv-par   { background: white; }
+.tv-card.tv-impar { background: #f8fafc; }
+/* cor dinâmica pelo resultado */
+.tv-card.tv-ótimo  { border-left-color: #10b981 !important; }
+.tv-card.tv-bom    { border-left-color: #6366f1 !important; }
+.tv-card.tv-alerta { border-left-color: #f59e0b !important; }
+.tv-card.tv-risco  { border-left-color: #ef4444 !important; }
+
+@keyframes tvSlideIn { from { opacity:0; transform:translateX(-16px); } to { opacity:1; transform:none; } }
+.tv-rank { font-size: 24px; font-weight: 900; text-align: center; }
+.tv-name { font-size: 15px; font-weight: 800; color: #0f172a; }
+.tv-capa { font-size: 10px; color: #94a3b8; font-weight: 700; margin-top: 2px; }
 .tv-bar-wrap { position: relative; }
-.tv-bar-bg { height: 14px; background: #1e293b; border-radius: 10px; overflow: hidden; }
+.tv-bar-bg { height: 12px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
 .tv-bar-fill { height: 100%; border-radius: 10px; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
-.tv-pct { font-size: 11px; font-weight: 900; margin-top: 4px; }
+.tv-pct { font-size: 11px; font-weight: 900; margin-top: 3px; }
 .tv-num { text-align: center; }
-.tv-num-val { font-size: 22px; font-weight: 900; color: white; }
-.tv-num-lbl { font-size: 9px; color: #64748b; font-weight: 700; text-transform: uppercase; }
-.tv-diaria-pill { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 14px; font-weight: 900; }
-.tv-close { position: absolute; top: 16px; right: 20px; background: rgba(255,255,255,0.1); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; cursor: pointer; z-index: 9001; }
-.tv-ticker { background: #0f172a; border-top: 1px solid #1e293b; padding: 8px 24px; font-size: 11px; color: #64748b; font-weight: 700; flex-shrink: 0; white-space: nowrap; overflow: hidden; }
-.tv-ticker-inner { display: inline-block; animation: ticker 30s linear infinite; }
+.tv-num-val { font-size: 20px; font-weight: 900; color: #0f172a; }
+.tv-num-lbl { font-size: 9px; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
+.tv-diaria-pill { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 13px; font-weight: 900; }
+.tv-close { position: absolute; top: 16px; right: 20px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #64748b; width: 36px; height: 36px; border-radius: 50%; font-size: 16px; cursor: pointer; z-index: 9001; transition: all 0.18s; }
+.tv-close:hover { background: #fee2e2; color: #ef4444; border-color: #fca5a5; }
+.tv-ticker {
+    background: #1e293b; border-top: none; padding: 9px 24px;
+    font-size: 11px; color: #94a3b8; font-weight: 700;
+    flex-shrink: 0; white-space: nowrap; overflow: hidden;
+}
+.tv-ticker-inner { display: inline-block; animation: ticker 35s linear infinite; }
 @keyframes ticker { from { transform: translateX(100vw); } to { transform: translateX(-100%); } }
 
 /* ── HISTÓRICO DIÁRIO ── */
@@ -407,12 +425,13 @@ body.tv-mode .container { max-width: 100%; padding: 0 24px; }
 <div class="tv-overlay" id="tvOverlay">
     <button class="tv-close" onclick="closeTv()" title="Fechar (ESC)">✕</button>
     <div class="tv-header">
-        <div class="tv-title">🦅 FÊNIX DO OESTE &nbsp;<span id="tvMes" style="color:#6366f1;font-size:16px;"></span></div>
+        <div class="tv-title">🦅 <span style="color:#0f172a;">FÊNIX DO OESTE</span> &nbsp;<span id="tvMes" style="color:#6366f1;font-size:15px;font-weight:700;"></span></div>
         <div class="tv-stats">
-            <div class="tv-stat"><div class="tv-stat-val" id="tvReal">0</div><div class="tv-stat-lbl">Realizado</div></div>
-            <div class="tv-stat"><div class="tv-stat-val" id="tvMeta" style="color:#f59e0b;">0</div><div class="tv-stat-lbl">Meta</div></div>
+            <div class="tv-stat"><div class="tv-stat-val" id="tvReal" style="color:#6366f1;">0</div><div class="tv-stat-lbl">Realizado</div></div>
+            <div class="tv-stat"><div class="tv-stat-val" id="tvMeta" style="color:#94a3b8;">0</div><div class="tv-stat-lbl">Meta</div></div>
             <div class="tv-stat"><div class="tv-stat-val" id="tvPct" style="color:#10b981;">0%</div><div class="tv-stat-lbl">Atingimento</div></div>
             <div class="tv-stat"><div class="tv-stat-val" id="tvDiaria" style="color:#ef4444;">0</div><div class="tv-stat-lbl">Diária/equipe</div></div>
+            <div class="tv-stat"><div class="tv-stat-val" id="tvDiasRest" style="color:#f59e0b;">0</div><div class="tv-stat-lbl">Dias úteis</div></div>
         </div>
     </div>
     <div class="tv-body" id="tvBody"></div>
@@ -951,10 +970,10 @@ function gerarWpp(tipo) {
             const pct = calcPct(p.real, p.meta);
             const m = i<3?medals[i]:`${i+1}º`;
             const bar = Math.round(pct/10);
-            const barra = '█'.repeat(Math.min(bar,10))+'░'.repeat(Math.max(10-bar,0));
+            const barra = '🟩'.repeat(Math.min(bar,10))+'⬜'.repeat(Math.max(10-bar,0));
             txt += `${m} *${primeiroNome(p.nome)}*\n`;
             txt += `   ${barra} ${pct}%\n`;
-            txt += `   📦 ${p.real}/${p.meta} vendas\n\n`;
+            txt += `   📱 ${p.real}/${p.meta} vendas\n\n`;
         });
         txt += `${'─'.repeat(30)}\n`;
         txt += `🎯 *Equipe: ${rT}/${mG} (${pctEq}%)*\n`;
@@ -988,7 +1007,7 @@ function gerarWpp(tipo) {
         txt += `📅 ${hoje}\n`;
         txt += `${'─'.repeat(30)}\n\n`;
         txt += `🎯 *Meta da equipe:* ${mG}\n`;
-        txt += `📦 *Realizado:* ${rT} _(${pctEq}%)_\n`;
+        txt += `📱 *Realizado:* ${rT} _(${pctEq}%)_\n`;
         txt += `⚡ *Diária necessária:* ${calcDiaria(mG,rT,dias)}/dia\n\n`;
         txt += `🔥 *Reno vendidos:* ${rnT}/${fenixData.metaReno||69}\n`;
         txt += `💎 *A5 Pro vendidos:* ${a5T}/${fenixData.metaA5||69}\n`;
@@ -1153,14 +1172,21 @@ function tvKeyHandler(e) { if (e.key === 'Escape') closeTv(); }
 function renderTv() {
     const dias = getDiasUteisRestantes();
     const ativos = fenixData.promotores.filter(p=>!p.ferias);
-    const rT = ativos.reduce((a,b)=>a+(b.real||0),0);
-    const somaM = ativos.reduce((a,b)=>a+(b.meta||0),0);
-    const pctEq = calcPct(rT, somaM);
+    const rT   = ativos.reduce((a,b)=>a+(b.real||0),0);
+    const somaM= ativos.reduce((a,b)=>a+(b.meta||0),0);
+    const pctEq= calcPct(rT, somaM);
+    const renoT= ativos.reduce((a,b)=>a+(b.reno||0),0);
+    const a5T  = ativos.reduce((a,b)=>a+(b.a5||0),0);
 
-    document.getElementById('tvReal').textContent = rT;
-    document.getElementById('tvMeta').textContent = somaM;
-    document.getElementById('tvPct').textContent  = pctEq + '%';
+    document.getElementById('tvReal').textContent   = rT;
+    document.getElementById('tvMeta').textContent   = somaM;
+    document.getElementById('tvPct').textContent    = pctEq + '%';
     document.getElementById('tvDiaria').textContent = calcDiaria(somaM, rT, dias);
+    const drEl = document.getElementById('tvDiasRest'); if(drEl) drEl.textContent = dias;
+
+    // cor do % atingimento no header
+    const pctEl = document.getElementById('tvPct');
+    pctEl.style.color = pctEq>=100?'#10b981':pctEq>=70?'#6366f1':pctEq>=50?'#f59e0b':'#ef4444';
 
     const sorted = [...fenixData.promotores]
         .filter(p => !p.ferias && p.meta > 0)
@@ -1170,41 +1196,61 @@ function renderTv() {
     const body = document.getElementById('tvBody');
     body.innerHTML = '';
 
-    // Limita cards para caber na tela
-    const maxCards = Math.min(sorted.length, 8);
+    const maxCards = Math.min(sorted.length, 9);
     sorted.slice(0, maxCards).forEach((p, i) => {
         const pct = calcPct(p.real, p.meta);
         const dr  = calcDiaria(p.meta, p.real, dias);
         const cor = pct>=100?'#10b981':pct>=70?'#6366f1':pct>=50?'#f59e0b':'#ef4444';
-        const diariaClass = dr===0?'diaria-ok':dr<=2?'diaria-ok':dr<=4?'diaria-warn':'diaria-bad';
+        const resultClass = pct>=100?'tv-ótimo':pct>=70?'tv-bom':pct>=50?'tv-alerta':'tv-risco';
+        const posClass = i<3 ? 'tv-pos-'+i : (i%2===0?'tv-par':'tv-impar');
+        const diariaClass = dr===0?'diaria-ok':dr<=3?'diaria-warn':'diaria-bad';
+
+        // barra de progresso com gradiente
+        const barGrad = pct>=100
+            ? 'linear-gradient(90deg,#10b981,#34d399)'
+            : pct>=70
+            ? 'linear-gradient(90deg,#6366f1,#818cf8)'
+            : pct>=50
+            ? 'linear-gradient(90deg,#f59e0b,#fbbf24)'
+            : 'linear-gradient(90deg,#ef4444,#f87171)';
 
         const card = document.createElement('div');
-        card.className = 'tv-card';
-        card.style.borderLeftColor = cor;
-        card.style.animationDelay = (i*0.08)+'s';
+        card.className = `tv-card ${posClass} ${resultClass}`;
+        card.style.animationDelay = (i*0.07)+'s';
         card.innerHTML = `
-            <div class="tv-rank">${i<3?rankEmoji[i]:`${i+1}º`}</div>
+            <div class="tv-rank">${i<3?rankEmoji[i]:`<span style="font-size:18px;color:#94a3b8;font-weight:900;">${i+1}º</span>`}</div>
             <div>
                 <div class="tv-name">${p.nome}</div>
                 <div class="tv-capa">CAPA ${p.capa}</div>
             </div>
             <div class="tv-bar-wrap">
-                <div class="tv-bar-bg"><div class="tv-bar-fill" style="width:${Math.min(pct,100)}%;background:${cor}"></div></div>
-                <div class="tv-pct" style="color:${cor}">${pct}% da meta</div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                    <span style="font-size:10px;font-weight:800;color:#64748b;">Progresso</span>
+                    <span style="font-size:10px;font-weight:900;color:${cor};">${p.real} / ${p.meta}</span>
+                </div>
+                <div class="tv-bar-bg"><div class="tv-bar-fill" style="width:${Math.min(pct,100)}%;background:${barGrad}"></div></div>
+                <div class="tv-pct" style="color:${cor};">${pct}% da meta${pct>=100?' 🏆':''}</div>
             </div>
-            <div class="tv-num"><div class="tv-num-val">${p.real}</div><div class="tv-num-lbl">Realizado</div></div>
-            <div class="tv-num"><div class="tv-num-val" style="color:#f59e0b;">${p.meta}</div><div class="tv-num-lbl">Meta</div></div>
-            <div class="tv-num"><span class="tv-diaria-pill ${diariaClass}">${dr===0?'✅ OK':dr+'/dia'}</span><div class="tv-num-lbl" style="margin-top:4px;">Diária</div></div>
+            <div class="tv-num">
+                <div class="tv-num-val" style="color:${cor};font-size:24px;">${pct}%</div>
+                <div class="tv-num-lbl">Atingimento</div>
+            </div>
+            <div class="tv-num">
+                <div class="tv-num-val" style="color:#f97316;">${p.reno||0}</div>
+                <div class="tv-num-lbl">Reno</div>
+            </div>
+            <div class="tv-num">
+                <span class="tv-diaria-pill ${diariaClass}">${dr===0?'✅ Meta!':dr+'/dia'}</span>
+                <div class="tv-num-lbl" style="margin-top:5px;">Diária</div>
+            </div>
         `;
         body.appendChild(card);
     });
 
-    // Ticker
-    const top3 = sorted.slice(0,3).map((p,i)=>`${rankEmoji[i]||'⭐'} ${primeiroNome(p.nome)}: ${calcPct(p.real,p.meta)}%`).join('   ·   ');
-    const renoT = ativos.reduce((a,b)=>a+(b.reno||0),0);
-    const a5T   = ativos.reduce((a,b)=>a+(b.a5||0),0);
+    // Ticker escuro no rodapé
+    const top3 = sorted.slice(0,3).map((p,i)=>`${rankEmoji[i]} ${primeiroNome(p.nome)}: ${calcPct(p.real,p.meta)}%`).join('   ·   ');
     document.getElementById('tvTicker').textContent =
-        `🦅 FÊNIX DO OESTE   ·   ${meses[mesSelecionado]}   ·   EQUIPE: ${rT}/${somaM} (${pctEq}%)   ·   🔥 Reno: ${renoT}   ·   💎 A5 Pro: ${a5T}   ·   ${top3}   ·   `;
+        `🦅 FÊNIX DO OESTE   ·   ${meses[mesSelecionado]}   ·   Equipe: ${rT}/${somaM} (${pctEq}%)   ·   🔥 Reno: ${renoT}/${fenixData.metaReno||69}   ·   💎 A5 Pro: ${a5T}/${fenixData.metaA5||69}   ·   ${top3}   ·   ⚡ Diária: ${calcDiaria(somaM,rT,dias)} vendas/dia   ·   📅 ${dias} dias úteis restantes   ·   `;
 }
 
 // ══════════════════════════════════════════
@@ -1225,6 +1271,23 @@ function saveHist(data) {
     if (window._fbSet) window._fbSet('fenix2026/hist_mes_' + mesSelecionado, data);
 }
 
+
+// ── Sincroniza histórico com o valor REAL atual (lança no dia de hoje automaticamente) ──
+function sincHistComReal() {
+    const hoje = new Date().toISOString().split('T')[0];
+    const hist = loadHist();
+    if (!hist[hoje]) hist[hoje] = {};
+    let alterou = false;
+    fenixData.promotores.forEach(p => {
+        if (!p.ferias && p.meta > 0 && (p.real || 0) > 0) {
+            if (hist[hoje][p.nome] !== p.real) {
+                hist[hoje][p.nome] = p.real;
+                alterou = true;
+            }
+        }
+    });
+    if (alterou) saveHist(hist);
+}
 function openHist() {
     document.getElementById('histMes').textContent = meses[mesSelecionado] + ' ' + new Date().getFullYear();
     document.getElementById('histModal').style.display = 'block';
@@ -1451,6 +1514,7 @@ function render() {
 
     document.getElementById("listaPromotores").innerHTML=html;
     verificarMetas(fenixData.promotores);
+    sincHistComReal();
 }
 
 render();
