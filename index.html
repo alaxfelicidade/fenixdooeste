@@ -655,7 +655,8 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
             <button class="graf-tab active" onclick="switchTab('performance')">🏆 Performance</button>
             <button class="graf-tab" onclick="switchTab('atencao')">⚠️ Atenção</button>
             <button class="graf-tab" onclick="switchTab('produtos')">📦 Produtos</button>
-            <button class="graf-tab" onclick="switchTab('comissao')" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;">💰 Comissão Supervisor</button>
+            <button class="graf-tab" onclick="switchTab('comissao')" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;">💰 Supervisor</button>
+            <button class="graf-tab" onclick="switchTab('promotor')" style="background:#f0fdf4;color:#166534;border:1px solid #86efac;">💵 Promotores</button>
         </div>
         <div id="tab-performance" class="graf-panel active">
             <div class="insight-grid" id="insightPerf"></div>
@@ -675,6 +676,10 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
         <!-- ABA COMISSÃO SUPERVISOR -->
         <div id="tab-comissao" class="graf-panel">
             <div id="comissaoConteudo"></div>
+        </div>
+        <!-- ABA COMISSÃO PROMOTORES -->
+        <div id="tab-promotor" class="graf-panel">
+            <div id="comissaoPromotorConteudo"></div>
         </div>
     </div>
 </div>
@@ -715,7 +720,51 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
         <div class="regra-item"><label>Mínimo de vendas (unid.)</label><input type="number" id="reg_inc_min" value="7" min="1"></div>
         <div class="regra-item"><label>Valor do incentivo (R$)</label><input type="number" id="reg_inc_val" value="10.00" step="0.50" min="0"></div>
     </div>
-    <button onclick="salvarRegras()" style="background:var(--success-dark);color:white;border:none;padding:12px;width:100%;border-radius:8px;font-weight:800;cursor:pointer;font-family:inherit;font-size:13px;margin-top:8px;">💾 Salvar Regras</button>
+    <button onclick="salvarRegras()" style="background:var(--success-dark);color:white;border:none;padding:12px;width:100%;border-radius:8px;font-weight:800;cursor:pointer;font-family:inherit;font-size:13px;margin-top:8px;">💾 Salvar Regras Supervisor</button>
+</div>
+
+<!-- REGRAS PROMOTOR POPOVER -->
+<div class="regras-popover" id="regrasPromotorPopover">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="margin:0;font-size:15px;font-weight:900;color:#0f172a;">✏️ Editar Regras — Comissão Promotores</h3>
+        <button onclick="closeRegrasPromotorPopover()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;line-height:1;">×</button>
+    </div>
+    <div class="regra-section">Limites de Nível (Varejo / Operadora)</div>
+    <div class="regras-grid">
+        <div class="regra-item"><label>Varejo — min. Nível 2 (unid.)</label><input type="number" id="preg_varejo_nivel2" value="25" min="1"></div>
+        <div class="regra-item"><label>Operadora — min. Nível 2 (unid.)</label><input type="number" id="preg_op_nivel2" value="15" min="1"></div>
+    </div>
+    <div class="regra-section">Comissão Nível 1 — por unidade (R$)</div>
+    <div class="regras-grid">
+        <div class="regra-item"><label>A6x</label><input type="number" id="preg_n1_a6x" value="3.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A40/A5</label><input type="number" id="preg_n1_a40" value="8.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A58</label><input type="number" id="preg_n1_a58" value="16.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A60/A79</label><input type="number" id="preg_n1_a60" value="32.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A5 (5G)</label><input type="number" id="preg_n1_a5g" value="40.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>Reno11F / A5 Pro / A6 Pro</label><input type="number" id="preg_n1_reno11f" value="56.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>Reno 13F / 14F</label><input type="number" id="preg_n1_reno13f" value="144.00" step="1" min="0"></div>
+        <div class="regra-item"><label>Reno 13 / 14</label><input type="number" id="preg_n1_reno14" value="160.00" step="1" min="0"></div>
+    </div>
+    <div class="regra-section">Comissão Nível 2 — por unidade (R$)</div>
+    <div class="regras-grid">
+        <div class="regra-item"><label>A6x</label><input type="number" id="preg_n2_a6x" value="6.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A40/A5</label><input type="number" id="preg_n2_a40" value="10.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A58</label><input type="number" id="preg_n2_a58" value="20.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A60/A79</label><input type="number" id="preg_n2_a60" value="40.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A5 (5G)</label><input type="number" id="preg_n2_a5g" value="50.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>Reno11F / A5 Pro / A6 Pro</label><input type="number" id="preg_n2_reno11f" value="70.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>Reno 13F / 14F</label><input type="number" id="preg_n2_reno13f" value="180.00" step="1" min="0"></div>
+        <div class="regra-item"><label>Reno 13 / 14</label><input type="number" id="preg_n2_reno14" value="200.00" step="1" min="0"></div>
+    </div>
+    <div class="regra-section">Incentivo Adicional Promotor (A6 Pro + Reno)</div>
+    <div class="regras-grid">
+        <div class="regra-item"><label>Faixa 1 — mín. unidades</label><input type="number" id="preg_inc1_min" value="6" min="1"></div>
+        <div class="regra-item"><label>Faixa 1 — máx. unidades</label><input type="number" id="preg_inc1_max" value="10" min="1"></div>
+        <div class="regra-item"><label>Faixa 1 — Valor (R$)</label><input type="number" id="preg_inc1_val" value="50.00" step="5" min="0"></div>
+        <div class="regra-item"><label>Faixa 2 — mín. unidades</label><input type="number" id="preg_inc2_min" value="11" min="1"></div>
+        <div class="regra-item"><label>Faixa 2 — Valor (R$)</label><input type="number" id="preg_inc2_val" value="100.00" step="5" min="0"></div>
+    </div>
+    <button onclick="salvarRegrasPromotor()" style="background:#059669;color:white;border:none;padding:12px;width:100%;border-radius:8px;font-weight:800;cursor:pointer;font-family:inherit;font-size:13px;margin-top:8px;">💾 Salvar Regras Promotores</button>
 </div>
 
 <script>
@@ -770,6 +819,7 @@ function setupFirebaseSync(){
     window._fbListen('fenix2026/banner',(data)=>{if(!data)return;bannerData=data;renderBanner();localStorage.setItem('fenixBanner2026',JSON.stringify(data));});
     window._fbListen('fenix2026/cardLabels',(data)=>{if(!data)return;cardLabels={...cardLabels,...data};localStorage.setItem('fenixCardLabels',JSON.stringify(cardLabels));renderCardLabels();});
     window._fbListen('fenix2026/regrasComissao',(data)=>{if(!data)return;regrasComissao={...regrasComissao,...data};localStorage.setItem('fenixRegrasComissao',JSON.stringify(regrasComissao));});
+    window._fbListen('fenix2026/regrasPromotor',(data)=>{if(!data)return;regrasPromotor={...regrasPromotor,...data};localStorage.setItem('fenixRegrasPromotor',JSON.stringify(regrasPromotor));});
 }
 
 let mesSelecionado=new Date().getMonth();
@@ -1071,10 +1121,16 @@ function destroyChart(id){if(chartInstances[id]){chartInstances[id].destroy();de
 function openGraficos(){document.getElementById('graficosMes').innerText=meses[mesSelecionado]+' '+new Date().getFullYear();document.getElementById('graficosModal').style.display='block';switchTab('performance');}
 function closeGraficos(){document.getElementById('graficosModal').style.display='none';['chartPerformance','chartAtencao','chartProdDonut','chartProdBar'].forEach(destroyChart);}
 function switchTab(tab){
-    document.querySelectorAll('.graf-tab').forEach((t,i)=>{const ts=['performance','atencao','produtos','comissao'];t.classList.toggle('active',ts[i]===tab);});
+    document.querySelectorAll('.graf-tab').forEach((t,i)=>{const ts=['performance','atencao','produtos','comissao','promotor'];t.classList.toggle('active',ts[i]===tab);});
     document.querySelectorAll('.graf-panel').forEach(p=>p.classList.remove('active'));
     document.getElementById('tab-'+tab).classList.add('active');
-    setTimeout(()=>{if(tab==='performance')buildChartPerformance();if(tab==='atencao')buildChartAtencao();if(tab==='produtos')buildChartProdutos();if(tab==='comissao')buildComissaoSupervisor();},50);
+    setTimeout(()=>{
+        if(tab==='performance')buildChartPerformance();
+        if(tab==='atencao')buildChartAtencao();
+        if(tab==='produtos')buildChartProdutos();
+        if(tab==='comissao')buildComissaoSupervisor();
+        if(tab==='promotor')buildComissaoPromotor();
+    },50);
 }
 function buildChartPerformance(){
     destroyChart('chartPerformance');
@@ -1109,8 +1165,13 @@ function buildChartProdutos(){
 }
 
 // ══════════════════════════════════════════
-//  COMISSÃO SUPERVISOR — LÓGICA COMPLETA
+//  COMISSÃO SUPERVISOR
+//  Regras: supervisor recebe por unidade vendida
+//  baseado na MÉDIA dos promotores de cada loja
+//  Nível definido pela média de vendas do promotor
+//  Supervisor recebe sobre cada unidade do promotor
 // ══════════════════════════════════════════
+// ══ REGRAS SUPERVISOR (comissão do supervisor sobre vendas médias dos promotores) ══
 let regrasComissao=JSON.parse(localStorage.getItem('fenixRegrasComissao'))||{
     varejo_nivel2:25, op_nivel2:15,
     n1:{a6x:0.50,a40:1.50,a58:2.00,a60:4.00,reno11f:9.00,a5pro:6.00,reno14:14.00},
@@ -1118,93 +1179,106 @@ let regrasComissao=JSON.parse(localStorage.getItem('fenixRegrasComissao'))||{
     inc_min:7, inc_val:10.00
 };
 
+// ══ REGRAS PROMOTOR (comissão individual por unidade vendida) ══
+let regrasPromotor=JSON.parse(localStorage.getItem('fenixRegrasPromotor'))||{
+    varejo_nivel2:25, op_nivel2:15,
+    n1:{a6x:3.00,a40:8.00,a58:16.00,a60:32.00,a5g:40.00,reno11f:56.00,reno13f:144.00,reno14:160.00},
+    n2:{a6x:6.00,a40:10.00,a58:20.00,a60:40.00,a5g:50.00,reno11f:70.00,reno13f:180.00,reno14:200.00},
+    inc1_min:6,inc1_max:10,inc1_val:50.00,
+    inc2_min:11,inc2_val:100.00
+};
+
+// ── Sync / get Supervisor ──
 function getRegras(){
     return{
         varejo_nivel2:parseInt(document.getElementById('reg_varejo_nivel2')?.value||regrasComissao.varejo_nivel2),
         op_nivel2:parseInt(document.getElementById('reg_op_nivel2')?.value||regrasComissao.op_nivel2),
-        n1:{
-            a6x:parseFloat(document.getElementById('reg_n1_a6x')?.value||regrasComissao.n1.a6x),
-            a40:parseFloat(document.getElementById('reg_n1_a40')?.value||regrasComissao.n1.a40),
-            a58:parseFloat(document.getElementById('reg_n1_a58')?.value||regrasComissao.n1.a58),
-            a60:parseFloat(document.getElementById('reg_n1_a60')?.value||regrasComissao.n1.a60),
-            reno11f:parseFloat(document.getElementById('reg_n1_reno11f')?.value||regrasComissao.n1.reno11f),
-            a5pro:parseFloat(document.getElementById('reg_n1_a5pro')?.value||regrasComissao.n1.a5pro),
-            reno14:parseFloat(document.getElementById('reg_n1_reno14')?.value||regrasComissao.n1.reno14)
-        },
-        n2:{
-            a6x:parseFloat(document.getElementById('reg_n2_a6x')?.value||regrasComissao.n2.a6x),
-            a40:parseFloat(document.getElementById('reg_n2_a40')?.value||regrasComissao.n2.a40),
-            a58:parseFloat(document.getElementById('reg_n2_a58')?.value||regrasComissao.n2.a58),
-            a60:parseFloat(document.getElementById('reg_n2_a60')?.value||regrasComissao.n2.a60),
-            reno11f:parseFloat(document.getElementById('reg_n2_reno11f')?.value||regrasComissao.n2.reno11f),
-            a5pro:parseFloat(document.getElementById('reg_n2_a5pro')?.value||regrasComissao.n2.a5pro),
-            reno14:parseFloat(document.getElementById('reg_n2_reno14')?.value||regrasComissao.n2.reno14)
-        },
+        n1:{a6x:parseFloat(document.getElementById('reg_n1_a6x')?.value||regrasComissao.n1.a6x),a40:parseFloat(document.getElementById('reg_n1_a40')?.value||regrasComissao.n1.a40),a58:parseFloat(document.getElementById('reg_n1_a58')?.value||regrasComissao.n1.a58),a60:parseFloat(document.getElementById('reg_n1_a60')?.value||regrasComissao.n1.a60),reno11f:parseFloat(document.getElementById('reg_n1_reno11f')?.value||regrasComissao.n1.reno11f),a5pro:parseFloat(document.getElementById('reg_n1_a5pro')?.value||regrasComissao.n1.a5pro),reno14:parseFloat(document.getElementById('reg_n1_reno14')?.value||regrasComissao.n1.reno14)},
+        n2:{a6x:parseFloat(document.getElementById('reg_n2_a6x')?.value||regrasComissao.n2.a6x),a40:parseFloat(document.getElementById('reg_n2_a40')?.value||regrasComissao.n2.a40),a58:parseFloat(document.getElementById('reg_n2_a58')?.value||regrasComissao.n2.a58),a60:parseFloat(document.getElementById('reg_n2_a60')?.value||regrasComissao.n2.a60),reno11f:parseFloat(document.getElementById('reg_n2_reno11f')?.value||regrasComissao.n2.reno11f),a5pro:parseFloat(document.getElementById('reg_n2_a5pro')?.value||regrasComissao.n2.a5pro),reno14:parseFloat(document.getElementById('reg_n2_reno14')?.value||regrasComissao.n2.reno14)},
         inc_min:parseInt(document.getElementById('reg_inc_min')?.value||regrasComissao.inc_min),
         inc_val:parseFloat(document.getElementById('reg_inc_val')?.value||regrasComissao.inc_val)
     };
 }
-
 function syncRegrasInputs(){
-    const r=regrasComissao;
-    const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
+    const r=regrasComissao;const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
     set('reg_varejo_nivel2',r.varejo_nivel2);set('reg_op_nivel2',r.op_nivel2);
     set('reg_n1_a6x',r.n1.a6x);set('reg_n1_a40',r.n1.a40);set('reg_n1_a58',r.n1.a58);set('reg_n1_a60',r.n1.a60);set('reg_n1_reno11f',r.n1.reno11f);set('reg_n1_a5pro',r.n1.a5pro);set('reg_n1_reno14',r.n1.reno14);
     set('reg_n2_a6x',r.n2.a6x);set('reg_n2_a40',r.n2.a40);set('reg_n2_a58',r.n2.a58);set('reg_n2_a60',r.n2.a60);set('reg_n2_reno11f',r.n2.reno11f);set('reg_n2_a5pro',r.n2.a5pro);set('reg_n2_reno14',r.n2.reno14);
     set('reg_inc_min',r.inc_min);set('reg_inc_val',r.inc_val);
 }
-
-function openRegrasPopover(){
-    syncRegrasInputs();
-    document.getElementById('regrasPopover').classList.add('open');
-}
+function openRegrasPopover(){syncRegrasInputs();document.getElementById('regrasPopover').classList.add('open');}
 function closeRegrasPopover(){document.getElementById('regrasPopover').classList.remove('open');}
 function salvarRegras(){
-    regrasComissao=getRegras();
-    localStorage.setItem('fenixRegrasComissao',JSON.stringify(regrasComissao));
+    regrasComissao=getRegras();localStorage.setItem('fenixRegrasComissao',JSON.stringify(regrasComissao));
     if(window._fbSet)window._fbSet('fenix2026/regrasComissao',regrasComissao);
-    closeRegrasPopover();
-    buildComissaoSupervisor();
-    showSync('✅ Regras salvas!','verde');
+    closeRegrasPopover();buildComissaoSupervisor();showSync('✅ Regras Supervisor salvas!','verde');
 }
 
-// Calcula comissão de um promotor
-// media = real total do promotor (usamos p.real como média mensal)
-// tipoLoja: 'varejo' ou 'operadora' (default varejo)
-function calcComissaoPromotor(p, r){
+// ── Sync / get Promotor ──
+function getRegrasPromotor(){
+    return{
+        varejo_nivel2:parseInt(document.getElementById('preg_varejo_nivel2')?.value||regrasPromotor.varejo_nivel2),
+        op_nivel2:parseInt(document.getElementById('preg_op_nivel2')?.value||regrasPromotor.op_nivel2),
+        n1:{a6x:parseFloat(document.getElementById('preg_n1_a6x')?.value||regrasPromotor.n1.a6x),a40:parseFloat(document.getElementById('preg_n1_a40')?.value||regrasPromotor.n1.a40),a58:parseFloat(document.getElementById('preg_n1_a58')?.value||regrasPromotor.n1.a58),a60:parseFloat(document.getElementById('preg_n1_a60')?.value||regrasPromotor.n1.a60),a5g:parseFloat(document.getElementById('preg_n1_a5g')?.value||regrasPromotor.n1.a5g),reno11f:parseFloat(document.getElementById('preg_n1_reno11f')?.value||regrasPromotor.n1.reno11f),reno13f:parseFloat(document.getElementById('preg_n1_reno13f')?.value||regrasPromotor.n1.reno13f),reno14:parseFloat(document.getElementById('preg_n1_reno14')?.value||regrasPromotor.n1.reno14)},
+        n2:{a6x:parseFloat(document.getElementById('preg_n2_a6x')?.value||regrasPromotor.n2.a6x),a40:parseFloat(document.getElementById('preg_n2_a40')?.value||regrasPromotor.n2.a40),a58:parseFloat(document.getElementById('preg_n2_a58')?.value||regrasPromotor.n2.a58),a60:parseFloat(document.getElementById('preg_n2_a60')?.value||regrasPromotor.n2.a60),a5g:parseFloat(document.getElementById('preg_n2_a5g')?.value||regrasPromotor.n2.a5g),reno11f:parseFloat(document.getElementById('preg_n2_reno11f')?.value||regrasPromotor.n2.reno11f),reno13f:parseFloat(document.getElementById('preg_n2_reno13f')?.value||regrasPromotor.n2.reno13f),reno14:parseFloat(document.getElementById('preg_n2_reno14')?.value||regrasPromotor.n2.reno14)},
+        inc1_min:parseInt(document.getElementById('preg_inc1_min')?.value||regrasPromotor.inc1_min),
+        inc1_max:parseInt(document.getElementById('preg_inc1_max')?.value||regrasPromotor.inc1_max),
+        inc1_val:parseFloat(document.getElementById('preg_inc1_val')?.value||regrasPromotor.inc1_val),
+        inc2_min:parseInt(document.getElementById('preg_inc2_min')?.value||regrasPromotor.inc2_min),
+        inc2_val:parseFloat(document.getElementById('preg_inc2_val')?.value||regrasPromotor.inc2_val)
+    };
+}
+function syncRegrasPromotorInputs(){
+    const r=regrasPromotor;const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
+    set('preg_varejo_nivel2',r.varejo_nivel2);set('preg_op_nivel2',r.op_nivel2);
+    set('preg_n1_a6x',r.n1.a6x);set('preg_n1_a40',r.n1.a40);set('preg_n1_a58',r.n1.a58);set('preg_n1_a60',r.n1.a60);set('preg_n1_a5g',r.n1.a5g);set('preg_n1_reno11f',r.n1.reno11f);set('preg_n1_reno13f',r.n1.reno13f);set('preg_n1_reno14',r.n1.reno14);
+    set('preg_n2_a6x',r.n2.a6x);set('preg_n2_a40',r.n2.a40);set('preg_n2_a58',r.n2.a58);set('preg_n2_a60',r.n2.a60);set('preg_n2_a5g',r.n2.a5g);set('preg_n2_reno11f',r.n2.reno11f);set('preg_n2_reno13f',r.n2.reno13f);set('preg_n2_reno14',r.n2.reno14);
+    set('preg_inc1_min',r.inc1_min);set('preg_inc1_max',r.inc1_max);set('preg_inc1_val',r.inc1_val);
+    set('preg_inc2_min',r.inc2_min);set('preg_inc2_val',r.inc2_val);
+}
+function openRegrasPromotorPopover(){syncRegrasPromotorInputs();document.getElementById('regrasPromotorPopover').classList.add('open');}
+function closeRegrasPromotorPopover(){document.getElementById('regrasPromotorPopover').classList.remove('open');}
+function salvarRegrasPromotor(){
+    regrasPromotor=getRegrasPromotor();localStorage.setItem('fenixRegrasPromotor',JSON.stringify(regrasPromotor));
+    if(window._fbSet)window._fbSet('fenix2026/regrasPromotor',regrasPromotor);
+    closeRegrasPromotorPopover();buildComissaoPromotor();showSync('✅ Regras Promotores salvas!','verde');
+}
+
+// ══ CÁLCULO SUPERVISOR ══
+// REGRA PDF: Supervisor recebe sobre as VENDAS DE CADA PROMOTOR (média)
+// Nível do promotor define qual tabela usar (varejo: <25=N1, >=25=N2)
+// Tabela Supervisor: A6x, A40/A5, A58, A60/A79/A5(5G), Reno11F, A5Pro/A6Pro, Reno13/13F/14/14F
+// Incentivo: se Reno+A5Pro/A6Pro do promotor >= inc_min → +inc_val POR PROMOTOR
+function calcComissaoSupervResult(p, r){
     const media=p.real||0;
-    const isVarejo=true; // sem campo de tipo de loja, assume varejo
-    const limiteN2=isVarejo?r.varejo_nivel2:r.op_nivel2;
-    const nivel=media>=limiteN2?2:1;
+    const nivel=media>=r.varejo_nivel2?2:1;
     const tab=nivel===2?r.n2:r.n1;
-    // Vendas principais: usamos real como total vendas gerais
-    // Reno e A6Pro têm colunas próprias
-    const vendReno=p.reno||0;
-    const vendA6Pro=p.a5||0;
-    // Vendas "outras" = real - reno - a6pro (assumimos mix médio no produto principal)
-    const vendOutras=Math.max(0,(p.real||0)-vendReno-vendA6Pro);
-    // Comissão: reno pelo maior valor da linha (reno14), a6pro pelo campo a5pro
-    const comReno=vendReno*tab.reno14;
-    const comA6Pro=vendA6Pro*tab.a5pro;
-    // Comissão outras vendas: usamos a60 como referência média de produto intermediário
-    const comOutras=vendOutras*tab.a60;
+    const vendReno=p.reno||0;   // Reno 13/13F/14/14F → tab.reno14
+    const vendA6Pro=p.a5||0;    // A5Pro/A6Pro → tab.a5pro
+    // "outras vendas" tratamos como mix intermediário → tab.a60 (A60/A79/A5 5G) como proxy
+    const vendOutras=Math.max(0,media-vendReno-vendA6Pro);
+    const comReno  = vendReno   * tab.reno14;   // Reno 13/13F/14/14F
+    const comA6Pro = vendA6Pro  * tab.a5pro;    // A5 Pro / A6 Pro
+    const comOutras= vendOutras * tab.a60;      // proxy A60
     const totalBase=comReno+comA6Pro+comOutras;
-    // Incentivo adicional: média A6Pro + Reno >= inc_min
-    const mediaEspecial=(vendReno+vendA6Pro);
-    const incentivo=mediaEspecial>=r.inc_min?r.inc_val:0;
-    return{nivel,media,vendReno,vendA6Pro,vendOutras,comReno,comA6Pro,comOutras,totalBase,incentivo,totalFinal:totalBase+incentivo};
+    // Incentivo adicional: Reno+A6Pro desse promotor >= inc_min → +inc_val (por promotor)
+    const totalEspecial=vendReno+vendA6Pro;
+    const incentivo=totalEspecial>=r.inc_min ? r.inc_val : 0;
+    return{nivel,media,vendReno,vendA6Pro,vendOutras,comReno,comA6Pro,comOutras,totalBase,incentivo,totalFinal:totalBase+incentivo,totalEspecial};
 }
 
 function buildComissaoSupervisor(){
     const r=regrasComissao;
     const ativos=fenixData.promotores.filter(p=>!p.ferias&&p.meta>0);
     const mes=meses[mesSelecionado];
+    const lReno=cardLabels.reno||'Reno';const lA6=cardLabels.a6pro||'A6 Pro';
     let totalComissao=0,totalIncentivo=0,totalN2=0;
     const rows=ativos.map(p=>{
-        const c=calcComissaoPromotor(p,r);
+        const c=calcComissaoSupervResult(p,r);
         totalComissao+=c.totalBase;totalIncentivo+=c.incentivo;if(c.nivel===2)totalN2++;
-        const lReno=cardLabels.reno||'Reno';const lA6=cardLabels.a6pro||'A6 Pro';
-        const incHtml=c.incentivo>0?`<span class="incentivo-pill">+R$${c.incentivo.toFixed(2)}</span>`:'—';
+        const incHtml=c.incentivo>0
+            ?`<span class="incentivo-pill">+R$${c.incentivo.toFixed(2)}<br><small style="font-size:9px;">${lReno}+${lA6}≥${r.inc_min}</small></span>`
+            :`<span style="color:#94a3b8;">—</span>`;
         return`<tr>
             <td>${primeiroNome(p.nome)}</td>
             <td><span class="nivel-badge ${c.nivel===2?'nivel-2':'nivel-1'}">Nível ${c.nivel}</span></td>
@@ -1213,41 +1287,41 @@ function buildComissaoSupervisor(){
             <td>${c.vendA6Pro}</td>
             <td><span class="comissao-pill com-verde">R$ ${c.comReno.toFixed(2)}</span></td>
             <td><span class="comissao-pill com-azul">R$ ${c.comA6Pro.toFixed(2)}</span></td>
-            <td><span class="comissao-pill" style="background:#f0fdf4;color:#166534;">R$ ${c.totalBase.toFixed(2)}</span></td>
+            <td><span class="comissao-pill" style="background:#f0fdf4;color:#166634;">R$ ${c.totalBase.toFixed(2)}</span></td>
             <td>${incHtml}</td>
             <td style="font-weight:900;color:#0f172a;">R$ ${c.totalFinal.toFixed(2)}</td>
         </tr>`;
     }).join('');
-
     const totalGeral=totalComissao+totalIncentivo;
-    const lReno=cardLabels.reno||'Reno';const lA6=cardLabels.a6pro||'A6 Pro';
-
+    const qtdInc=ativos.filter(p=>calcComissaoSupervResult(p,r).incentivo>0).length;
     document.getElementById('comissaoConteudo').innerHTML=`
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
             <div>
                 <div style="font-size:15px;font-weight:900;color:#0f172a;">💰 Comissão Supervisor — ${mes}</div>
-                <div style="font-size:11px;color:#64748b;font-weight:600;margin-top:2px;">Cálculo baseado nas vendas dos promotores ativos</div>
+                <div style="font-size:11px;color:#64748b;font-weight:600;margin-top:2px;">Baseada nas vendas dos promotores × tabela de nível do supervisor</div>
             </div>
-            <button class="btn-edit-regras" onclick="openRegrasPopover()">✏️ Editar Regras</button>
+            <button class="btn-edit-regras" onclick="openRegrasPopover()">✏️ Editar Regras Supervisor</button>
         </div>
         <div class="comissao-info">
-            📋 <b>Regras ativas:</b> Varejo → Nível 2 com ≥ ${r.varejo_nivel2} unidades | Incentivo extra: média A6Pro + ${lReno} ≥ ${r.inc_min} unidades → + R$ ${r.inc_val.toFixed(2)}/promotor
+            📋 <b>Regras Supervisor:</b>
+            Varejo → Nível 2 com ≥${r.varejo_nivel2} unid. | Operadora → ≥${r.op_nivel2} unid. |
+            Incentivo: ${lReno}+${lA6} ≥${r.inc_min}/promotor → +R$${r.inc_val.toFixed(2)} por promotor
         </div>
         <div class="sup-cards">
             <div class="sup-card" style="border-top:4px solid #6366f1;">
-                <div class="s-label">💰 Comissão Total</div>
+                <div class="s-label">💰 Total Supervisor</div>
                 <div class="s-val" style="color:#6366f1;">R$ ${totalGeral.toFixed(2)}</div>
                 <div class="s-sub">Base + incentivos</div>
             </div>
             <div class="sup-card" style="border-top:4px solid #10b981;">
                 <div class="s-label">📦 Comissão Base</div>
                 <div class="s-val" style="color:#10b981;">R$ ${totalComissao.toFixed(2)}</div>
-                <div class="s-sub">Sem incentivo</div>
+                <div class="s-sub">Sem incentivo adicional</div>
             </div>
             <div class="sup-card" style="border-top:4px solid #f59e0b;">
                 <div class="s-label">🎁 Incentivo Extra</div>
                 <div class="s-val" style="color:#f59e0b;">R$ ${totalIncentivo.toFixed(2)}</div>
-                <div class="s-sub">${ativos.filter(p=>calcComissaoPromotor(p,r).incentivo>0).length} promotores qualificados</div>
+                <div class="s-sub">${qtdInc} promotor(es) qualificado(s)</div>
             </div>
             <div class="sup-card" style="border-top:4px solid #059669;">
                 <div class="s-label">⭐ Promotores Nível 2</div>
@@ -1259,15 +1333,11 @@ function buildComissaoSupervisor(){
             <table class="tabela-sup-detalhe">
                 <thead><tr>
                     <th style="text-align:left;">Promotor</th>
-                    <th>Nível</th>
-                    <th>Real</th>
-                    <th>${lReno}</th>
-                    <th>${lA6}</th>
-                    <th>Com. ${lReno}</th>
-                    <th>Com. ${lA6}</th>
-                    <th>Base Total</th>
-                    <th>Incentivo</th>
-                    <th>TOTAL</th>
+                    <th>Nível</th><th>Real</th>
+                    <th>${lReno}</th><th>${lA6}</th>
+                    <th>Com. ${lReno}<br><small style="font-size:8px;opacity:0.7;">Reno13/14F</small></th>
+                    <th>Com. ${lA6}<br><small style="font-size:8px;opacity:0.7;">A5Pro/A6Pro</small></th>
+                    <th>Base Total</th><th>Incentivo</th><th>TOTAL</th>
                 </tr></thead>
                 <tbody>${rows}</tbody>
                 <tfoot><tr style="background:#0f172a;color:white;font-weight:900;">
@@ -1278,9 +1348,94 @@ function buildComissaoSupervisor(){
                 </tr></tfoot>
             </table>
         </div>
-        <div style="font-size:10px;color:#94a3b8;font-weight:600;margin-top:12px;">
-            * Comissão calculada com base nas vendas registradas. ${lReno} e ${lA6} são aplicados pelas tabelas de nível correspondentes. "Outras vendas" usam valor médio do produto A60/A79/A5 5G como referência.
+        <div style="font-size:10px;color:#94a3b8;margin-top:10px;">
+            * Nível 2 = ≥${r.varejo_nivel2} unid. (varejo) ou ≥${r.op_nivel2} unid. (operadora).
+            ${lReno} usa tabela Reno13/13F/14/14F | ${lA6} usa tabela A5Pro.
+            Outras vendas = real−${lReno}−${lA6}, calculadas com tabela A60/A79 como referência.
         </div>`;
+}
+
+// ══ CÁLCULO PROMOTOR ══
+// REGRA PDF: Promotor recebe POR UNIDADE VENDIDA no mês.
+// Nível: varejo <25=N1, >=25=N2 | operadora <15=N1, >=15=N2
+// Tabela Promotor: A6x | A40/A5 | A58 | A60/A79 | A5(5G) | Reno11F/A5Pro/A6Pro | Reno13F/14F | Reno13/14
+// Incentivo A5Pro+Reno: 6-10 unid → +R$50 | 11+ unid → +R$100
+function calcComissaoPromotorResult(p, r){
+    const total=p.real||0;
+    const nivel=total>=r.varejo_nivel2?2:1;
+    const tab=nivel===2?r.n2:r.n1;
+    const vendReno  = p.reno||0;  // Reno13F/14F → tab.reno13f (maior comissão da linha)
+    const vendA6Pro = p.a5||0;    // Reno11F/A5Pro/A6Pro → tab.reno11f
+    // Outras vendas → proxy A60/A79 → tab.a60
+    const vendOutras=Math.max(0,total-vendReno-vendA6Pro);
+    const comReno   = vendReno   * tab.reno13f;  // Reno 13F/14F
+    const comA6Pro  = vendA6Pro  * tab.reno11f;  // Reno11F/A5Pro/A6Pro (mesma faixa no PDF)
+    const comOutras = vendOutras * tab.a60;       // proxy A60/A79
+    const totalBase = comReno+comA6Pro+comOutras;
+    // Incentivo 2 faixas: 6-10 unid=R$50 | 11+ unid=R$100
+    const totalEspecial=vendReno+vendA6Pro;
+    let incentivo=0;
+    if     (totalEspecial>=r.inc2_min)  incentivo=r.inc2_val;
+    else if(totalEspecial>=r.inc1_min)  incentivo=r.inc1_val;
+    return{nivel,total,vendReno,vendA6Pro,vendOutras,comReno,comA6Pro,comOutras,totalBase,incentivo,totalFinal:totalBase+incentivo,totalEspecial};
+}
+
+function buildComissaoPromotor(){
+    const r=regrasPromotor;
+    const ativos=fenixData.promotores.filter(p=>!p.ferias&&p.meta>0);
+    const mes=meses[mesSelecionado];
+    const lReno=cardLabels.reno||'Reno';const lA6=cardLabels.a6pro||'A6 Pro';
+    let totalGeralP=0,totalIncP=0,totalN2P=0;
+    const rows=ativos.map(p=>{
+        const c=calcComissaoPromotorResult(p,r);
+        totalGeralP+=c.totalFinal;totalIncP+=c.incentivo;if(c.nivel===2)totalN2P++;
+        const pctMeta=calcPct(p.real,p.meta);
+        const corPct=pctMeta>=100?'#166534':pctMeta>=70?'#3730a3':pctMeta>=50?'#92400e':'#991b1b';
+        const bgPct=pctMeta>=100?'#dcfce7':pctMeta>=70?'#eff6ff':pctMeta>=50?'#fef9c3':'#fee2e2';
+        let incBadge='—';
+        if(c.totalEspecial>=r.inc2_min) incBadge=`<span style="background:#dcfce7;color:#166534;font-weight:900;font-size:10px;padding:2px 8px;border-radius:5px;display:inline-block;">+R$${c.incentivo.toFixed(2)}<br><small>≥${r.inc2_min} unid.</small></span>`;
+        else if(c.totalEspecial>=r.inc1_min) incBadge=`<span style="background:#fef9c3;color:#92400e;font-weight:900;font-size:10px;padding:2px 8px;border-radius:5px;display:inline-block;">+R$${c.incentivo.toFixed(2)}<br><small>${r.inc1_min}-${r.inc1_max} unid.</small></span>`;
+        return`<tr>
+            <td>${primeiroNome(p.nome)}</td>
+            <td><span class="nivel-badge ${c.nivel===2?'nivel-2':'nivel-1'}">Nível ${c.nivel}</span></td>
+            <td><span style="background:${bgPct};color:${corPct};font-weight:900;font-size:11px;padding:2px 7px;border-radius:5px;">${p.real} (${pctMeta}%)</span></td>
+            <td>${c.vendReno}</td><td>${c.vendA6Pro}</td>
+            <td><span class="comissao-pill com-verde">R$ ${c.comReno.toFixed(2)}</span></td>
+            <td><span class="comissao-pill com-azul">R$ ${c.comA6Pro.toFixed(2)}</span></td>
+            <td><span class="comissao-pill" style="background:#f0fdf4;color:#166534;">R$ ${c.totalBase.toFixed(2)}</span></td>
+            <td>${incBadge}</td>
+            <td style="font-weight:900;color:#059669;">R$ ${c.totalFinal.toFixed(2)}</td>
+        </tr>`;
+    }).join('');
+    const totalBaseP=ativos.reduce((a,p)=>a+calcComissaoPromotorResult(p,r).totalBase,0);
+    const qtdInc1=ativos.filter(p=>{const c=calcComissaoPromotorResult(p,r);return c.totalEspecial>=r.inc1_min&&c.totalEspecial<r.inc2_min;}).length;
+    const qtdInc2=ativos.filter(p=>calcComissaoPromotorResult(p,r).totalEspecial>=r.inc2_min).length;
+    document.getElementById('comissaoPromotorConteudo').innerHTML=`
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+            <div><div style="font-size:15px;font-weight:900;color:#0f172a;">💵 Comissão Promotores — ${mes}</div>
+            <div style="font-size:11px;color:#64748b;font-weight:600;margin-top:2px;">Comissão individual por unidade vendida no mês</div></div>
+            <button class="btn-edit-regras" onclick="openRegrasPromotorPopover()" style="background:#f0fdf4;border-color:#86efac;color:#166534;">✏️ Editar Regras Promotores</button>
+        </div>
+        <div class="comissao-info" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#86efac;color:#166534;">
+            📋 <b>Regras Promotores:</b> Varejo → Nível 2 com ≥${r.varejo_nivel2} unid. | Incentivo Faixa 1: ${r.inc1_min}-${r.inc1_max} unid. Reno+${lA6} → +R$${r.inc1_val.toFixed(2)} | Faixa 2: ≥${r.inc2_min} unid. → +R$${r.inc2_val.toFixed(2)}
+        </div>
+        <div class="sup-cards">
+            <div class="sup-card" style="border-top:4px solid #059669;"><div class="s-label">💵 Total Promotores</div><div class="s-val" style="color:#059669;">R$ ${totalGeralP.toFixed(2)}</div><div class="s-sub">Todos ativos</div></div>
+            <div class="sup-card" style="border-top:4px solid #10b981;"><div class="s-label">📦 Base (sem incentivo)</div><div class="s-val" style="color:#10b981;">R$ ${totalBaseP.toFixed(2)}</div><div class="s-sub">Por unidade vendida</div></div>
+            <div class="sup-card" style="border-top:4px solid #f59e0b;"><div class="s-label">🎁 Incentivo Faixa 1</div><div class="s-val" style="color:#f59e0b;">${qtdInc1}</div><div class="s-sub">${r.inc1_min}-${r.inc1_max} unid. → R$${r.inc1_val}</div></div>
+            <div class="sup-card" style="border-top:4px solid #6366f1;"><div class="s-label">🏆 Incentivo Faixa 2</div><div class="s-val" style="color:#6366f1;">${qtdInc2}</div><div class="s-sub">≥${r.inc2_min} unid. → R$${r.inc2_val}</div></div>
+        </div>
+        <div style="overflow-x:auto;"><table class="tabela-sup-detalhe">
+            <thead><tr><th style="text-align:left;">Promotor</th><th>Nível</th><th>Real (ating.)</th><th>${lReno}</th><th>${lA6}</th><th>Com.${lReno}</th><th>Com.${lA6}</th><th>Base</th><th>Incentivo</th><th>TOTAL</th></tr></thead>
+            <tbody>${rows}</tbody>
+            <tfoot><tr style="background:#059669;color:white;font-weight:900;">
+                <td style="padding:9px 10px;text-align:left;" colspan="7">TOTAL PROMOTORES</td>
+                <td style="padding:9px 10px;text-align:center;">R$ ${totalBaseP.toFixed(2)}</td>
+                <td style="padding:9px 10px;text-align:center;">R$ ${totalIncP.toFixed(2)}</td>
+                <td style="padding:9px 10px;text-align:center;font-size:14px;">R$ ${totalGeralP.toFixed(2)}</td>
+            </tr></tfoot>
+        </table></div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:10px;">* Nível 2 = ≥${r.varejo_nivel2} unidades no mês (varejo). Reno=coluna ${lReno} (tab. Reno13/14). ${lA6}=coluna A6 Pro (tab. Reno11F/A5Pro). Outras=real−Reno−${lA6}, proxy A60/A79.</div>`;
 }
 
 // ══ SOM ══
