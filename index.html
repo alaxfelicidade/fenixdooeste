@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1242,7 +1243,7 @@ function copiarWpp(){const txt=document.getElementById('wppPreview').textContent
 // ══ GRÁFICOS ══
 let chartInstances={};
 function destroyChart(id){if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id];}}
-function openGraficos(){document.getElementById('graficosMes').innerText=meses[mesSelecionado]+' '+new Date().getFullYear();document.getElementById('graficosModal').style.display='block';switchTab('performance');}
+function openGraficos(){fenixData=loadMesData(mesSelecionado);document.getElementById('graficosMes').innerText=meses[mesSelecionado]+' '+new Date().getFullYear();document.getElementById('graficosModal').style.display='block';switchTab('performance');}
 function closeGraficos(){document.getElementById('graficosModal').style.display='none';['chartPerformance','chartAtencao','chartProdDonut','chartProdBar'].forEach(destroyChart);}
 function switchTab(tab){
     // Remove active de todos os tabs
@@ -1257,6 +1258,8 @@ function switchTab(tab){
     document.querySelectorAll('.graf-panel').forEach(p=>p.classList.remove('active'));
     document.getElementById('tab-'+tab).classList.add('active');
     setTimeout(()=>{
+        // Sempre relê os dados mais frescos antes de construir as abas de comissão
+        if(tab==='comissao'||tab==='promotor'){fenixData=loadMesData(mesSelecionado);}
         if(tab==='performance')buildChartPerformance();
         if(tab==='atencao')buildChartAtencao();
         if(tab==='produtos')buildChartProdutos();
@@ -1466,7 +1469,8 @@ const PRODUTOS_PROMOTOR = [
 
 // Formata moeda BR: R$ 1.234,56
 function fmtBRL(v){
-    return fmtBRL(v).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+    if(v===undefined||v===null||isNaN(v)) return 'R$ 0,00';
+    return 'R$ ' + parseFloat(v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
 }
 
 // Armazena qtds manuais por promotor: {nome: {key: qtd}}
@@ -1591,7 +1595,10 @@ function buildComissaoSupervisor(){
     const r=regrasComissao;
     const ativos=fenixData.promotores.filter(p=>!p.ferias&&parseInt(p.meta)>0);
     const mes=meses[mesSelecionado];
-    if(ativos.length===0){document.getElementById('comissaoConteudo').innerHTML='<div style="text-align:center;padding:40px;color:#94a3b8;font-weight:700;">Nenhum promotor ativo com meta definida para '+mes+'.</div>';return;}
+    if(ativos.length===0){
+        document.getElementById('comissaoConteudo').innerHTML='<div style="text-align:center;padding:48px 20px;color:#94a3b8;"><div style="font-size:32px;margin-bottom:12px;">📭</div><div style="font-weight:800;font-size:14px;">Nenhum promotor com meta definida em '+mes+'</div><div style="font-size:12px;margin-top:6px;">Abra o Painel e preencha os dados do mês.</div></div>';
+        return;
+    }
     const lReno=cardLabels.reno||'Reno'; const lA6=cardLabels.a6pro||'A6 Pro';
 
     // ── CÁLCULO CORRETO CONFORME PDF ──
@@ -1756,7 +1763,10 @@ function buildComissaoPromotor(){
     const r=regrasPromotor;
     const ativos=fenixData.promotores.filter(p=>!p.ferias&&parseInt(p.meta)>0);
     const mes=meses[mesSelecionado];
-    if(ativos.length===0){document.getElementById('comissaoPromotorConteudo').innerHTML='<div style="text-align:center;padding:40px;color:#94a3b8;font-weight:700;">Nenhum promotor ativo com meta definida para '+mes+'.</div>';return;}
+    if(ativos.length===0){
+        document.getElementById('comissaoPromotorConteudo').innerHTML='<div style="text-align:center;padding:48px 20px;color:#94a3b8;"><div style="font-size:32px;margin-bottom:12px;">📭</div><div style="font-weight:800;font-size:14px;">Nenhum promotor com meta definida em '+mes+'</div><div style="font-size:12px;margin-top:6px;">Abra o Painel e preencha os dados do mês.</div></div>';
+        return;
+    }
     const lReno=cardLabels.reno||'Reno'; const lA6=cardLabels.a6pro||'A6 Pro';
     let totalGeralP=0,totalIncP=0,totalN2P=0;
     const rows=ativos.map(p=>{
