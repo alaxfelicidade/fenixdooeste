@@ -848,6 +848,10 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
         </table>
         <!-- Incentivo adicional -->
         <div style="margin-top:12px;" id="pdIncentivoWrap"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;">
+            <button onclick="pdSalvarAtual()" style="background:#059669;color:white;border:none;padding:10px 16px;border-radius:8px;font-weight:800;cursor:pointer;font-family:inherit;font-size:12px;">💾 Salvar</button>
+            <button onclick="fecharDetalhePromotor()" style="background:none;border:1px solid #e2e8f0;color:#64748b;padding:10px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px;">Cancelar</button>
+        </div>
     </div>
 </div>
 
@@ -945,6 +949,7 @@ function setupFirebaseSync(){
     window._fbListen('fenix2026/cardLabels',(data)=>{if(!data)return;cardLabels={...cardLabels,...data};localStorage.setItem('fenixCardLabels',JSON.stringify(cardLabels));renderCardLabels();});
     window._fbListen('fenix2026/regrasComissao',(data)=>{if(!data)return;regrasComissao={...regrasComissao,...data};localStorage.setItem('fenixRegrasComissao',JSON.stringify(regrasComissao));});
     window._fbListen('fenix2026/regrasPromotor',(data)=>{if(!data)return;regrasPromotor={...regrasPromotor,...data};localStorage.setItem('fenixRegrasPromotor',JSON.stringify(regrasPromotor));});
+    window._fbListen('fenix2026/pdQtds',(data)=>{if(!data)return;pdQtds=data;localStorage.setItem('fenixPdQtds2026',JSON.stringify(pdQtds));if(document.getElementById('tab-comissao')?.classList.contains('active')) buildComissaoSupervisor(); if(document.getElementById('tab-promotor')?.classList.contains('active')) buildComissaoPromotor();});
 }
 
 let mesSelecionado=new Date().getMonth();
@@ -1487,36 +1492,74 @@ function fmtBRL(v){
 let pdQtds = JSON.parse(localStorage.getItem('fenixPdQtds2026')) || {};
 let pdPromAtual = null;
 
+
+function getPdQtdsForPromotor(p){
+    const qs = {...(pdQtds[p.nome]||{})};
+    qs['reno14'] = parseInt(p.reno)||0;
+    qs['reno11'] = parseInt(p.a5)||0;
+    return qs;
+}
+function calcComissaoPromotorDetalhada(p, r){
+    const total = parseInt(p.real)||0;
+    const nivel = total >= r.varejo_nivel2 ? 2 : 1;
+    const qs = getPdQtdsForPromotor(p);
+    const itens = [];
+    let baseTotal = 0;
+    let totalQtd = 0;
+    let totalEspecial = 0;
+
+    PRODUTOS_PROMOTOR.forEach(prod=>{
+        const qtd = parseInt(qs[prod.key])||0;
+        const preco = nivel===2 ? prod.n2 : prod.n1;
+        const com = qtd * preco;
+        baseTotal += com;
+        totalQtd += qtd;
+        if(prod.key==='reno14' || prod.key==='reno11') totalEspecial += qtd;
+        itens.push({key:prod.key,qtd,preco,com});
+    });
+
+    let incentivo = 0;
+    if(totalEspecial >= r.inc2_min) incentivo = totalEspecial * r.inc2_val;
+    else if(totalEspecial >= r.inc1_min) incentivo = totalEspecial * r.inc1_val;
+
+    return {
+        nivel,
+        total,
+        totalQtd,
+        vendReno: parseInt(qs['reno14'])||0,
+        vendA6Pro: parseInt(qs['reno11'])||0,
+        vendOutras: Math.max(0, total - ((parseInt(qs['reno14'])||0) + (parseInt(qs['reno11'])||0))),
+        totalEspecial,
+        baseTotal,
+        incentivo,
+        totalFinal: baseTotal + incentivo,
+        itens
+    };
+}
+function salvarPdResultados(){
+    localStorage.setItem('fenixPdQtds2026', JSON.stringify(pdQtds));
+    if(window._fbSet){
+        window._fbSet('fenix2026/pdQtds', pdQtds).catch(()=>{});
+    }
+}
 function pdRecalc(){
     if(!pdPromAtual) return;
     const p = pdPromAtual;
     const r = regrasPromotor;
-    const total = p.real||0;
-    const nivel = total >= r.varejo_nivel2 ? 2 : 1;
-    const qs = pdQtds[p.nome]||{};
+    const c = calcComissaoPromotorDetalhada(p, r);
     const lReno = cardLabels.reno||'Reno';
     const lA6   = cardLabels.a6pro||'A6 Pro';
 
-    // Reno e A6Pro vêm automáticos do sistema
-    qs['reno14'] = p.reno||0;   // coluna RENO → Reno 13/14
-    qs['reno11'] = p.a5||0;     // coluna A6Pro → Reno11F/A5Pro/A6Pro
-    pdQtds[p.nome] = qs;
-    localStorage.setItem('fenixPdQtds2026', JSON.stringify(pdQtds));
+    pdQtds[p.nome] = {...(pdQtds[p.nome]||{}), reno14: p.reno||0, reno11: p.a5||0};
+    salvarPdResultados();
 
-    let baseTotal = 0;
-    let renoPlusA6 = 0; // para incentivo
     const prodRows = PRODUTOS_PROMOTOR.map(prod=>{
-        const preco = nivel===2 ? prod.n2 : prod.n1;
-        const qtd   = parseInt(qs[prod.key])||0;
-        const com   = qtd * preco;
-        baseTotal  += com;
-        if(prod.key==='reno14'||prod.key==='reno11') renoPlusA6 += qtd;
-
+        const item = c.itens.find(x=>x.key===prod.key) || {qtd:0,preco:0,com:0};
         const isAuto = prod.auto;
-        const destaque = com>0;
+        const destaque = item.com>0;
         const inputEl = isAuto
-            ? `<span style="font-weight:900;color:#6366f1;">${qtd} <small style="font-size:9px;color:#94a3b8;">(auto)</small></span>`
-            : `<input type="number" min="0" value="${qtd}"
+            ? `<span style="font-weight:900;color:#6366f1;">${item.qtd} <small style="font-size:9px;color:#94a3b8;">(auto)</small></span>`
+            : `<input type="number" min="0" value="${item.qtd}"
                 style="width:56px;border:1.5px solid ${destaque?'#10b981':'#e2e8f0'};border-radius:6px;padding:4px 6px;font-size:13px;font-weight:800;text-align:center;font-family:inherit;"
                 oninput="pdSetQtd('${prod.key}',this.value)"
                 onchange="pdSetQtd('${prod.key}',this.value)">`;
@@ -1524,58 +1567,59 @@ function pdRecalc(){
         return `<tr class="${destaque?'prod-row-highlight':''}">
             <td>${prodLabel}${isAuto?' <span style="background:#e0f2fe;color:#0369a1;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:4px;">automático</span>':''}</td>
             <td style="text-align:center;">${inputEl}</td>
-            <td style="text-align:center;">${fmtBRL(preco)}</td>
-            <td style="text-align:right;${destaque?'color:#059669;font-weight:900;':'color:#94a3b8;'}">${fmtBRL(com)}</td>
+            <td style="text-align:center;">${fmtBRL(item.preco)}</td>
+            <td style="text-align:right;${destaque?'color:#059669;font-weight:900;':'color:#94a3b8;'}">${fmtBRL(item.com)}</td>
         </tr>`;
     }).join('');
 
-    // Incentivo: POR UNIDADE vendida
-    let incentivo = 0;
-    if(renoPlusA6>=r.inc2_min)      incentivo = renoPlusA6 * r.inc2_val;
-    else if(renoPlusA6>=r.inc1_min) incentivo = renoPlusA6 * r.inc1_val;
-    const totalFinal = baseTotal + incentivo;
+    document.getElementById('pdNivel').textContent = 'Nível '+c.nivel;
+    document.getElementById('pdNivelNum').textContent = c.nivel;
+    document.getElementById('pdBase').textContent   = fmtBRL(c.baseTotal);
+    document.getElementById('pdTotal').textContent  = fmtBRL(c.totalFinal);
 
-    // Atualiza mini-cards
-    document.getElementById('pdNivel').textContent = 'Nível '+nivel;
-    document.getElementById('pdNivelNum').textContent = nivel;
-    document.getElementById('pdBase').textContent   = fmtBRL(baseTotal);
-    document.getElementById('pdTotal').textContent  = fmtBRL(totalFinal);
-
-    // Nota nível
-    const faltaN2 = Math.max(0,r.varejo_nivel2-total);
-    document.getElementById('pdNivelNota').innerHTML = nivel===2
-        ?`<b>Nível 2 ativo</b> — ${total} vendas ≥ ${r.varejo_nivel2} (tabela maior)`
+    const faltaN2 = Math.max(0,r.varejo_nivel2-c.total);
+    document.getElementById('pdNivelNota').innerHTML = c.nivel===2
+        ?`<b>Nível 2 ativo</b> — ${c.total} vendas ≥ ${r.varejo_nivel2} (tabela maior)`
         :`<b>Nível 1</b> — Faltam <b>${faltaN2}</b> unidades para Nível 2 (comissões maiores em todos os produtos)`;
 
-    // Tabela
     document.getElementById('pdLinhas').innerHTML = prodRows;
     document.getElementById('pdRodape').innerHTML = `<tr>
-        <td colspan="3" style="padding:9px 10px;text-align:left;font-weight:900;">BASE TOTAL</td>
-        <td style="padding:9px 10px;text-align:right;font-weight:900;font-size:15px;">${fmtBRL(baseTotal)}</td>
+        <td style="padding:9px 10px;text-align:left;font-weight:900;">BASE TOTAL</td>
+        <td style="padding:9px 10px;text-align:center;font-weight:900;font-size:15px;">${c.totalQtd}</td>
+        <td></td>
+        <td style="padding:9px 10px;text-align:right;font-weight:900;font-size:15px;">${fmtBRL(c.baseTotal)}</td>
     </tr>`;
 
-    // Incentivo bloco
     let incHtml='';
-    if(renoPlusA6>=r.inc2_min){
+    if(c.totalEspecial>=r.inc2_min){
         incHtml=`<div style="background:#dcfce7;border:1px solid #86efac;border-radius:10px;padding:12px 16px;">
             <div style="font-size:11px;font-weight:900;color:#166534;">🏆 Incentivo Faixa 2 — ≥${r.inc2_min} unid. Reno+${lA6}/A5Pro</div>
-            <div style="font-size:24px;font-weight:900;color:#059669;margin:4px 0;">${fmtBRL(incentivo)}</div>
-            <div style="font-size:10px;color:#166534;">${renoPlusA6} unidades especiais × ${fmtBRL(r.inc2_val)}/unid.</div>
+            <div style="font-size:24px;font-weight:900;color:#059669;margin:4px 0;">${fmtBRL(c.incentivo)}</div>
+            <div style="font-size:10px;color:#166534;">${c.totalEspecial} unidades especiais × ${fmtBRL(r.inc2_val)}/unid.</div>
         </div>`;
-    } else if(renoPlusA6>=r.inc1_min){
+    }else if(c.totalEspecial>=r.inc1_min){
         incHtml=`<div style="background:#fef9c3;border:1px solid #fcd34d;border-radius:10px;padding:12px 16px;">
-            <div style="font-size:11px;font-weight:900;color:#92400e;">🎁 Incentivo Faixa 1 — ${r.inc1_min}–${r.inc1_max} unid. Reno+${lA6}/A5Pro</div>
-            <div style="font-size:24px;font-weight:900;color:#92400e;margin:4px 0;">${fmtBRL(incentivo)}</div>
-            <div style="font-size:10px;color:#92400e;">${renoPlusA6} unidades especiais × ${fmtBRL(r.inc1_val)}/unid.</div>
+            <div style="font-size:11px;font-weight:900;color:#92400e;">🎁 Incentivo Faixa 1 — ${r.inc1_min} a ${r.inc1_max} unid. Reno+${lA6}/A5Pro</div>
+            <div style="font-size:24px;font-weight:900;color:#b45309;margin:4px 0;">${fmtBRL(c.incentivo)}</div>
+            <div style="font-size:10px;color:#92400e;">${c.totalEspecial} unidades especiais × ${fmtBRL(r.inc1_val)}/unid.</div>
         </div>`;
-    } else {
-        const falta=r.inc1_min-renoPlusA6;
+    }else{
+        const faltam = Math.max(0, r.inc1_min - c.totalEspecial);
         incHtml=`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;">
-            <div style="font-size:11px;font-weight:800;color:#64748b;">Sem incentivo adicional</div>
-            <div style="font-size:10px;color:#94a3b8;margin-top:4px;">Faltam ${falta} unidade(s) Reno+${lA6}/A5Pro para Faixa 1 (${fmtBRL(r.inc1_val)})</div>
+            <div style="font-size:11px;font-weight:900;color:#64748b;">🎯 Incentivo adicional ainda não ativado</div>
+            <div style="font-size:10px;color:#64748b;margin-top:4px;">${c.totalEspecial} unid. especiais. Faltam <b>${faltam}</b> para iniciar a Faixa 1.</div>
         </div>`;
     }
     document.getElementById('pdIncentivoWrap').innerHTML=incHtml;
+}
+function pdSalvarAtual(){
+    if(!pdPromAtual) return;
+    salvarPdResultados();
+    render();
+    buildComissaoPromotor();
+    buildComissaoSupervisor();
+    showSync('✅ Comissão do promotor salva!', 'verde');
+    fecharDetalhePromotor();
 }
 
 function pdSetQtd(key, val){
@@ -1751,21 +1795,24 @@ function buildComissaoSupervisor(){
 // Tabela Promotor: A6x | A40/A5 | A58 | A60/A79 | A5(5G) | Reno11F/A5Pro/A6Pro | Reno13F/14F | Reno13/14
 // Incentivo A5Pro+Reno: 6-10 unid → +R$50 | 11+ unid → +R$100
 function calcComissaoPromotorResult(p, r){
-    const total     = p.real||0;
-    const nivel     = total >= r.varejo_nivel2 ? 2 : 1;
-    const tab       = nivel === 2 ? r.n2 : r.n1;
-    const vendReno  = p.reno||0;   // coluna Reno → Reno 13/14 (tab.reno14 → R$160/R$200)
-    const vendA6Pro = p.a5||0;     // coluna A6Pro → Reno11F/A5Pro/A6Pro (tab.reno11f → R$56/R$70)
-    const vendOutras= Math.max(0, total - vendReno - vendA6Pro); // outras → A60/A79 proxy
-    const comReno   = vendReno   * tab.reno14;   // Reno 13/14: R$160 N1 / R$200 N2
-    const comA6Pro  = vendA6Pro  * tab.reno11f;  // Reno11F/A5Pro/A6Pro: R$56 N1 / R$70 N2
-    const comOutras = vendOutras * tab.a60;      // A60/A79: R$32 N1 / R$40 N2
-    const totalBase = comReno + comA6Pro + comOutras;
-    const totalEspecial = vendReno + vendA6Pro;
-    let incentivo = 0;
-    if(totalEspecial >= r.inc2_min)      incentivo = totalEspecial * r.inc2_val;
-    else if(totalEspecial >= r.inc1_min) incentivo = totalEspecial * r.inc1_val;
-    return{nivel,total,vendReno,vendA6Pro,vendOutras,comReno,comA6Pro,comOutras,totalBase,incentivo,totalFinal:totalBase+incentivo,totalEspecial,tab};
+    const detalhado = calcComissaoPromotorDetalhada(p, r);
+    const tab = detalhado.nivel === 2 ? r.n2 : r.n1;
+    return {
+        nivel: detalhado.nivel,
+        total: detalhado.total,
+        totalQtd: detalhado.totalQtd,
+        vendReno: detalhado.vendReno,
+        vendA6Pro: detalhado.vendA6Pro,
+        vendOutras: detalhado.vendOutras,
+        comReno: detalhado.vendReno * tab.reno14,
+        comA6Pro: detalhado.vendA6Pro * tab.reno11f,
+        comOutras: Math.max(0, detalhado.baseTotal - (detalhado.vendReno * tab.reno14) - (detalhado.vendA6Pro * tab.reno11f)),
+        totalBase: detalhado.baseTotal,
+        incentivo: detalhado.incentivo,
+        totalFinal: detalhado.totalFinal,
+        totalEspecial: detalhado.totalEspecial,
+        tab
+    };
 }
 
 function buildComissaoPromotor(){
@@ -1793,7 +1840,7 @@ function buildComissaoPromotor(){
             incBadge=`<span class="inc-balloon f1">🎁 +${fmtBRL(c.incentivo)}<br><small>${r.inc1_min}–${r.inc1_max} unid.</small></span>`;
         // BASE detalhada
         const baseDetail=`<div style="font-size:10px;line-height:1.7;text-align:left;">
-            <span style="color:#f97316;">Reno(${c.vendReno}×R$${c.tab.reno13f}): ${fmtBRL(c.comReno)}</span><br>
+            <span style="color:#f97316;">Reno(${c.vendReno}×R$${c.tab.reno14}): ${fmtBRL(c.comReno)}</span><br>
             <span style="color:#06b6d4;">${lA6}(${c.vendA6Pro}×R$${c.tab.reno11f}): ${fmtBRL(c.comA6Pro)}</span><br>
             <span style="color:#64748b;">Outras(${c.vendOutras}×R$${c.tab.a60}): ${fmtBRL(c.comOutras)}</span>
         </div>`;
@@ -2004,91 +2051,5 @@ if(window._firebaseReady){setupFirebaseSync();setupHistFirebaseSync();}
 else{window.addEventListener('firebaseReady',()=>{setupFirebaseSync();setupHistFirebaseSync();});}
 </script>
 
-<script>
-// ===== V11 PATCH – correções solicitadas =====
-
-// 1 evitar incentivo duplicado
-window.calcTotalFinal = function(base,incentivo){
-    return Number(base||0)+Number(incentivo||0);
-};
-
-// 2 soma automática das quantidades do modal
-window.sumModalQuantidades = function(){
-    const inputs=[...document.querySelectorAll('.modal input[type="number"]')];
-    let total=0;
-    inputs.forEach(i=>{
-        const v=parseInt(i.value||0);
-        if(!isNaN(v)) total+=v;
-    });
-    const el=document.querySelector('#baseTotalQtd');
-    if(el) el.innerText=total;
-    return total;
-};
-
-// observa mudanças
-document.addEventListener("input",e=>{
-    if(e.target.closest(".modal")){
-        window.sumModalQuantidades();
-    }
-});
-
-// 3 botão salvar
-window.salvarPromotor=function(nome,data){
-    if(!window._fbSet) return;
-    const path="promotores/"+nome;
-    window._fbSet(path,data);
-    console.log("salvo:",nome,data);
-};
-
-// cria botão salvar se não existir
-window.addEventListener("DOMContentLoaded",()=>{
-    const modal=document.querySelector(".modal-footer")||document.querySelector(".modal");
-    if(modal && !document.getElementById("btnSalvarPromotor")){
-        const b=document.createElement("button");
-        b.id="btnSalvarPromotor";
-        b.innerText="Salvar";
-        b.style.background="#10b981";
-        b.style.color="white";
-        b.style.padding="10px 16px";
-        b.style.borderRadius="8px";
-        b.style.marginTop="12px";
-        b.onclick=()=>{
-            const nome=document.querySelector(".modal h2")?.innerText||"promotor";
-            const qtd=window.sumModalQuantidades();
-            const base=parseFloat(document.querySelector("#baseTotalValor")?.innerText.replace(/[R$ .]/g,'').replace(',','.')||0);
-            const incentivo=parseFloat(document.querySelector("#incentivoValor")?.innerText.replace(/[R$ .]/g,'').replace(',','.')||0);
-            const total=window.calcTotalFinal(base,incentivo);
-
-            const data={qtd,base,incentivo,total,timestamp:Date.now()};
-            window.salvarPromotor(nome,data);
-        };
-        modal.appendChild(b);
-    }
-});
-
-// 4 atualizar supervisor automático
-window.syncSupervisor=function(nome,data){
-    if(!window._fbSet) return;
-    const path="supervisor/"+nome;
-    window._fbSet(path,data);
-};
-
-// listener promotores -> supervisor
-if(window._fbListen){
-    window._fbListen("promotores",(dados)=>{
-        if(!dados) return;
-        Object.entries(dados).forEach(([nome,d])=>{
-            window.syncSupervisor(nome,d);
-        });
-    });
-}
-</script>
-
 </body>
 </html>
-
-// Inicialização das quantidades manuais ao carregar
-window.addEventListener('load', () => {
-    const saved = localStorage.getItem('fenixPdQtds2026');
-    if(saved) pdQtds = JSON.parse(saved);
-});
