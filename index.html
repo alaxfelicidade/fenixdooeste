@@ -1751,50 +1751,21 @@ function buildComissaoSupervisor(){
 // Tabela Promotor: A6x | A40/A5 | A58 | A60/A79 | A5(5G) | Reno11F/A5Pro/A6Pro | Reno13F/14F | Reno13/14
 // Incentivo A5Pro+Reno: 6-10 unid → +R$50 | 11+ unid → +R$100
 function calcComissaoPromotorResult(p, r){
-
-    const total     = p.real || 0;
+    const total     = p.real||0;
     const nivel     = total >= r.varejo_nivel2 ? 2 : 1;
     const tab       = nivel === 2 ? r.n2 : r.n1;
-
-    const vendReno  = p.reno || 0;
-    const vendA6Pro = p.a5   || 0;
-
-    const vendOutras = Math.max(0, total - vendReno - vendA6Pro);
-
-    // Correção Reno13F/14F conforme política
-    const comReno   = vendReno   * tab.reno13f;
-    const comA6Pro  = vendA6Pro  * tab.reno11f;
-    const comOutras = vendOutras * tab.a60;
-
+    const vendReno  = p.reno||0;   // coluna Reno → Reno 13/14 (tab.reno14 → R$160/R$200)
+    const vendA6Pro = p.a5||0;     // coluna A6Pro → Reno11F/A5Pro/A6Pro (tab.reno11f → R$56/R$70)
+    const vendOutras= Math.max(0, total - vendReno - vendA6Pro); // outras → A60/A79 proxy
+    const comReno   = vendReno   * tab.reno14;   // Reno 13/14: R$160 N1 / R$200 N2
+    const comA6Pro  = vendA6Pro  * tab.reno11f;  // Reno11F/A5Pro/A6Pro: R$56 N1 / R$70 N2
+    const comOutras = vendOutras * tab.a60;      // A60/A79: R$32 N1 / R$40 N2
     const totalBase = comReno + comA6Pro + comOutras;
-
-    // Incentivo multiplicado conforme regra solicitada
     const totalEspecial = vendReno + vendA6Pro;
-
     let incentivo = 0;
-
-    if(totalEspecial >= r.inc2_min){
-        incentivo = totalEspecial * r.inc2_val;
-    }
-    else if(totalEspecial >= r.inc1_min){
-        incentivo = totalEspecial * r.inc1_val;
-    }
-
-    return{
-        nivel,
-        total,
-        vendReno,
-        vendA6Pro,
-        vendOutras,
-        comReno,
-        comA6Pro,
-        comOutras,
-        totalBase,
-        incentivo,
-        totalFinal: totalBase + incentivo,
-        totalEspecial,
-        tab
-    };
+    if(totalEspecial >= r.inc2_min)      incentivo = totalEspecial * r.inc2_val;
+    else if(totalEspecial >= r.inc1_min) incentivo = totalEspecial * r.inc1_val;
+    return{nivel,total,vendReno,vendA6Pro,vendOutras,comReno,comA6Pro,comOutras,totalBase,incentivo,totalFinal:totalBase+incentivo,totalEspecial,tab};
 }
 
 function buildComissaoPromotor(){
@@ -2032,6 +2003,87 @@ render();
 if(window._firebaseReady){setupFirebaseSync();setupHistFirebaseSync();}
 else{window.addEventListener('firebaseReady',()=>{setupFirebaseSync();setupHistFirebaseSync();});}
 </script>
+
+<script>
+// ===== V11 PATCH – correções solicitadas =====
+
+// 1 evitar incentivo duplicado
+window.calcTotalFinal = function(base,incentivo){
+    return Number(base||0)+Number(incentivo||0);
+};
+
+// 2 soma automática das quantidades do modal
+window.sumModalQuantidades = function(){
+    const inputs=[...document.querySelectorAll('.modal input[type="number"]')];
+    let total=0;
+    inputs.forEach(i=>{
+        const v=parseInt(i.value||0);
+        if(!isNaN(v)) total+=v;
+    });
+    const el=document.querySelector('#baseTotalQtd');
+    if(el) el.innerText=total;
+    return total;
+};
+
+// observa mudanças
+document.addEventListener("input",e=>{
+    if(e.target.closest(".modal")){
+        window.sumModalQuantidades();
+    }
+});
+
+// 3 botão salvar
+window.salvarPromotor=function(nome,data){
+    if(!window._fbSet) return;
+    const path="promotores/"+nome;
+    window._fbSet(path,data);
+    console.log("salvo:",nome,data);
+};
+
+// cria botão salvar se não existir
+window.addEventListener("DOMContentLoaded",()=>{
+    const modal=document.querySelector(".modal-footer")||document.querySelector(".modal");
+    if(modal && !document.getElementById("btnSalvarPromotor")){
+        const b=document.createElement("button");
+        b.id="btnSalvarPromotor";
+        b.innerText="Salvar";
+        b.style.background="#10b981";
+        b.style.color="white";
+        b.style.padding="10px 16px";
+        b.style.borderRadius="8px";
+        b.style.marginTop="12px";
+        b.onclick=()=>{
+            const nome=document.querySelector(".modal h2")?.innerText||"promotor";
+            const qtd=window.sumModalQuantidades();
+            const base=parseFloat(document.querySelector("#baseTotalValor")?.innerText.replace(/[R$ .]/g,'').replace(',','.')||0);
+            const incentivo=parseFloat(document.querySelector("#incentivoValor")?.innerText.replace(/[R$ .]/g,'').replace(',','.')||0);
+            const total=window.calcTotalFinal(base,incentivo);
+
+            const data={qtd,base,incentivo,total,timestamp:Date.now()};
+            window.salvarPromotor(nome,data);
+        };
+        modal.appendChild(b);
+    }
+});
+
+// 4 atualizar supervisor automático
+window.syncSupervisor=function(nome,data){
+    if(!window._fbSet) return;
+    const path="supervisor/"+nome;
+    window._fbSet(path,data);
+};
+
+// listener promotores -> supervisor
+if(window._fbListen){
+    window._fbListen("promotores",(dados)=>{
+        if(!dados) return;
+        Object.entries(dados).forEach(([nome,d])=>{
+            window.syncSupervisor(nome,d);
+        });
+    });
+}
+</script>
+
 </body>
 </html>
 
