@@ -1564,7 +1564,7 @@ function pdRecalc(){
             if(prod.key==='extra'){
                 inputEl = `<div style="display:flex;gap:6px;justify-content:center;align-items:center;">
                     <input type="number" min="0" value="${prod.qtd}" style="width:56px;border:1.5px solid ${destaque?'#10b981':'#e2e8f0'};border-radius:6px;padding:4px 6px;font-size:13px;font-weight:800;text-align:center;font-family:inherit;" oninput="pdSetQtd('extra_qtd',this.value)" onchange="pdSetQtd('extra_qtd',this.value)">
-                    <input type="text" inputmode="decimal" value="${(parseFloat(qs.extra_val)||0).toFixed(2).replace('.',',')}" style="width:74px;border:1.5px solid ${destaque?'#10b981':'#e2e8f0'};border-radius:6px;padding:4px 6px;font-size:13px;font-weight:800;text-align:center;font-family:inherit;" oninput="this.value=formatarValorRelampago(this.value); pdSetValExtra(this.value)" onchange="this.value=formatarValorRelampago(this.value); pdSetValExtra(this.value)">
+                    <input type="text" inputmode="decimal" value="${(parseFloat(qs.extra_val)||0).toFixed(2).replace('.',',')}" style="width:74px;border:1.5px solid ${destaque?'#10b981':'#e2e8f0'};border-radius:6px;padding:4px 6px;font-size:13px;font-weight:800;text-align:center;font-family:inherit;" onfocus="this.select()" oninput="pdSetValExtra(this.value, false)" onblur="this.value=formatarValorRelampago(this.value); pdSetValExtra(this.value, true)">
                 </div>`;
             } else if(prod.key==='reno11' || prod.key==='reno14') {
                 inputEl = `<span style="font-weight:900;color:#6366f1;">${prod.qtd} <small style="font-size:9px;color:#94a3b8;">(auto)</small></span>`;
@@ -1611,7 +1611,7 @@ function pdRecalc(){
         if(prod.key==='extra'){
             inputEl = `<div style="display:flex;gap:6px;justify-content:center;align-items:center;">
                 <input type="number" min="0" value="${prod.qtd}" style="width:56px;border:1.5px solid ${destaque?'#10b981':'#e2e8f0'};border-radius:6px;padding:4px 6px;font-size:13px;font-weight:800;text-align:center;font-family:inherit;" oninput="pdSetQtd('extra_qtd',this.value)" onchange="pdSetQtd('extra_qtd',this.value)">
-                <input type="text" inputmode="decimal" value="${(parseFloat(qs.extra_val)||0).toFixed(2).replace('.',',')}" style="width:74px;border:1.5px solid ${destaque?'#10b981':'#e2e8f0'};border-radius:6px;padding:4px 6px;font-size:13px;font-weight:800;text-align:center;font-family:inherit;" oninput="this.value=formatarValorRelampago(this.value); pdSetValExtra(this.value)" onchange="this.value=formatarValorRelampago(this.value); pdSetValExtra(this.value)">
+                <input type="text" inputmode="decimal" value="${(parseFloat(qs.extra_val)||0).toFixed(2).replace('.',',')}" style="width:74px;border:1.5px solid ${destaque?'#10b981':'#e2e8f0'};border-radius:6px;padding:4px 6px;font-size:13px;font-weight:800;text-align:center;font-family:inherit;" onfocus="this.select()" oninput="pdSetValExtra(this.value, false)" onblur="this.value=formatarValorRelampago(this.value); pdSetValExtra(this.value, true)">
             </div>`;
         } else if(prod.key==='reno11' || prod.key==='reno14') {
             inputEl = `<span style="font-weight:900;color:#6366f1;">${prod.qtd} <small style="font-size:9px;color:#94a3b8;">(auto)</small></span>`;
@@ -1677,19 +1677,34 @@ function pdSetQtd(key, val){
     buildComissaoPromotor();
 }
 function formatarValorRelampago(val){
-    let v = String(val||'').replace(/\./g,'').replace(',', '').replace(/\D/g,'');
-    if(!v) return '';
-    v = (Number(v)/100).toFixed(2);
-    return v.replace('.',',');
+    let v = String(val||'').trim().replace(/\s/g,'').replace(/[^\d,\.]/g,'');
+    if(!v) return '0,00';
+    if(v.includes(',') && v.includes('.')){
+        v = v.replace(/\./g,'').replace(',', '.');
+    }else if(v.includes(',')){
+        v = v.replace(',', '.');
+    }
+    const num = parseFloat(v);
+    if(isNaN(num)) return '0,00';
+    return num.toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
 }
-function pdSetValExtra(val){
+function pdSetValExtra(val, render=true){
     if(!pdPromAtual)return;
     if(!pdQtds[pdPromAtual.nome]) pdQtds[pdPromAtual.nome]={};
-    pdQtds[pdPromAtual.nome]['extra_val']=parseFloat(String(val||'0').replace(',','.'))||0;
+    let raw = String(val||'').trim().replace(/\s/g,'');
+    raw = raw.replace(/[^\d,\.]/g,'');
+    if(raw.includes(',') && raw.includes('.')){
+        raw = raw.replace(/\./g,'').replace(',', '.');
+    }else if(raw.includes(',')){
+        raw = raw.replace(',', '.');
+    }
+    pdQtds[pdPromAtual.nome]['extra_val']=parseFloat(raw)||0;
     localStorage.setItem('fenixPdQtds2026', JSON.stringify(pdQtds));
-    pdRecalc();
-    buildComissaoSupervisor();
-    buildComissaoPromotor();
+    if(render){
+        pdRecalc();
+        buildComissaoSupervisor();
+        buildComissaoPromotor();
+    }
 }
 function salvarDetalhePromotor(){
     localStorage.setItem('fenixPdQtds2026', JSON.stringify(pdQtds));
