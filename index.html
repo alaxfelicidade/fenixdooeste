@@ -1405,7 +1405,7 @@ function calcComissaoSupervResult(p, r){
     PRODUTOS_PROMOTOR.forEach(prod => {
         const preco = nivel === 2 ? prod.sn2 : prod.sn1;
         let qtd = 0;
-        if(prod.key === 'reno14') qtd = p.reno||0;
+        if(prod.key === 'reno13f') qtd = p.reno||0;
         else if(prod.key === 'reno11') qtd = p.a5||0;
         else qtd = parseInt(qs[prod.key])||0;
         
@@ -1469,7 +1469,7 @@ function salvarIncProF2(){
 // Produtos do PDF promotores (N1 / N2)
 // A6x: 3/6 | A40/A5: 8/10 | A58: 16/20 | A60/A79: 32/40 | A5(5G): 40/50
 // Reno11F/A5Pro/A6Pro: 56/70 | Reno13F/14F: 144/180 | Reno13/14: 160/200
-// Reno e A6Pro são preenchidos automaticamente das colunas do sistema.
+// Reno 13F / 14F e A6Pro são preenchidos automaticamente das colunas do sistema.
 
 const PRODUTOS_PROMOTOR = [
     {key:'a6x',    nome:'A6x',              n1:3,   n2:6,   sn1:0.5, sn2:1.5, auto:false},
@@ -1478,8 +1478,7 @@ const PRODUTOS_PROMOTOR = [
     {key:'a60',    nome:'A60 / A79',        n1:32,  n2:40,  sn1:4.0, sn2:8.0, auto:false},
     {key:'a5g',    nome:'A5 (5G)',          n1:40,  n2:50,  sn1:4.0, sn2:8.0, auto:false},
     {key:'reno11', nome:'Reno11F / A5Pro / A6Pro', n1:56, n2:70, sn1:6.0, sn2:12.0, auto:true,  autoKey:'a6pro'},
-    {key:'reno13f',nome:'Reno 13F / 14F',  n1:144, n2:180, sn1:9.0, sn2:18.0, auto:false},
-    {key:'reno14', nome:'Reno 13 / 14',    n1:160, n2:200, sn1:14.0, sn2:28.0, auto:true,  autoKey:'reno'},
+    {key:'reno13f',nome:'Reno 13F / 14F',  n1:144, n2:180, sn1:9.0, sn2:18.0, auto:true,  autoKey:'reno'},
 ];
 
 // Formata moeda BR: R$ 1.234,56
@@ -1491,11 +1490,31 @@ function fmtBRL(v){
 // Armazena qtds manuais por promotor: {nome: {key: qtd}}
 let pdQtds = JSON.parse(localStorage.getItem('fenixPdQtds2026')) || {};
 let pdPromAtual = null;
+let pdAutoLabels = JSON.parse(localStorage.getItem('fenixPdAutoLabels2026')) || {};
 
+function getPdAutoLabel(prod, lReno, lA6){
+    if(prod.key==='reno11') return pdAutoLabels.reno11 || `${lA6} / Reno11F / A5Pro`;
+    if(prod.key==='reno13f') return pdAutoLabels.reno13f || `${lReno} (Reno 13F / 14F)`;
+    return prod.nome;
+}
+function editarTextoAutoProduto(key){
+    const lReno = cardLabels.reno||'Reno';
+    const lA6   = cardLabels.a6pro||'A6 Pro';
+    const prod = PRODUTOS_PROMOTOR.find(p=>p.key===key);
+    if(!prod) return;
+    const atual = getPdAutoLabel(prod, lReno, lA6);
+    const novo = window.prompt('Editar texto do item automático:', atual);
+    if(novo===null) return;
+    const limpo = novo.trim();
+    if(!limpo) return;
+    pdAutoLabels[key] = limpo;
+    localStorage.setItem('fenixPdAutoLabels2026', JSON.stringify(pdAutoLabels));
+    pdRecalc();
+}
 
 function getPdQtdsForPromotor(p){
     const qs = {...(pdQtds[p.nome]||{})};
-    qs['reno14'] = parseInt(p.reno)||0;
+    qs['reno13f'] = parseInt(p.reno)||0;
     qs['reno11'] = parseInt(p.a5)||0;
     return qs;
 }
@@ -1514,7 +1533,7 @@ function calcComissaoPromotorDetalhada(p, r){
         const com = qtd * preco;
         baseTotal += com;
         totalQtd += qtd;
-        if(prod.key==='reno14' || prod.key==='reno11') totalEspecial += qtd;
+        if(prod.key==='reno13f' || prod.key==='reno11') totalEspecial += qtd;
         itens.push({key:prod.key,qtd,preco,com});
     });
 
@@ -1526,9 +1545,9 @@ function calcComissaoPromotorDetalhada(p, r){
         nivel,
         total,
         totalQtd,
-        vendReno: parseInt(qs['reno14'])||0,
+        vendReno: parseInt(qs['reno13f'])||0,
         vendA6Pro: parseInt(qs['reno11'])||0,
-        vendOutras: Math.max(0, total - ((parseInt(qs['reno14'])||0) + (parseInt(qs['reno11'])||0))),
+        vendOutras: Math.max(0, total - ((parseInt(qs['reno13f'])||0) + (parseInt(qs['reno11'])||0))),
         totalEspecial,
         baseTotal,
         incentivo,
@@ -1550,7 +1569,7 @@ function pdRecalc(){
     const lReno = cardLabels.reno||'Reno';
     const lA6   = cardLabels.a6pro||'A6 Pro';
 
-    pdQtds[p.nome] = {...(pdQtds[p.nome]||{}), reno14: p.reno||0, reno11: p.a5||0};
+    pdQtds[p.nome] = {...(pdQtds[p.nome]||{}), reno13f: p.reno||0, reno11: p.a5||0};
     salvarPdResultados();
 
     const prodRows = PRODUTOS_PROMOTOR.map(prod=>{
@@ -1563,9 +1582,12 @@ function pdRecalc(){
                 style="width:56px;border:1.5px solid ${destaque?'#10b981':'#e2e8f0'};border-radius:6px;padding:4px 6px;font-size:13px;font-weight:800;text-align:center;font-family:inherit;"
                 oninput="pdSetQtd('${prod.key}',this.value)"
                 onchange="pdSetQtd('${prod.key}',this.value)">`;
-        const prodLabel = prod.key==='reno11' ? `${lA6} / Reno11F / A5Pro` : prod.key==='reno14' ? lReno+' (Reno 13/14)' : prod.nome;
+        const prodLabel = isAuto ? getPdAutoLabel(prod, lReno, lA6) : prod.nome;
+        const labelEditBtn = isAuto
+            ? ` <button onclick="event.stopPropagation();editarTextoAutoProduto('${prod.key}')" title="Editar texto" style="background:none;border:none;cursor:pointer;font-size:11px;color:#94a3b8;padding:0 2px;line-height:1;">✏️</button>`
+            : '';
         return `<tr class="${destaque?'prod-row-highlight':''}">
-            <td>${prodLabel}${isAuto?' <span style="background:#e0f2fe;color:#0369a1;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:4px;">automático</span>':''}</td>
+            <td>${prodLabel}${isAuto?' <span style="background:#e0f2fe;color:#0369a1;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:4px;">automático</span>':''}${labelEditBtn}</td>
             <td style="text-align:center;">${inputEl}</td>
             <td style="text-align:center;">${fmtBRL(item.preco)}</td>
             <td style="text-align:right;${destaque?'color:#059669;font-weight:900;':'color:#94a3b8;'}">${fmtBRL(item.com)}</td>
@@ -1642,7 +1664,7 @@ function abrirDetalhePromotor(nomeBusca){
     // Inicializa qtds se não existir (zera manuais, auto vem do p)
     if(!pdQtds[p.nome]) pdQtds[p.nome]={};
     // Garante auto
-    pdQtds[p.nome]['reno14'] = p.reno||0;
+    pdQtds[p.nome]['reno13f'] = p.reno||0;
     pdQtds[p.nome]['reno11'] = p.a5||0;
     pdRecalc();
     document.getElementById('promDetailOverlay').classList.add('open');
@@ -1730,8 +1752,8 @@ function buildComissaoSupervisor(){
             📋 <b>Como funciona:</b>
             Supervisor recebe por <b>cada unidade</b> vendida pelos promotores.
             Nível do promotor define qual tabela usar (N1 se &lt;${r.varejo_nivel2} vendas | N2 se ≥${r.varejo_nivel2}).
-            <b>Tabela N1:</b> Reno R$${r.n1.reno14} | ${lA6}/A5Pro R$${r.n1.a5pro} | Outras R$${r.n1.a60}.
-            <b>Tabela N2:</b> Reno R$${r.n2.reno14} | ${lA6}/A5Pro R$${r.n2.a5pro} | Outras R$${r.n2.a60}.
+            <b>Tabela N1:</b> Reno 13F/14F R$${r.n1.reno14} | ${lA6}/A5Pro R$${r.n1.a5pro} | Outras R$${r.n1.a60}.
+            <b>Tabela N2:</b> Reno 13F/14F R$${r.n2.reno14} | ${lA6}/A5Pro R$${r.n2.a5pro} | Outras R$${r.n2.a60}.
         </div>
 
         <div class="sup-cards" style="margin-bottom:16px;">
@@ -1804,9 +1826,9 @@ function calcComissaoPromotorResult(p, r){
         vendReno: detalhado.vendReno,
         vendA6Pro: detalhado.vendA6Pro,
         vendOutras: detalhado.vendOutras,
-        comReno: detalhado.vendReno * tab.reno14,
+        comReno: detalhado.vendReno * tab.reno13f,
         comA6Pro: detalhado.vendA6Pro * tab.reno11f,
-        comOutras: Math.max(0, detalhado.baseTotal - (detalhado.vendReno * tab.reno14) - (detalhado.vendA6Pro * tab.reno11f)),
+        comOutras: Math.max(0, detalhado.baseTotal - (detalhado.vendReno * tab.reno13f) - (detalhado.vendA6Pro * tab.reno11f)),
         totalBase: detalhado.baseTotal,
         incentivo: detalhado.incentivo,
         totalFinal: detalhado.totalFinal,
@@ -1840,7 +1862,7 @@ function buildComissaoPromotor(){
             incBadge=`<span class="inc-balloon f1">🎁 +${fmtBRL(c.incentivo)}<br><small>${r.inc1_min}–${r.inc1_max} unid.</small></span>`;
         // BASE detalhada
         const baseDetail=`<div style="font-size:10px;line-height:1.7;text-align:left;">
-            <span style="color:#f97316;">Reno(${c.vendReno}×R$${c.tab.reno14}): ${fmtBRL(c.comReno)}</span><br>
+            <span style="color:#f97316;">Reno(${c.vendReno}×R$${c.tab.reno13f}): ${fmtBRL(c.comReno)}</span><br>
             <span style="color:#06b6d4;">${lA6}(${c.vendA6Pro}×R$${c.tab.reno11f}): ${fmtBRL(c.comA6Pro)}</span><br>
             <span style="color:#64748b;">Outras(${c.vendOutras}×R$${c.tab.a60}): ${fmtBRL(c.comOutras)}</span>
         </div>`;
