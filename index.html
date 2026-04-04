@@ -1130,7 +1130,7 @@ function saveAll(){
     fenixData.metaA5=parseInt(document.getElementById('metaA5Input').value)||69;
     fenixData.promotores=fenixData.promotores.map((p,i)=>{
         const fbtn=document.getElementById(`fbtn_${i}`);
-        return{nome:document.getElementById(`n_${i}`).value,capa:parseInt(document.getElementById(`c_${i}`).value)||0,meta:parseInt(document.getElementById(`m_${i}`).value)||0,real:parseInt(document.getElementById(`r_${i}`).value)||0,reno:parseInt(document.getElementById(`re_${i}`).value)||0,a5:parseInt(document.getElementById(`a_${i}`).value)||0,ferias:fbtn?fbtn.classList.contains('on'):(p.ferias||false)};
+        return{nome:document.getElementById(`n_${i}`).value,capa:parseInt(document.getElementById(`c_${i}`).value)||0,meta:parseInt(document.getElementById(`m_${i}`).value)||0,real:parseInt(document.getElementById(`r_${i}`).value)||0,reno:parseInt(document.getElementById(`re_${i}`).value)||0,a5:parseInt(document.getElementById(`a_${i}`).value)||0,reno13f:parseInt(document.getElementById(`re13_${i}`).value)||0,ferias:fbtn?fbtn.classList.contains('on'):(p.ferias||false)};
     });
     // Salva nomes dos cards de topo
     const ilr=document.getElementById('inputLabelReno');const ila=document.getElementById('inputLabelA6Pro');
@@ -1400,8 +1400,9 @@ function calcComissaoSupervResult(p, r){
     PRODUTOS_PROMOTOR.forEach(prod => {
         const preco = nivel === 2 ? prod.sn2 : prod.sn1;
         let qtd = 0;
-        if(prod.key === 'reno14') qtd = p.reno||0;
-        else if(prod.key === 'reno11') qtd = p.a5||0;
+        if(prod.key === 'reno14')       qtd = p.reno||0;
+        else if(prod.key === 'reno11')  qtd = p.a5||0;
+        else if(prod.key === 'reno13f') qtd = p.reno13f||0;
         else qtd = parseInt(qs[prod.key])||0;
         
         const com = qtd * preco;
@@ -1473,7 +1474,7 @@ const PRODUTOS_PROMOTOR = [
     {key:'a60',    nome:'A60 / A79',        n1:32,  n2:40,  sn1:4.0, sn2:8.0, auto:false},
     {key:'a5g',    nome:'A5 (5G)',          n1:40,  n2:50,  sn1:4.0, sn2:8.0, auto:false},
     {key:'reno11', nome:'Reno11F / A5Pro / A6Pro', n1:56, n2:70, sn1:6.0, sn2:12.0, auto:true,  autoKey:'a6pro'},
-    {key:'reno13f',nome:'Reno 13F / 14F',  n1:144, n2:180, sn1:9.0, sn2:18.0, auto:false},
+    {key:'reno13f',nome:'Reno 13F / 14F',  n1:144, n2:180, sn1:9.0, sn2:18.0, auto:true, autoKey:'reno13f'},
     {key:'reno14', nome:'Reno 13 / 14',    n1:160, n2:200, sn1:14.0, sn2:28.0, auto:true,  autoKey:'reno'},
 ];
 
@@ -1498,8 +1499,9 @@ function pdRecalc(){
     const lA6   = cardLabels.a6pro||'A6 Pro';
 
     // Reno e A6Pro vêm automáticos do sistema
-    qs['reno14'] = p.reno||0;   // coluna RENO → Reno 13/14
-    qs['reno11'] = p.a5||0;     // coluna A6Pro → Reno11F/A5Pro/A6Pro
+    qs['reno14']  = p.reno||0;      // coluna RENO → Reno 13/14
+    qs['reno11']  = p.a5||0;        // coluna A6Pro → Reno11F/A5Pro/A6Pro
+    qs['reno13f'] = p.reno13f||0;   // Reno 13F / 14F
     pdQtds[p.nome] = qs;
     localStorage.setItem('fenixPdQtds2026', JSON.stringify(pdQtds));
 
@@ -1510,7 +1512,7 @@ function pdRecalc(){
         const qtd   = parseInt(qs[prod.key])||0;
         const com   = qtd * preco;
         baseTotal  += com;
-        if(prod.key==='reno14'||prod.key==='reno11') renoPlusA6 += qtd;
+        if(prod.key==='reno14'||prod.key==='reno11'||prod.key==='reno13f') renoPlusA6 += qtd;
 
         const isAuto = prod.auto;
         const destaque = com>0;
@@ -1520,7 +1522,7 @@ function pdRecalc(){
                 style="width:56px;border:1.5px solid ${destaque?'#10b981':'#e2e8f0'};border-radius:6px;padding:4px 6px;font-size:13px;font-weight:800;text-align:center;font-family:inherit;"
                 oninput="pdSetQtd('${prod.key}',this.value)"
                 onchange="pdSetQtd('${prod.key}',this.value)">`;
-        const prodLabel = prod.key==='reno11' ? `${lA6} / Reno11F / A5Pro` : prod.key==='reno14' ? lReno+' (Reno 13/14)' : prod.nome;
+        const prodLabel = prod.key==='reno11' ? `${lA6} / Reno11F / A5Pro` : (prod.key==='reno14' ? lReno+' (Reno 13 / 14)' : (prod.key==='reno13f' ? 'Reno 13F / 14F' : prod.nome));
         return `<tr class="${destaque?'prod-row-highlight':''}">
             <td>${prodLabel}${isAuto?' <span style="background:#e0f2fe;color:#0369a1;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:4px;">automático</span>':''}</td>
             <td style="text-align:center;">${inputEl}</td>
@@ -1621,7 +1623,7 @@ function buildComissaoSupervisor(){
     //    Se MÉDIA ≥ inc_min (7 unid) → +R$10,00 para o supervisor (valor único)
 
     let totalBase=0, totalN2=0;
-    const somaEspecial = ativos.reduce((acc,p)=>acc+((p.reno||0)+(p.a5||0)),0);
+    const somaEspecial = ativos.reduce((acc,p)=>acc+((p.reno||0)+(p.a5||0)+(p.reno13f||0)),0);
     const mediaEspecial = ativos.length > 0 ? somaEspecial / ativos.length : 0;
     const incentivo = mediaEspecial >= r.inc_min ? r.inc_val : 0;
 
@@ -1634,8 +1636,9 @@ function buildComissaoSupervisor(){
             <td>${primeiroNome(p.nome)} <span style="font-size:10px;color:#94a3b8;">✏️</span></td>
             <td><span style="background:${nivelBg};color:${nivelCor};font-weight:800;font-size:10px;padding:2px 8px;border-radius:20px;">N${c.nivel}</span></td>
             <td style="text-align:center;">${c.vendReno}</td>
+            <td style="text-align:center;">${p.reno13f||0}</td>
             <td style="text-align:center;">${c.vendA6Pro}</td>
-            <td style="text-align:center;font-weight:700;">${c.vendReno+c.vendA6Pro}</td>
+            <td style="text-align:center;font-weight:700;">${(p.reno||0)+(p.reno13f||0)+(p.a5||0)}</td>
             <td style="font-size:9px;color:#64748b;text-align:left;max-width:200px;">${c.details || 'Sem dados manuais'}</td>
             <td style="text-align:center;font-weight:900;color:#166534;">${fmtBRL(c.totalBase)}</td>
         </tr>`;
@@ -1719,6 +1722,7 @@ function buildComissaoSupervisor(){
                     <th style="text-align:left;">Promotor ✏️</th>
                     <th>Nível</th>
                     <th>${lReno}</th>
+                    <th>Reno 13F/14F</th>
                     <th>${lA6}</th>
                     <th>Especiais</th>
                     <th style="text-align:left;">Detalhamento</th>
@@ -1755,13 +1759,15 @@ function calcComissaoPromotorResult(p, r){
     const nivel     = total >= r.varejo_nivel2 ? 2 : 1;
     const tab       = nivel === 2 ? r.n2 : r.n1;
     const vendReno  = p.reno||0;   // coluna Reno → Reno 13/14 (tab.reno14 → R$160/R$200)
+    const vendReno13f = p.reno13f||0; // Reno 13F / 14F (tab.reno13f → R$144/R$180)
     const vendA6Pro = p.a5||0;     // coluna A6Pro → Reno11F/A5Pro/A6Pro (tab.reno11f → R$56/R$70)
-    const vendOutras= Math.max(0, total - vendReno - vendA6Pro); // outras → A60/A79 proxy
+    const vendOutras= Math.max(0, total - vendReno - vendReno13f - vendA6Pro); // outras → A60/A79 proxy
     const comReno   = vendReno   * tab.reno14;   // Reno 13/14: R$160 N1 / R$200 N2
+    const comReno13f= vendReno13f* tab.reno13f;  // Reno 13F/14F: R$144 N1 / R$180 N2
     const comA6Pro  = vendA6Pro  * tab.reno11f;  // Reno11F/A5Pro/A6Pro: R$56 N1 / R$70 N2
     const comOutras = vendOutras * tab.a60;      // A60/A79: R$32 N1 / R$40 N2
-    const totalBase = comReno + comA6Pro + comOutras;
-    const totalEspecial = vendReno + vendA6Pro;
+    const totalBase = comReno + comReno13f + comA6Pro + comOutras;
+    const totalEspecial = vendReno + vendReno13f + vendA6Pro;
     let incentivo = 0;
     if(totalEspecial >= r.inc2_min)      incentivo = totalEspecial * r.inc2_val;
     else if(totalEspecial >= r.inc1_min) incentivo = totalEspecial * r.inc1_val;
@@ -1793,7 +1799,8 @@ function buildComissaoPromotor(){
             incBadge=`<span class="inc-balloon f1">🎁 +${fmtBRL(c.incentivo)}<br><small>${r.inc1_min}–${r.inc1_max} unid.</small></span>`;
         // BASE detalhada
         const baseDetail=`<div style="font-size:10px;line-height:1.7;text-align:left;">
-            <span style="color:#f97316;">Reno(${c.vendReno}×R$${c.tab.reno13f}): ${fmtBRL(c.comReno)}</span><br>
+            <span style="color:#f97316;">Reno(${c.vendReno}×R$${c.tab.reno14}): ${fmtBRL(c.comReno)}</span><br>
+            <span style="color:#f97316;">Reno13F(${p.reno13f||0}×R$${c.tab.reno13f}): ${fmtBRL((p.reno13f||0)*c.tab.reno13f)}</span><br>
             <span style="color:#06b6d4;">${lA6}(${c.vendA6Pro}×R$${c.tab.reno11f}): ${fmtBRL(c.comA6Pro)}</span><br>
             <span style="color:#64748b;">Outras(${c.vendOutras}×R$${c.tab.a60}): ${fmtBRL(c.comOutras)}</span>
         </div>`;
