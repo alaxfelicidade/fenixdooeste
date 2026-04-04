@@ -1,0 +1,1988 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fênix 2026 – Elite Ranking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        const firebaseConfig = {
+            apiKey:"AIzaSyBCFPX0gknfN0CgIoC_4dWiJDg6Rnz0LqI",authDomain:"fenixdooeste.firebaseapp.com",
+            databaseURL:"https://fenixdooeste-default-rtdb.firebaseio.com",projectId:"fenixdooeste",
+            storageBucket:"fenixdooeste.firebasestorage.app",messagingSenderId:"276140570126",
+            appId:"1:276140570126:web:a0af6a3a76ccf70977ae5f",measurementId:"G-WYDR7PTP9N"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db  = getDatabase(app);
+        window._fbSet    = (path,data) => set(ref(db,path),data);
+        window._fbGet    = (path)      => get(ref(db,path)).then(s=>s.exists()?s.val():null);
+        window._fbListen = (path,cb)   => onValue(ref(db,path),snap=>cb(snap.exists()?snap.val():null));
+        window._firebaseReady = true;
+        window.dispatchEvent(new Event('firebaseReady'));
+    </script>
+<style>
+:root {
+    --bg:#1e293b; --header-dark:#0f172a; --danger:#ef4444; --warning:#f59e0b;
+    --success:#10b981; --success-dark:#059669; --primary:#6366f1; --reno:#f97316; --a5pro:#06b6d4;
+}
+*{box-sizing:border-box;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#f1f5f9;margin:0;padding-bottom:60px;color:#1e293b;}
+header{background:var(--header-dark);color:white;padding:12px 24px 0;display:flex;flex-direction:column;border-bottom:3px solid var(--primary);position:sticky;top:0;z-index:1000;}
+.header-top{display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;}
+.header-left{display:flex;align-items:center;gap:12px;}
+header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-align:center;flex-grow:1;}
+.header-buttons{display:flex;align-items:center;gap:6px;}
+.btn-hdr{border:none;padding:7px 13px;border-radius:6px;font-weight:700;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:4px;transition:all 0.2s;font-family:inherit;}
+.btn-hdr-ghost{background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.15);}
+.btn-hdr-ghost:hover{background:rgba(255,255,255,0.18);}
+.btn-hdr-primary{background:var(--primary);color:white;}
+.btn-hdr-primary:hover{background:#4f46e5;}
+.btn-hdr-chart{background:#0f766e;color:white;}
+.btn-hdr-chart:hover{background:#0d9488;}
+.btn-hdr-wpp{background:#25D366;color:white;}
+.btn-hdr-wpp:hover{background:#128C7E;}
+.month-tabs{display:flex;gap:2px;padding:0 4px;overflow-x:auto;scrollbar-width:none;}
+.month-tabs::-webkit-scrollbar{display:none;}
+.month-tab{background:none;border:none;border-bottom:3px solid transparent;color:#64748b;padding:8px 12px 9px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all 0.18s;letter-spacing:0.6px;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
+.month-tab:hover{color:#cbd5e1;border-bottom-color:#334155;}
+.month-tab.active{color:white;border-bottom-color:var(--primary);}
+.container{max-width:1000px;margin:0 auto;padding:0 15px;}
+.alerta-risco{display:none;border-radius:12px;padding:14px 18px;margin:16px 0;display:flex;align-items:center;gap:14px;animation:pulseAlert 2.5s ease-in-out infinite;}
+.alerta-risco.critico{background:linear-gradient(135deg,#fef2f2,#fee2e2);border:2px solid #fca5a5;}
+.alerta-risco.atencao{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2px solid #fcd34d;}
+.alerta-risco.otimo{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #86efac;}
+.alerta-risco.hidden{display:none!important;}
+@keyframes pulseAlert{0%,100%{box-shadow:0 2px 12px rgba(239,68,68,0.15);}50%{box-shadow:0 4px 20px rgba(239,68,68,0.35);}}
+.alerta-icon{font-size:28px;flex-shrink:0;}
+.alerta-texto h3{margin:0 0 3px;font-size:13px;font-weight:900;}
+.alerta-texto p{margin:0;font-size:11px;font-weight:600;opacity:0.8;}
+
+/* ── BANNER ── */
+.premium-banner-wrap{position:relative;margin:16px auto;max-width:700px;}
+.premium-banner{background:white;border:2px dashed #3b82f6;border-radius:12px;padding:12px 44px 12px 12px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.05);}
+.premium-banner h2{font-size:13px;margin:0;color:#1e40af;font-weight:900;text-transform:uppercase;}
+.premium-banner p{font-size:12px;margin:5px 0 0;font-weight:700;color:#3b82f6;}
+.btn-banner-edit{position:absolute;top:8px;right:8px;background:#eff6ff;border:1px solid #bfdbfe;color:#3b82f6;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all 0.2s;}
+.btn-banner-edit:hover{background:#dbeafe;}
+.banner-popover{display:none;position:absolute;top:50px;left:50%;transform:translateX(-50%);background:white;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.12);padding:16px;width:380px;z-index:500;}
+.banner-popover.open{display:block;}
+.banner-popover label{font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;display:block;margin-bottom:4px;}
+.banner-popover input,.banner-popover textarea{width:100%;border:1px solid #e2e8f0;border-radius:7px;padding:8px 10px;font-size:12px;font-family:inherit;margin-bottom:10px;resize:none;}
+.banner-popover-btns{display:flex;gap:8px;}
+.btn-pop-save{background:var(--primary);color:white;border:none;padding:8px 16px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;flex:1;font-family:inherit;}
+.btn-pop-cancel{background:none;border:1px solid #e2e8f0;color:#64748b;padding:8px 16px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:inherit;}
+
+/* ── STATS GRID – cards duplos para Reno e A6 Pro ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:20px;}
+.stat-card{background:white;padding:15px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.04);text-align:center;border-bottom:4px solid #e2e8f0;position:relative;}
+.stat-card .label{font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;margin-bottom:4px;}
+.stat-card .big-number{font-size:26px;font-weight:900;display:block;margin:2px 0;}
+.stat-card .footer-label{font-size:11px;font-weight:700;}
+/* Card duplo Meta/Realizado */
+.stat-card-dual{background:white;padding:12px 15px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.04);border-bottom:4px solid #e2e8f0;position:relative;}
+.stat-card-dual .label-wrap{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:6px;}
+.stat-card-dual .label{font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;}
+/* ── Card duplo Meta/Realizado ── */
+.dual-row{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px;}
+.dual-item{text-align:center;padding:6px 4px;border-radius:8px;}
+.dual-item .d-label{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:0.3px;opacity:0.65;}
+.dual-item .d-val{font-size:22px;font-weight:900;line-height:1.1;margin-top:2px;}
+.dual-item.meta-side{background:#f8fafc;}
+.dual-item.real-side{background:#f0fdf4;}
+
+/* ── PROMOTOR CARDS ── */
+.promotor-card{background:white;padding:14px 16px;border-radius:12px;margin-bottom:10px;display:grid;grid-template-columns:44px 1.4fr 2fr 1fr;align-items:center;gap:14px;box-shadow:0 2px 5px rgba(0,0,0,0.03);border-left:6px solid #eee;transition:box-shadow 0.2s,transform 0.1s;}
+.promotor-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.08);transform:translateY(-1px);}
+.promotor-card.ferias{opacity:0.7;background:repeating-linear-gradient(135deg,#fff,#fff 18px,#f0fdf4 18px,#f0fdf4 20px);border-left-color:#10b981!important;}
+.rank-badge{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex-shrink:0;}
+.rank-1{background:linear-gradient(135deg,#fef9c3,#fde68a);color:#92400e;box-shadow:0 2px 8px rgba(251,191,36,0.45);}
+.rank-2{background:linear-gradient(135deg,#f1f5f9,#cbd5e1);color:#475569;box-shadow:0 2px 8px rgba(148,163,184,0.4);}
+.rank-3{background:linear-gradient(135deg,#fef3e2,#fed7aa);color:#9a3412;box-shadow:0 2px 8px rgba(251,146,60,0.4);}
+.rank-n{background:#f1f5f9;color:#94a3b8;font-size:13px;}
+.p-name-wrap{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.p-name{font-weight:800;font-size:13px;cursor:pointer;border-radius:4px;padding:2px 5px;transition:background 0.15s;line-height:1.3;}
+.p-name:hover{background:#f1f5f9;}
+.p-name-input{font-weight:800;font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;border:2px solid var(--primary);border-radius:6px;padding:3px 8px;outline:none;width:185px;color:#1e293b;background:#f8f9ff;}
+.ferias-badge{display:inline-flex;align-items:center;gap:2px;background:#d1fae5;color:#065f46;font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;letter-spacing:0.3px;text-transform:uppercase;}
+.btn-ferias-toggle{background:none;border:none;cursor:pointer;font-size:13px;padding:2px 3px;border-radius:4px;opacity:0.35;transition:all 0.18s;flex-shrink:0;line-height:1;}
+.btn-ferias-toggle:hover{opacity:1;background:#f1f5f9;transform:scale(1.2);}
+.btn-ferias-toggle.ativo{opacity:1;}
+.progress-bg{height:9px;background:#f1f5f9;border-radius:10px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:10px;transition:width 0.8s ease;}
+.pct-label{font-size:9px;font-weight:900;margin-top:3px;}
+.meta-group{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.m-item{text-align:center;}
+.m-item span{display:block;font-size:8px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.3px;}
+.m-item b{font-size:14px;font-weight:900;line-height:1.2;}
+.m-item.diaria-item b{font-size:16px;}
+.diaria-pill{display:inline-block;padding:1px 8px;border-radius:20px;font-size:13px;font-weight:900;}
+.diaria-ok{background:#dcfce7;color:#166534;}
+.diaria-warn{background:#fef9c3;color:#92400e;}
+.diaria-bad{background:#fee2e2;color:#991b1b;}
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.95);z-index:2000;overflow-y:auto;padding:20px 0;}
+.modal-content{background:white;max-width:940px;margin:auto;padding:25px;border-radius:15px;}
+.edit-row{display:grid;grid-template-columns:2fr 0.7fr 0.7fr 0.7fr 0.7fr 1.3fr 90px;gap:6px;margin-bottom:8px;align-items:center;}
+.edit-row input{padding:8px;border:1px solid #ddd;border-radius:5px;width:100%;font-size:11px;font-family:inherit;}
+.btn-ferias-modal{border:none;border-radius:6px;padding:8px 6px;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:3px;transition:all 0.18s;white-space:nowrap;}
+.btn-ferias-modal.off{background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;}
+.btn-ferias-modal.off:hover{background:#e0fdf4;color:#065f46;border-color:#6ee7b7;}
+.btn-ferias-modal.on{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;}
+.btn-del{background:none;border:none;color:#ef4444;cursor:pointer;font-size:18px;padding:0 4px;}
+.btn-save{background:var(--success-dark);color:white;border:none;padding:12px;width:100%;border-radius:8px;font-weight:800;cursor:pointer;font-family:inherit;font-size:13px;}
+
+/* ── PAINEL ── */
+.painel-content{background:white;max-width:960px;margin:auto;padding:24px 28px;border-radius:15px;}
+.painel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.painel-title{font-size:16px;font-weight:900;color:#0f172a;}
+.painel-sub{font-size:11px;font-weight:700;color:#64748b;margin-top:2px;}
+.btn-print{background:var(--primary);color:white;border:none;padding:9px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:5px;font-family:inherit;}
+.btn-fechar-painel{background:none;border:1px solid #e2e8f0;color:#64748b;padding:9px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:12px;font-family:inherit;}
+.painel-table{width:100%;border-collapse:collapse;font-size:11px;}
+.painel-table thead tr{background:#0f172a;color:white;}
+.painel-table thead th{padding:8px 10px;font-weight:800;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;text-align:center;}
+.painel-table thead th:first-child{text-align:left;}
+.painel-table tbody tr{border-bottom:1px solid #f1f5f9;}
+.painel-table tbody tr:hover{background:#f8fafc;}
+.painel-table tbody tr.row-ferias{background:#f0fdf4!important;color:#6b7280;}
+.painel-table tbody td{padding:8px 10px;text-align:center;vertical-align:middle;}
+.painel-table tbody td:first-child{text-align:left;font-weight:700;font-size:12px;}
+.pct-cell{font-weight:900;font-size:12px;padding:3px 8px;border-radius:5px;display:inline-block;}
+.pct-verde{background:#dcfce7;color:#166534;}
+.pct-amarelo{background:#fef9c3;color:#92400e;}
+.pct-vermelho{background:#fee2e2;color:#991b1b;}
+.pct-ferias{background:#d1fae5;color:#065f46;}
+.painel-totais td{background:#f8fafc;font-weight:900;font-size:12px;border-top:2px solid #e2e8f0;}
+
+/* ── COMPARATIVO ── */
+.comp-content{background:white;max-width:960px;margin:auto;padding:24px 28px;border-radius:15px;}
+.comp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.comp-title{font-size:16px;font-weight:900;color:#0f172a;}
+.comp-table{width:100%;border-collapse:collapse;font-size:11px;}
+.comp-table thead tr{background:#0f172a;color:white;}
+.comp-table thead th{padding:9px 10px;font-weight:800;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;text-align:center;}
+.comp-table thead th:first-child{text-align:left;}
+.comp-table tbody tr{border-bottom:1px solid #f1f5f9;}
+.comp-table tbody tr:hover{background:#f8fafc;}
+.comp-table tbody td{padding:9px 10px;text-align:center;vertical-align:middle;font-size:11px;}
+.comp-table tbody td:first-child{text-align:left;font-weight:700;font-size:12px;}
+.trend-up{color:#10b981;font-weight:900;font-size:13px;}
+.trend-down{color:#ef4444;font-weight:900;font-size:13px;}
+.trend-eq{color:#94a3b8;font-weight:700;}
+.mes-col-hdr{font-size:9px!important;letter-spacing:0.3px;}
+
+/* ── WHATSAPP ── */
+.wpp-content{background:white;max-width:600px;margin:auto;padding:28px;border-radius:15px;}
+.wpp-preview{background:#075e54;border-radius:12px;padding:20px;font-family:monospace;font-size:12px;color:#e2e8f0;white-space:pre-wrap;line-height:1.6;max-height:420px;overflow-y:auto;margin:16px 0;}
+.btn-wpp-copy{background:#25D366;color:white;border:none;padding:14px;width:100%;border-radius:8px;font-weight:800;cursor:pointer;font-family:inherit;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-wpp-copy:hover{background:#128C7E;}
+
+/* ── GRÁFICOS ── */
+.graficos-content{background:white;max-width:960px;margin:auto;padding:24px 28px;border-radius:15px;max-height:90vh;overflow-y:auto;}
+.graficos-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.graficos-title{font-size:16px;font-weight:900;color:#0f172a;}
+.graficos-tabs{display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap;}
+.graf-tab{background:#f1f5f9;border:1px solid transparent;color:#64748b;padding:8px 16px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;transition:all 0.18s;box-shadow:none;}
+.graf-tab:hover{background:#e2e8f0;transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+.graf-tab.active{background:var(--primary)!important;color:white!important;border-color:transparent!important;box-shadow:0 4px 14px rgba(99,102,241,0.35);transform:translateY(-2px);}
+/* Tabs especiais com cores próprias */
+.graf-tab-sup{background:#fef3c7;color:#92400e;border:1px solid #fcd34d;}
+.graf-tab-sup:hover{background:#fde68a;}
+.graf-tab-sup.active{background:#d97706!important;color:white!important;border-color:#d97706!important;box-shadow:0 4px 14px rgba(217,119,6,0.35);transform:translateY(-2px);}
+.graf-tab-pro{background:#f0fdf4;color:#166534;border:1px solid #86efac;}
+.graf-tab-pro:hover{background:#dcfce7;}
+.graf-tab-pro.active{background:#059669!important;color:white!important;border-color:#059669!important;box-shadow:0 4px 14px rgba(5,150,105,0.35);transform:translateY(-2px);}
+.graf-panel{display:none;}
+.graf-panel.active{display:block;}
+.chart-wrap{position:relative;height:340px;}
+.chart-wrap-sm{position:relative;height:260px;}
+.insight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px;}
+.insight-card{background:#f8fafc;border-radius:10px;padding:12px;border-left:4px solid #e2e8f0;}
+.insight-card .i-label{font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;margin-bottom:4px;}
+.insight-card .i-val{font-size:20px;font-weight:900;}
+.insight-card .i-name{font-size:13px;font-weight:800;color:#1e293b;margin-top:4px;line-height:1.3;}
+
+/* ── COMISSÃO SUPERVISOR ── */
+.comissao-content{background:white;max-width:1000px;margin:auto;padding:24px 28px;border-radius:15px;}
+.comissao-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.comissao-title{font-size:16px;font-weight:900;color:#0f172a;}
+.comissao-info{background:linear-gradient(135deg,#eff6ff,#e0f2fe);border:1px solid #bfdbfe;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:11px;color:#1e40af;font-weight:700;}
+.tabela-comissao{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:20px;}
+.tabela-comissao thead tr{background:#0f172a;color:white;}
+.tabela-comissao thead th{padding:9px 10px;font-weight:800;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;text-align:center;}
+.tabela-comissao thead th:first-child{text-align:left;}
+.tabela-comissao tbody tr{border-bottom:1px solid #f1f5f9;}
+.tabela-comissao tbody tr:hover{background:#f8fafc;}
+.tabela-comissao tbody td{padding:9px 10px;text-align:center;vertical-align:middle;font-size:12px;}
+.tabela-comissao tbody td:first-child{text-align:left;font-weight:700;}
+.nivel-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:800;}
+.nivel-1{background:#fef9c3;color:#92400e;}
+.nivel-2{background:#dcfce7;color:#166534;}
+.comissao-total-row td{background:#0f172a;color:white;font-weight:900;font-size:13px;}
+/* Valores editáveis */
+.val-editavel{cursor:pointer;border-bottom:1px dashed #94a3b8;padding:1px 3px;border-radius:2px;transition:all 0.15s;}
+.val-editavel:hover{background:#f1f5f9;border-bottom-color:#6366f1;}
+.val-input-inline{width:70px;border:2px solid var(--primary);border-radius:5px;padding:3px 6px;font-size:12px;font-weight:700;font-family:inherit;text-align:center;}
+/* Cards resumo supervisor */
+.sup-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px;}
+.sup-card{background:white;border-radius:12px;padding:14px;border:1px solid #e2e8f0;box-shadow:0 2px 6px rgba(0,0,0,0.04);text-align:center;}
+.sup-card .s-label{font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;}
+.sup-card .s-val{font-size:24px;font-weight:900;}
+.sup-card .s-sub{font-size:10px;font-weight:700;color:#64748b;margin-top:3px;}
+/* Tabela detalhada */
+.tabela-sup-detalhe{width:100%;border-collapse:collapse;font-size:11px;}
+.tabela-sup-detalhe thead tr{background:#1e293b;color:white;}
+.tabela-sup-detalhe thead th{padding:8px 10px;font-weight:800;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;text-align:center;}
+.tabela-sup-detalhe thead th:first-child{text-align:left;}
+.tabela-sup-detalhe tbody tr{border-bottom:1px solid #f1f5f9;}
+.tabela-sup-detalhe tbody tr:hover{background:#f8fafc;}
+.tabela-sup-detalhe tbody td{padding:8px 10px;text-align:center;vertical-align:middle;font-size:11px;}
+.tabela-sup-detalhe tbody td:first-child{text-align:left;font-weight:700;}
+.comissao-pill{display:inline-block;padding:2px 8px;border-radius:5px;font-weight:900;font-size:11px;}
+.com-verde{background:#dcfce7;color:#166534;}
+.com-azul{background:#e0f2fe;color:#0369a1;}
+.incentivo-pill{background:#fef3c7;color:#92400e;display:inline-block;padding:2px 8px;border-radius:5px;font-weight:800;font-size:10px;}
+/* Regras editáveis popup */
+.btn-edit-regras{background:#f1f5f9;border:1px solid #e2e8f0;color:#64748b;padding:7px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;}
+.btn-edit-regras:hover{background:#e2e8f0;}
+.regras-popover{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.15);padding:24px;width:520px;z-index:3000;max-height:90vh;overflow-y:auto;}
+.regras-popover.open{display:block;}
+.regras-popover h3{margin:0 0 16px;font-size:15px;font-weight:900;color:#0f172a;}
+.regras-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.regra-item{background:#f8fafc;border-radius:8px;padding:10px;}
+.regra-item label{font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;display:block;margin-bottom:5px;}
+.regra-item input{width:100%;border:1.5px solid #e2e8f0;border-radius:6px;padding:6px 10px;font-size:13px;font-weight:800;font-family:inherit;text-align:center;}
+.regra-item input:focus{outline:none;border-color:var(--primary);}
+.regra-section{font-size:10px;font-weight:800;color:#0f172a;text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 8px;padding-bottom:4px;border-bottom:2px solid #f1f5f9;}
+
+@media print{body *{visibility:hidden;}#painelModal,#painelModal *{visibility:visible;}#painelModal{position:absolute;top:0;left:0;background:white;padding:0;}.painel-content{border-radius:0;box-shadow:none;padding:16px;}.btn-print,.btn-fechar-painel{display:none;}}
+@media(max-width:768px){.promotor-card{grid-template-columns:44px 1fr;}.promotor-card>div:nth-child(3),.promotor-card>div:nth-child(4){grid-column:1/-1;}header h1{font-size:14px;}.banner-popover{width:calc(100vw - 40px);}.graficos-content,.painel-content,.modal-content{padding:16px;}.meta-group{grid-template-columns:repeat(4,1fr);}}
+
+/* ── TV MODE ── */
+/* ── MODAL DETALHE PROMOTOR ── */
+.prom-detail-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.7);z-index:3500;align-items:center;justify-content:center;}
+.prom-detail-overlay.open{display:flex;}
+.prom-detail-box{background:white;border-radius:16px;padding:24px 28px;width:580px;max-width:95vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.prom-detail-close{background:none;border:1px solid #e2e8f0;color:#64748b;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.prom-detail-close:hover{background:#fee2e2;color:#ef4444;border-color:#fca5a5;}
+.prod-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px;}
+.prod-table thead tr{background:#1e293b;color:white;}
+.prod-table thead th{padding:8px 10px;font-weight:800;font-size:9px;text-transform:uppercase;letter-spacing:0.4px;text-align:center;}
+.prod-table thead th:first-child{text-align:left;}
+.prod-table tbody tr{border-bottom:1px solid #f1f5f9;}
+.prod-table tbody tr:hover{background:#f8fafc;}
+.prod-table tbody td{padding:7px 10px;text-align:center;vertical-align:middle;}
+.prod-table tbody td:first-child{text-align:left;font-weight:700;}
+.prod-table tfoot tr{background:#0f172a;color:white;font-weight:900;}
+.prod-table tfoot td{padding:9px 10px;text-align:center;}
+.prod-table tfoot td:first-child{text-align:left;}
+.prod-row-highlight{background:#f0fdf4!important;}
+.inc-balloon{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:800;cursor:default;border:1px solid;}
+.inc-balloon.f1{background:#fef9c3;color:#92400e;border-color:#fcd34d;}
+.inc-balloon.f2{background:#dcfce7;color:#166534;border-color:#86efac;}
+.inc-balloon.none{background:#f1f5f9;color:#94a3b8;border-color:#e2e8f0;}
+.inc-edit-btn{background:none;border:none;cursor:pointer;font-size:11px;color:#94a3b8;padding:0 2px;line-height:1;}
+.inc-edit-btn:hover{color:#6366f1;}
+.inc-inline-pop{display:none;position:fixed;background:white;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.14);padding:14px;z-index:5000;width:270px;}
+.inc-inline-pop.open{display:block;}
+.inc-inline-pop label{font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;display:block;margin-bottom:4px;}
+.inc-inline-pop input{width:100%;border:1.5px solid #e2e8f0;border-radius:6px;padding:6px 10px;font-size:13px;font-weight:800;font-family:inherit;text-align:center;margin-bottom:8px;}
+.inc-inline-pop input:focus{outline:none;border-color:var(--primary);}
+/* ── MODO TV ── */
+.tv-overlay.active{display:flex;}
+.tv-header{background:white;padding:14px 28px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #6366f1;flex-shrink:0;box-shadow:0 2px 8px rgba(99,102,241,0.08);}
+.tv-title{font-size:22px;font-weight:900;color:#0f172a;letter-spacing:-0.5px;display:flex;align-items:center;gap:10px;}
+.tv-stats{display:flex;gap:20px;align-items:center;}
+.tv-stat{text-align:center;background:#f8fafc;border-radius:10px;padding:8px 18px;border:1px solid #e2e8f0;}
+.tv-stat-val{font-size:24px;font-weight:900;line-height:1;}
+.tv-stat-lbl{font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+.tv-body{flex:1;overflow:hidden;padding:16px 28px;display:flex;flex-direction:column;gap:8px;}
+.tv-card{background:white;border-radius:12px;padding:12px 20px;display:grid;grid-template-columns:56px 2fr 3fr 90px 90px 110px;align-items:center;gap:16px;border-left:7px solid #e2e8f0;box-shadow:0 1px 6px rgba(0,0,0,0.05);animation:tvSlideIn 0.4s ease both;}
+.tv-card.tv-pos-0{background:linear-gradient(135deg,#fffbeb,#fef9c3);}
+.tv-card.tv-pos-1{background:linear-gradient(135deg,#f8fafc,#f1f5f9);}
+.tv-card.tv-pos-2{background:linear-gradient(135deg,#fff7ed,#ffedd5);}
+.tv-card.tv-par{background:white;} .tv-card.tv-impar{background:#f8fafc;}
+.tv-card.tv-ótimo{border-left-color:#10b981!important;} .tv-card.tv-bom{border-left-color:#6366f1!important;}
+.tv-card.tv-alerta{border-left-color:#f59e0b!important;} .tv-card.tv-risco{border-left-color:#ef4444!important;}
+@keyframes tvSlideIn{from{opacity:0;transform:translateX(-16px);}to{opacity:1;transform:none;}}
+.tv-rank{font-size:24px;font-weight:900;text-align:center;}
+.tv-name{font-size:15px;font-weight:800;color:#0f172a;}
+.tv-capa{font-size:10px;color:#94a3b8;font-weight:700;margin-top:2px;}
+.tv-bar-wrap{position:relative;}
+.tv-bar-bg{height:12px;background:#e2e8f0;border-radius:10px;overflow:hidden;}
+.tv-bar-fill{height:100%;border-radius:10px;transition:width 1.2s cubic-bezier(0.4,0,0.2,1);}
+.tv-pct{font-size:11px;font-weight:900;margin-top:3px;}
+.tv-num{text-align:center;}
+.tv-num-val{font-size:20px;font-weight:900;color:#0f172a;}
+.tv-num-lbl{font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;}
+.tv-diaria-pill{display:inline-block;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:900;}
+.tv-close{position:absolute;top:16px;right:20px;background:#f1f5f9;border:1px solid #e2e8f0;color:#64748b;width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer;z-index:9001;transition:all 0.18s;}
+.tv-close:hover{background:#fee2e2;color:#ef4444;border-color:#fca5a5;}
+.tv-ticker{background:#1e293b;padding:9px 24px;font-size:11px;color:#94a3b8;font-weight:700;flex-shrink:0;white-space:nowrap;overflow:hidden;}
+.tv-ticker-inner{display:inline-block;animation:ticker 35s linear infinite;}
+@keyframes ticker{from{transform:translateX(100vw);}to{transform:translateX(-100%);}}
+
+/* ── HISTÓRICO DIÁRIO ── */
+.hist-content{background:white;max-width:960px;margin:auto;padding:24px 28px;border-radius:15px;}
+.hist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:16px;}
+.hist-card{background:#f8fafc;border-radius:10px;padding:14px;border-top:3px solid #e2e8f0;}
+.hist-card-name{font-size:11px;font-weight:800;color:#1e293b;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hist-day-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid #f1f5f9;font-size:11px;}
+.hist-day-lbl{color:#64748b;font-weight:600;} .hist-day-val{font-weight:900;color:#1e293b;}
+.hist-day-delta{font-size:10px;font-weight:800;}
+.hist-add-btn{background:var(--primary);color:white;border:none;padding:10px 18px;border-radius:8px;font-weight:800;cursor:pointer;font-size:12px;font-family:inherit;display:flex;align-items:center;gap:6px;}
+.hist-add-btn:hover{background:#4f46e5;}
+.hist-chart-wrap{position:relative;height:200px;margin-top:10px;}
+
+/* ── CELEBRAÇÃO ── */
+.celebracao-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;flex-direction:column;}
+.celebracao-overlay.show{display:flex;animation:fadeInCel 0.3s ease;}
+@keyframes fadeInCel{from{opacity:0;}to{opacity:1;}}
+.celebracao-box{background:linear-gradient(135deg,#1e1b4b,#0f172a);border:2px solid #6366f1;border-radius:20px;padding:40px 60px;text-align:center;position:relative;overflow:hidden;}
+.cel-emoji{font-size:64px;animation:bounce 0.6s ease infinite alternate;}
+@keyframes bounce{from{transform:scale(1);}to{transform:scale(1.15);}}
+.cel-titulo{font-size:28px;font-weight:900;color:white;margin:12px 0 6px;}
+.cel-nome{font-size:20px;font-weight:800;color:#a5b4fc;margin-bottom:8px;}
+.cel-sub{font-size:14px;color:#64748b;font-weight:600;}
+.confetti{position:absolute;width:10px;height:10px;border-radius:2px;animation:confettifall 2s ease-in forwards;}
+@keyframes confettifall{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(400px) rotate(720deg);opacity:0;}}
+</style>
+</head>
+<body>
+
+<header>
+    <div class="header-top">
+        <div class="header-left">
+            <span style="font-size:22px;">🦅</span>
+            <span id="syncStatus" style="font-size:10px;font-weight:700;transition:opacity 1s;opacity:0;"></span>
+        </div>
+        <h1>FÊNIX DO OESTE — <span id="mesAtual"></span></h1>
+        <div class="header-buttons">
+            <button class="btn-hdr" style="background:#7c3aed;color:white;" onclick="openTv()">📺 TV</button>
+            <button class="btn-hdr" style="background:#0369a1;color:white;" onclick="openHist()">📈 DIAS</button>
+            <button class="btn-hdr btn-hdr-wpp" onclick="openWpp()">📲 WPP</button>
+            <button class="btn-hdr btn-hdr-chart" onclick="openGraficos()">📊</button>
+            <button class="btn-hdr" style="background:#1d4ed8;color:white;" onclick="openComparativo()">📅 HISTÓRICO</button>
+            <button class="btn-hdr btn-hdr-primary" onclick="openPainel()">📋 PAINEL</button>
+            <button class="btn-hdr btn-hdr-ghost" onclick="openModal()">⚙️ EQUIPE</button>
+        </div>
+    </div>
+    <div class="month-tabs" id="monthTabs">
+        <button class="month-tab" onclick="selecionarMes(0)">JAN</button>
+        <button class="month-tab" onclick="selecionarMes(1)">FEV</button>
+        <button class="month-tab" onclick="selecionarMes(2)">MAR</button>
+        <button class="month-tab" onclick="selecionarMes(3)">ABR</button>
+        <button class="month-tab" onclick="selecionarMes(4)">MAI</button>
+        <button class="month-tab" onclick="selecionarMes(5)">JUN</button>
+        <button class="month-tab" onclick="selecionarMes(6)">JUL</button>
+        <button class="month-tab" onclick="selecionarMes(7)">AGO</button>
+        <button class="month-tab" onclick="selecionarMes(8)">SET</button>
+        <button class="month-tab" onclick="selecionarMes(9)">OUT</button>
+        <button class="month-tab" onclick="selecionarMes(10)">NOV</button>
+        <button class="month-tab" onclick="selecionarMes(11)">DEZ</button>
+    </div>
+</header>
+
+<div class="container">
+    <div class="alerta-risco hidden" id="alertaRisco">
+        <div class="alerta-icon" id="alertaIcon">⚠️</div>
+        <div class="alerta-texto">
+            <h3 id="alertaTitulo">Atenção necessária</h3>
+            <p id="alertaDesc">Carregando...</p>
+        </div>
+    </div>
+
+    <div class="premium-banner-wrap">
+        <div class="premium-banner">
+            <h2 id="bannerTitulo">🏆 PREMIAÇÃO ESPECIAL: LINHA RENO + A6 PRO</h2>
+            <p id="bannerDesc">6 a 10 aparelhos: <b>+ R$ 50,00</b> | 11 ou mais: <b>+ R$ 100,00 por unidade</b></p>
+        </div>
+        <button class="btn-banner-edit" onclick="toggleBannerEdit(event)">✏️</button>
+        <div class="banner-popover" id="bannerPopover">
+            <label>Título do Banner</label>
+            <input type="text" id="bannerTituloInput">
+            <label>Descrição</label>
+            <textarea id="bannerDescInput" rows="2"></textarea>
+            <div class="banner-popover-btns">
+                <button class="btn-pop-cancel" onclick="closeBannerEdit()">Cancelar</button>
+                <button class="btn-pop-save" onclick="saveBanner()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS GRID -->
+    <div class="stats-grid">
+        <div class="stat-card" style="border-bottom-color:var(--primary);">
+            <div class="label">REALIZADO EQUIPE</div>
+            <span id="realGeral" class="big-number">0</span>
+            <div class="footer-label" style="color:var(--primary);">Meta: <span id="metaGeralLabel">629</span></div>
+        </div>
+        <div class="stat-card" style="border-bottom-color:var(--primary);">
+            <div class="label">ATINGIMENTO GERAL</div>
+            <span id="pctGeral" class="big-number" style="color:var(--primary);">0%</span>
+            <div class="footer-label" style="color:#64748b;">% da meta da equipe</div>
+        </div>
+
+        <!-- Card Reno dual Meta/Realizado — espelho automático, edição no modal Equipe -->
+        <div class="stat-card-dual" style="border-bottom-color:var(--reno);" id="cardRenoDual">
+            <div class="label-wrap">
+                <span class="label" id="labelReno">RENO 14F</span>
+            </div>
+            <div class="dual-row">
+                <div class="dual-item meta-side">
+                    <div class="d-label" style="color:var(--reno);">META</div>
+                    <div class="d-val" style="color:var(--reno);" id="metaRenoLabel2">0</div>
+                </div>
+                <div class="dual-item real-side">
+                    <div class="d-label" style="color:#059669;">REAL</div>
+                    <div class="d-val" style="color:#059669;" id="renoGeral">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card A6 Pro dual Meta/Realizado — espelho automático, edição no modal Equipe -->
+        <div class="stat-card-dual" style="border-bottom-color:var(--a5pro);" id="cardA6Dual">
+            <div class="label-wrap">
+                <span class="label" id="labelA6Pro">META A6 PRO</span>
+            </div>
+            <div class="dual-row">
+                <div class="dual-item meta-side">
+                    <div class="d-label" style="color:var(--a5pro);">META</div>
+                    <div class="d-val" style="color:var(--a5pro);" id="metaA5Label2">0</div>
+                </div>
+                <div class="dual-item real-side">
+                    <div class="d-label" style="color:#059669;">REAL</div>
+                    <div class="d-val" style="color:#059669;" id="a5Geral">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card" style="border-bottom-color:var(--success);">
+            <div class="label">MARKET SHARE</div>
+            <span id="marketGeral" class="big-number">0%</span>
+            <div class="footer-label" style="color:var(--success);">Real ÷ CAPA total</div>
+        </div>
+        <div class="stat-card" style="border-bottom-color:var(--danger);">
+            <div class="label">DIÁRIA EQUIPE</div>
+            <span id="diariaEquipe" class="big-number" style="color:var(--danger);">0</span>
+            <div class="footer-label">Vendas/dia útil restante</div>
+        </div>
+    </div>
+
+    <div id="listaPromotores"></div>
+</div>
+
+<!-- TV -->
+<div class="tv-overlay" id="tvOverlay">
+    <button class="tv-close" onclick="closeTv()">✕</button>
+    <div class="tv-header">
+        <div class="tv-title">🦅 <span style="color:#0f172a;">FÊNIX DO OESTE</span> &nbsp;<span id="tvMes" style="color:#6366f1;font-size:15px;font-weight:700;"></span></div>
+        <div class="tv-stats">
+            <div class="tv-stat"><div class="tv-stat-val" id="tvReal" style="color:#6366f1;">0</div><div class="tv-stat-lbl">Realizado</div></div>
+            <div class="tv-stat"><div class="tv-stat-val" id="tvMeta" style="color:#94a3b8;">0</div><div class="tv-stat-lbl">Meta</div></div>
+            <div class="tv-stat"><div class="tv-stat-val" id="tvPct" style="color:#10b981;">0%</div><div class="tv-stat-lbl">Atingimento</div></div>
+            <div class="tv-stat"><div class="tv-stat-val" id="tvDiaria" style="color:#ef4444;">0</div><div class="tv-stat-lbl">Diária/equipe</div></div>
+            <div class="tv-stat"><div class="tv-stat-val" id="tvDiasRest" style="color:#f59e0b;">0</div><div class="tv-stat-lbl">Dias úteis</div></div>
+        </div>
+    </div>
+    <div class="tv-body" id="tvBody"></div>
+    <div class="tv-ticker"><span class="tv-ticker-inner" id="tvTicker"></span></div>
+</div>
+
+<!-- CELEBRAÇÃO -->
+<div class="celebracao-overlay" id="celebracaoOverlay" onclick="fecharCelebracao()">
+    <div class="celebracao-box" id="celebracaoBox">
+        <div class="cel-emoji">🏆</div>
+        <div class="cel-titulo">META BATIDA!</div>
+        <div class="cel-nome" id="celNome">Promotor</div>
+        <div class="cel-sub" id="celSub">Parabéns pela conquista!</div>
+    </div>
+</div>
+
+<!-- HISTÓRICO DIÁRIO -->
+<div id="histModal" class="modal-overlay">
+    <div class="hist-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div>
+                <div style="font-size:16px;font-weight:900;color:#0f172a;">📈 HISTÓRICO DIÁRIO — <span id="histMes" style="color:var(--primary);"></span></div>
+                <div style="font-size:11px;color:#64748b;font-weight:600;margin-top:2px;">Registro de vendas por dia por promotor</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button class="hist-add-btn" onclick="abrirRegistroDia()">➕ Registrar dia</button>
+                <button class="btn-fechar-painel" onclick="closeHist()">✕ Fechar</button>
+            </div>
+        </div>
+        <div id="histFormWrap" style="display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;margin-bottom:10px;">📅 Registrar vendas do dia</div>
+            <div style="display:grid;grid-template-columns:160px 1fr;gap:10px;margin-bottom:12px;">
+                <div>
+                    <label style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;display:block;margin-bottom:4px;">Data</label>
+                    <input type="date" id="histData" style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:7px;font-family:inherit;font-size:12px;width:100%;">
+                </div>
+            </div>
+            <div id="histInputsPromotores"></div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+                <button onclick="salvarDia()" style="background:var(--success-dark);color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:800;cursor:pointer;font-family:inherit;font-size:12px;">💾 Salvar</button>
+                <button onclick="document.getElementById('histFormWrap').style.display='none'" style="background:none;border:1px solid #e2e8f0;color:#64748b;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px;">Cancelar</button>
+            </div>
+        </div>
+        <div style="background:#f8fafc;border-radius:10px;padding:16px;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;margin-bottom:10px;">📊 Evolução acumulada da equipe</div>
+            <div class="hist-chart-wrap"><canvas id="chartHistEquipe"></canvas></div>
+        </div>
+        <div class="hist-grid" id="histCards"></div>
+    </div>
+</div>
+
+<!-- MODAL GESTÃO -->
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+        <h2 style="margin:0 0 4px;font-size:18px;">Configuração da Equipe</h2>
+        <p style="margin:0 0 15px;font-size:12px;color:#64748b;font-weight:600;">Mês: <span id="modalMesLabel" style="color:var(--primary);font-weight:800;"></span></p>
+        <!-- Linha 1: Meta Geral + dois cards espelho Meta/Real com edição integrada -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+
+            <!-- Meta Geral -->
+            <div style="background:#f8fafc;border:1px solid #6366f1;border-radius:8px;padding:10px;">
+                <div style="font-size:9px;font-weight:800;color:#6366f1;text-transform:uppercase;margin-bottom:6px;">🎯 Meta Geral (soma automática)</div>
+                <div id="somaMetaModal" style="width:100%;border:1.5px solid #6366f1;border-radius:6px;padding:7px 10px;font-size:22px;font-weight:900;color:#6366f1;font-family:inherit;text-align:center;background:white;">0</div>
+                <div style="font-size:9px;color:#94a3b8;font-weight:600;text-align:center;margin-top:4px;">Atualiza ao digitar as metas</div>
+            </div>
+
+            <!-- Card Reno — editar nome + meta + espelho realizado -->
+            <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:8px;padding:10px;position:relative;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                    <div style="font-size:9px;font-weight:800;color:#f97316;text-transform:uppercase;">🔥 <span id="modalLabelReno">Reno 14F</span></div>
+                    <button onclick="toggleEditReno()" id="btnEditReno" title="Editar nome" style="background:none;border:none;cursor:pointer;font-size:12px;color:#94a3b8;padding:1px 4px;border-radius:4px;transition:all 0.15s;line-height:1;" onmouseover="this.style.background='#fed7aa'" onmouseout="this.style.background='none'">✏️</button>
+                </div>
+                <!-- Edição de nome — oculta por padrão -->
+                <div id="editRenoNome" style="display:none;margin-bottom:8px;">
+                    <label style="font-size:8px;font-weight:800;color:#94a3b8;text-transform:uppercase;display:block;margin-bottom:3px;">Nome do card</label>
+                    <input type="text" id="inputLabelReno" placeholder="Ex: RENO 14F" style="width:100%;border:1.5px solid #fed7aa;border-radius:6px;padding:5px 8px;font-size:11px;font-weight:700;font-family:inherit;margin-bottom:0;">
+                </div>
+                <!-- Meta editável -->
+                <div style="font-size:8px;font-weight:800;color:#94a3b8;text-transform:uppercase;margin-bottom:3px;">META</div>
+                <input type="number" id="metaRenoInput" min="0" oninput="atualizarEspelhosModal()" style="width:100%;border:1.5px solid #f97316;border-radius:6px;padding:5px 10px;font-size:18px;font-weight:900;color:#f97316;font-family:inherit;text-align:center;margin-bottom:8px;">
+                <!-- Espelho realizado (soma automática coluna RENO) -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+                    <div style="background:white;border-radius:6px;padding:6px;text-align:center;">
+                        <div style="font-size:7px;font-weight:800;color:#f97316;text-transform:uppercase;margin-bottom:2px;">META</div>
+                        <div style="font-size:16px;font-weight:900;color:#f97316;" id="modalRenoMeta">0</div>
+                    </div>
+                    <div style="background:#f0fdf4;border-radius:6px;padding:6px;text-align:center;">
+                        <div style="font-size:7px;font-weight:800;color:#059669;text-transform:uppercase;margin-bottom:2px;">REAL</div>
+                        <div style="font-size:16px;font-weight:900;color:#059669;" id="modalRenoReal">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card A6 Pro — editar nome + meta + espelho realizado -->
+            <div style="background:#ecfeff;border:1.5px solid #a5f3fc;border-radius:8px;padding:10px;position:relative;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                    <div style="font-size:9px;font-weight:800;color:#06b6d4;text-transform:uppercase;">💎 <span id="modalLabelA6Pro">A6 Pro</span></div>
+                    <button onclick="toggleEditA6Pro()" id="btnEditA6Pro" title="Editar nome" style="background:none;border:none;cursor:pointer;font-size:12px;color:#94a3b8;padding:1px 4px;border-radius:4px;transition:all 0.15s;line-height:1;" onmouseover="this.style.background='#a5f3fc'" onmouseout="this.style.background='none'">✏️</button>
+                </div>
+                <!-- Edição de nome — oculta por padrão -->
+                <div id="editA6ProNome" style="display:none;margin-bottom:8px;">
+                    <label style="font-size:8px;font-weight:800;color:#94a3b8;text-transform:uppercase;display:block;margin-bottom:3px;">Nome do card</label>
+                    <input type="text" id="inputLabelA6Pro" placeholder="Ex: META A6 PRO" style="width:100%;border:1.5px solid #a5f3fc;border-radius:6px;padding:5px 8px;font-size:11px;font-weight:700;font-family:inherit;margin-bottom:0;">
+                </div>
+                <!-- Meta editável -->
+                <div style="font-size:8px;font-weight:800;color:#94a3b8;text-transform:uppercase;margin-bottom:3px;">META</div>
+                <input type="number" id="metaA5Input" min="0" oninput="atualizarEspelhosModal()" style="width:100%;border:1.5px solid #06b6d4;border-radius:6px;padding:5px 10px;font-size:18px;font-weight:900;color:#06b6d4;font-family:inherit;text-align:center;margin-bottom:8px;">
+                <!-- Espelho realizado (soma automática coluna A6 PRO) -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+                    <div style="background:white;border-radius:6px;padding:6px;text-align:center;">
+                        <div style="font-size:7px;font-weight:800;color:#06b6d4;text-transform:uppercase;margin-bottom:2px;">META</div>
+                        <div style="font-size:16px;font-weight:900;color:#06b6d4;" id="modalA6Meta">0</div>
+                    </div>
+                    <div style="background:#f0fdf4;border-radius:6px;padding:6px;text-align:center;">
+                        <div style="font-size:7px;font-weight:800;color:#059669;text-transform:uppercase;margin-bottom:2px;">REAL</div>
+                        <div style="font-size:16px;font-weight:900;color:#059669;" id="modalA6Real">0</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div style="background:#f0fdf4;border:1px solid #6ee7b7;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#065f46;font-weight:700;display:flex;align-items:center;gap:8px;">
+            🏖️ <span>Promotor em <b>FÉRIAS</b> não entra nos cálculos de metas e atingimento da equipe.</span>
+        </div>
+        <div style="display:grid;grid-template-columns:2fr 0.7fr 0.7fr 0.7fr 0.7fr 1.3fr 90px;gap:6px;padding:8px;font-weight:bold;font-size:10px;color:#64748b;text-align:center;background:#f8fafc;border-radius:6px;">
+            <div style="text-align:left;">NOME</div><div>CAPA</div><div>META</div><div>REAL</div><div>RENO</div>
+            <div style="color:var(--a5pro);" id="colHeaderA6Pro">A6 PRO</div><div>FÉRIAS</div>
+        </div>
+        <div id="formLista" style="margin-top:10px;"></div>
+        <button onclick="addRow()" style="margin:15px 0;padding:10px;cursor:pointer;width:100%;border:1px dashed #cbd5e1;border-radius:8px;background:#f8fafc;font-weight:700;font-family:inherit;">+ Adicionar Promotor</button>
+        <button class="btn-save" onclick="saveAll()">SALVAR E ATUALIZAR</button>
+        <button onclick="closeModal()" style="background:none;border:none;color:#64748b;width:100%;margin-top:10px;cursor:pointer;font-size:12px;font-family:inherit;">Cancelar</button>
+    </div>
+</div>
+
+<!-- MODAL PAINEL -->
+<div id="painelModal" class="modal-overlay">
+    <div class="painel-content">
+        <div class="painel-header">
+            <div>
+                <div class="painel-title">🦅 PAINEL GERAL — FÊNIX DO OESTE &nbsp;<span id="painelMes" style="color:var(--primary)"></span></div>
+                <div class="painel-sub">Atualizado em tempo real</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR</button>
+                <button class="btn-fechar-painel" onclick="closePainel()">✕ Fechar</button>
+            </div>
+        </div>
+        <div id="painelTabela"></div>
+    </div>
+</div>
+
+<!-- MODAL COMPARATIVO -->
+<div id="compModal" class="modal-overlay">
+    <div class="comp-content">
+        <div class="comp-header">
+            <div>
+                <div class="comp-title">📅 HISTÓRICO — EVOLUÇÃO POR PROMOTOR</div>
+                <div class="painel-sub">Comparativo de atingimento mês a mês em 2026</div>
+            </div>
+            <button class="btn-fechar-painel" onclick="closeComparativo()">✕ Fechar</button>
+        </div>
+        <div id="compTabela"></div>
+    </div>
+</div>
+
+<!-- MODAL WHATSAPP -->
+<div id="wppModal" class="modal-overlay">
+    <div class="wpp-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div>
+                <div style="font-size:16px;font-weight:900;color:#0f172a;">📲 Exportar para WhatsApp</div>
+                <div style="font-size:11px;color:#64748b;font-weight:600;margin-top:2px;">Copie e cole no grupo da equipe</div>
+            </div>
+            <button class="btn-fechar-painel" onclick="closeWpp()">✕</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <button onclick="gerarWpp('ranking')" style="background:#f1f5f9;border:none;padding:8px 14px;border-radius:8px;font-weight:800;font-size:11px;cursor:pointer;font-family:inherit;" id="wbtn-ranking">🏆 Ranking</button>
+            <button onclick="gerarWpp('diaria')" style="background:#f1f5f9;border:none;padding:8px 14px;border-radius:8px;font-weight:800;font-size:11px;cursor:pointer;font-family:inherit;" id="wbtn-diaria">⚡ Diária</button>
+            <button onclick="gerarWpp('resumo')" style="background:#f1f5f9;border:none;padding:8px 14px;border-radius:8px;font-weight:800;font-size:11px;cursor:pointer;font-family:inherit;" id="wbtn-resumo">📊 Resumo Geral</button>
+        </div>
+        <div class="wpp-preview" id="wppPreview">Selecione um formato acima...</div>
+        <button class="btn-wpp-copy" onclick="copiarWpp()">📋 COPIAR MENSAGEM</button>
+    </div>
+</div>
+
+<!-- MODAL GRÁFICOS -->
+<div id="graficosModal" class="modal-overlay">
+    <div class="graficos-content">
+        <div class="graficos-header">
+            <div>
+                <div class="graficos-title">📊 ANÁLISE — <span id="graficosMes" style="color:var(--primary)"></span></div>
+                <div class="painel-sub">Visão analítica da equipe Fênix do Oeste</div>
+            </div>
+            <button class="btn-fechar-painel" onclick="closeGraficos()">✕ Fechar</button>
+        </div>
+        <div class="graficos-tabs">
+            <button class="graf-tab active" id="gtab-performance" onclick="switchTab('performance')">🏆 Performance</button>
+            <button class="graf-tab" id="gtab-atencao" onclick="switchTab('atencao')">⚠️ Atenção</button>
+            <button class="graf-tab" id="gtab-produtos" onclick="switchTab('produtos')">📦 Produtos</button>
+            <button class="graf-tab graf-tab-sup" id="gtab-comissao" onclick="switchTab('comissao')">💰 Supervisor</button>
+            <button class="graf-tab graf-tab-pro" id="gtab-promotor" onclick="switchTab('promotor')">💵 Promotores</button>
+        </div>
+        <div id="tab-performance" class="graf-panel active">
+            <div class="insight-grid" id="insightPerf"></div>
+            <div class="chart-wrap"><canvas id="chartPerformance"></canvas></div>
+        </div>
+        <div id="tab-atencao" class="graf-panel">
+            <div class="insight-grid" id="insightAtencao"></div>
+            <div class="chart-wrap"><canvas id="chartAtencao"></canvas></div>
+        </div>
+        <div id="tab-produtos" class="graf-panel">
+            <div class="insight-grid" id="insightProd"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:8px;">
+                <div><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;margin-bottom:10px;">Vendas por produto</div><div class="chart-wrap-sm"><canvas id="chartProdDonut"></canvas></div></div>
+                <div><div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;margin-bottom:10px;">Reno + A6 Pro por promotor</div><div class="chart-wrap-sm"><canvas id="chartProdBar"></canvas></div></div>
+            </div>
+        </div>
+        <!-- ABA COMISSÃO SUPERVISOR -->
+        <div id="tab-comissao" class="graf-panel">
+            <div id="comissaoConteudo"></div>
+        </div>
+        <!-- ABA COMISSÃO PROMOTORES -->
+        <div id="tab-promotor" class="graf-panel">
+            <div id="comissaoPromotorConteudo"></div>
+        </div>
+    </div>
+</div>
+
+<!-- REGRAS EDITÁVEIS POPOVER -->
+<div class="regras-popover" id="regrasPopover">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="margin:0;font-size:15px;font-weight:900;color:#0f172a;">✏️ Editar Regras de Comissão</h3>
+        <button onclick="closeRegrasPopover()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;line-height:1;">×</button>
+    </div>
+    <div class="regra-section">Limites de Nível (Varejo / Operadora)</div>
+    <div class="regras-grid">
+        <div class="regra-item"><label>Varejo — min. Nível 2 (unid.)</label><input type="number" id="reg_varejo_nivel2" value="25" min="1"></div>
+        <div class="regra-item"><label>Operadora — min. Nível 2 (unid.)</label><input type="number" id="reg_op_nivel2" value="15" min="1"></div>
+    </div>
+    <div class="regra-section">Comissão Nível 1 (R$)</div>
+    <div class="regras-grid">
+        <div class="regra-item"><label>A6x</label><input type="number" id="reg_n1_a6x" value="0.50" step="0.10" min="0"></div>
+        <div class="regra-item"><label>A40/A5</label><input type="number" id="reg_n1_a40" value="1.50" step="0.10" min="0"></div>
+        <div class="regra-item"><label>A58</label><input type="number" id="reg_n1_a58" value="2.00" step="0.10" min="0"></div>
+        <div class="regra-item"><label>A60/A79/A5 5G</label><input type="number" id="reg_n1_a60" value="4.00" step="0.10" min="0"></div>
+        <div class="regra-item"><label>Reno 11F</label><input type="number" id="reg_n1_reno11f" value="9.00" step="0.10" min="0"></div>
+        <div class="regra-item"><label>A5 Pro / A6 Pro</label><input type="number" id="reg_n1_a5pro" value="6.00" step="0.10" min="0"></div>
+        <div class="regra-item"><label>Reno 13/13F/14/14F</label><input type="number" id="reg_n1_reno14" value="14.00" step="0.10" min="0"></div>
+    </div>
+    <div class="regra-section">Comissão Nível 2 (R$)</div>
+    <div class="regras-grid">
+        <div class="regra-item"><label>A6x</label><input type="number" id="reg_n2_a6x" value="1.50" step="0.10" min="0"></div>
+        <div class="regra-item"><label>A40/A5</label><input type="number" id="reg_n2_a40" value="3.00" step="0.10" min="0"></div>
+        <div class="regra-item"><label>A58</label><input type="number" id="reg_n2_a58" value="4.00" step="0.10" min="0"></div>
+        <div class="regra-item"><label>A60/A79/A5 5G</label><input type="number" id="reg_n2_a60" value="8.00" step="0.10" min="0"></div>
+        <div class="regra-item"><label>Reno 11F</label><input type="number" id="reg_n2_reno11f" value="18.00" step="0.10" min="0"></div>
+        <div class="regra-item"><label>A5 Pro / A6 Pro</label><input type="number" id="reg_n2_a5pro" value="12.00" step="0.10" min="0"></div>
+        <div class="regra-item"><label>Reno 13/13F/14/14F</label><input type="number" id="reg_n2_reno14" value="28.00" step="0.10" min="0"></div>
+    </div>
+    <div class="regra-section">Incentivo Adicional (A6 Pro + Reno)</div>
+    <div class="regras-grid">
+        <div class="regra-item"><label>Mínimo de vendas (unid.)</label><input type="number" id="reg_inc_min" value="7" min="1"></div>
+        <div class="regra-item"><label>Valor do incentivo (R$)</label><input type="number" id="reg_inc_val" value="10.00" step="0.50" min="0"></div>
+    </div>
+    <button onclick="salvarRegras()" style="background:var(--success-dark);color:white;border:none;padding:12px;width:100%;border-radius:8px;font-weight:800;cursor:pointer;font-family:inherit;font-size:13px;margin-top:8px;">💾 Salvar Regras Supervisor</button>
+</div>
+
+<!-- REGRAS PROMOTOR POPOVER -->
+<div class="regras-popover" id="regrasPromotorPopover">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="margin:0;font-size:15px;font-weight:900;color:#0f172a;">✏️ Editar Regras — Comissão Promotores</h3>
+        <button onclick="closeRegrasPromotorPopover()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;line-height:1;">×</button>
+    </div>
+    <div class="regra-section">Limites de Nível (Varejo / Operadora)</div>
+    <div class="regras-grid">
+        <div class="regra-item"><label>Varejo — min. Nível 2 (unid.)</label><input type="number" id="preg_varejo_nivel2" value="25" min="1"></div>
+        <div class="regra-item"><label>Operadora — min. Nível 2 (unid.)</label><input type="number" id="preg_op_nivel2" value="15" min="1"></div>
+    </div>
+    <div class="regra-section">Comissão Nível 1 — por unidade (R$)</div>
+    <div class="regras-grid">
+        <div class="regra-item"><label>A6x</label><input type="number" id="preg_n1_a6x" value="3.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A40/A5</label><input type="number" id="preg_n1_a40" value="8.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A58</label><input type="number" id="preg_n1_a58" value="16.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A60/A79</label><input type="number" id="preg_n1_a60" value="32.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A5 (5G)</label><input type="number" id="preg_n1_a5g" value="40.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>Reno11F / A5 Pro / A6 Pro</label><input type="number" id="preg_n1_reno11f" value="56.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>Reno 13F / 14F</label><input type="number" id="preg_n1_reno13f" value="144.00" step="1" min="0"></div>
+        <div class="regra-item"><label>Reno 13 / 14</label><input type="number" id="preg_n1_reno14" value="160.00" step="1" min="0"></div>
+    </div>
+    <div class="regra-section">Comissão Nível 2 — por unidade (R$)</div>
+    <div class="regras-grid">
+        <div class="regra-item"><label>A6x</label><input type="number" id="preg_n2_a6x" value="6.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A40/A5</label><input type="number" id="preg_n2_a40" value="10.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A58</label><input type="number" id="preg_n2_a58" value="20.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A60/A79</label><input type="number" id="preg_n2_a60" value="40.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>A5 (5G)</label><input type="number" id="preg_n2_a5g" value="50.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>Reno11F / A5 Pro / A6 Pro</label><input type="number" id="preg_n2_reno11f" value="70.00" step="0.50" min="0"></div>
+        <div class="regra-item"><label>Reno 13F / 14F</label><input type="number" id="preg_n2_reno13f" value="180.00" step="1" min="0"></div>
+        <div class="regra-item"><label>Reno 13 / 14</label><input type="number" id="preg_n2_reno14" value="200.00" step="1" min="0"></div>
+    </div>
+    <div class="regra-section">Incentivo Adicional Promotor (A6 Pro + Reno)</div>
+    <div class="regras-grid">
+        <div class="regra-item"><label>Faixa 1 — mín. unidades</label><input type="number" id="preg_inc1_min" value="6" min="1"></div>
+        <div class="regra-item"><label>Faixa 1 — máx. unidades</label><input type="number" id="preg_inc1_max" value="10" min="1"></div>
+        <div class="regra-item"><label>Faixa 1 — Valor (R$)</label><input type="number" id="preg_inc1_val" value="50.00" step="5" min="0"></div>
+        <div class="regra-item"><label>Faixa 2 — mín. unidades</label><input type="number" id="preg_inc2_min" value="11" min="1"></div>
+        <div class="regra-item"><label>Faixa 2 — Valor (R$)</label><input type="number" id="preg_inc2_val" value="100.00" step="5" min="0"></div>
+    </div>
+    <button onclick="salvarRegrasPromotor()" style="background:#059669;color:white;border:none;padding:12px;width:100%;border-radius:8px;font-weight:800;cursor:pointer;font-family:inherit;font-size:13px;margin-top:8px;">💾 Salvar Regras Promotores</button>
+</div>
+
+<!-- MODAL DETALHE PROMOTOR -->
+<div class="prom-detail-overlay" id="promDetailOverlay" onclick="fecharDetalhePromotor(event)">
+    <div class="prom-detail-box" onclick="event.stopPropagation()" style="width:640px;">
+        <!-- Header -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+            <div>
+                <div style="font-size:17px;font-weight:900;color:#0f172a;" id="promDetailNome">—</div>
+                <div style="font-size:11px;color:#64748b;font-weight:600;margin-top:2px;" id="promDetailSub"></div>
+            </div>
+            <button class="prom-detail-close" onclick="fecharDetalhePromotor()">✕</button>
+        </div>
+        <!-- Mini cards -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0;">
+            <div style="background:#f8fafc;border-radius:10px;padding:10px;text-align:center;border-top:3px solid #6366f1;">
+                <div style="font-size:8px;font-weight:800;color:#6366f1;text-transform:uppercase;margin-bottom:4px;">Nível</div>
+                <div style="font-size:20px;font-weight:900;color:#6366f1;" id="pdNivel">—</div>
+            </div>
+            <div style="background:#f8fafc;border-radius:10px;padding:10px;text-align:center;border-top:3px solid #10b981;">
+                <div style="font-size:8px;font-weight:800;color:#10b981;text-transform:uppercase;margin-bottom:4px;">Base</div>
+                <div style="font-size:20px;font-weight:900;color:#10b981;" id="pdBase">R$ 0,00</div>
+            </div>
+            <div style="background:#f8fafc;border-radius:10px;padding:10px;text-align:center;border-top:3px solid #059669;">
+                <div style="font-size:8px;font-weight:800;color:#059669;text-transform:uppercase;margin-bottom:4px;">Total c/ incentivo</div>
+                <div style="font-size:20px;font-weight:900;color:#059669;" id="pdTotal">R$ 0,00</div>
+            </div>
+        </div>
+        <!-- Nota nível -->
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#1e40af;font-weight:600;" id="pdNivelNota"></div>
+        <!-- Tabela produtos com qtd editável -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <div style="font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:0.4px;">Detalhamento por produto — digite as quantidades</div>
+            <span style="font-size:10px;color:#94a3b8;font-weight:600;">🔁 Reno e A6 Pro somam automaticamente</span>
+        </div>
+        <table class="prod-table" id="pdTabelaProdutos">
+            <thead><tr>
+                <th style="text-align:left;">Produto</th>
+                <th style="text-align:center;">Qtd.</th>
+                <th style="text-align:center;">R$/unid. (N<span id="pdNivelNum">1</span>)</th>
+                <th style="text-align:right;">Comissão</th>
+            </tr></thead>
+            <tbody id="pdLinhas"></tbody>
+            <tfoot id="pdRodape"></tfoot>
+        </table>
+        <!-- Incentivo adicional -->
+        <div style="margin-top:12px;" id="pdIncentivoWrap"></div>
+    </div>
+</div>
+
+<!-- POPOVER EDITAR INCENTIVO SUPERVISOR -->
+<div class="inc-inline-pop" id="popIncSup">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:11px;font-weight:800;color:#0f172a;">✏️ Incentivo Supervisor</div>
+        <button onclick="closeIncSup()" style="background:none;border:none;cursor:pointer;font-size:16px;color:#94a3b8;">×</button>
+    </div>
+    <label>Mín. Reno+A5Pro/A6Pro (unid.)</label>
+    <input type="number" id="is_min" min="1">
+    <label>Valor do incentivo (R$)</label>
+    <input type="number" id="is_val" step="0.50" min="0">
+    <button onclick="salvarIncSup()" style="background:var(--success-dark);color:white;border:none;padding:9px;width:100%;border-radius:7px;font-weight:800;cursor:pointer;font-family:inherit;font-size:12px;">💾 Salvar</button>
+</div>
+
+<!-- POPOVER EDITAR INCENTIVO PROMOTOR F1 -->
+<div class="inc-inline-pop" id="popIncProF1">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:11px;font-weight:800;color:#0f172a;">✏️ Incentivo Promotor — Faixa 1</div>
+        <button onclick="closeIncProF1()" style="background:none;border:none;cursor:pointer;font-size:16px;color:#94a3b8;">×</button>
+    </div>
+    <label>Mín. Reno+A5Pro/A6Pro (unid.)</label>
+    <input type="number" id="if1_min" min="1">
+    <label>Máx. (unid.)</label>
+    <input type="number" id="if1_max" min="1">
+    <label>Valor do incentivo (R$)</label>
+    <input type="number" id="if1_val" step="5" min="0">
+    <button onclick="salvarIncProF1()" style="background:var(--success-dark);color:white;border:none;padding:9px;width:100%;border-radius:7px;font-weight:800;cursor:pointer;font-family:inherit;font-size:12px;">💾 Salvar</button>
+</div>
+
+<!-- POPOVER EDITAR INCENTIVO PROMOTOR F2 -->
+<div class="inc-inline-pop" id="popIncProF2">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:11px;font-weight:800;color:#0f172a;">✏️ Incentivo Promotor — Faixa 2</div>
+        <button onclick="closeIncProF2()" style="background:none;border:none;cursor:pointer;font-size:16px;color:#94a3b8;">×</button>
+    </div>
+    <label>Mín. Reno+A5Pro/A6Pro (unid.)</label>
+    <input type="number" id="if2_min" min="1">
+    <label>Valor do incentivo (R$)</label>
+    <input type="number" id="if2_val" step="5" min="0">
+    <button onclick="salvarIncProF2()" style="background:var(--success-dark);color:white;border:none;padding:9px;width:100%;border-radius:7px;font-weight:800;cursor:pointer;font-family:inherit;font-size:12px;">💾 Salvar</button>
+</div>
+
+<script>
+// ══ BASE ══
+const meses=["JANEIRO","FEVEREIRO","MARÇO","ABRIL","MAIO","JUNHO","JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"];
+const mesesAbrev=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+const STORAGE_PREFIX='fenixData2026_mes_';
+
+const defaultPromotores=()=>[
+    {nome:"Erika Aparecida Maneia De Oliveira",capa:367,meta:55,real:0,reno:0,a5:0,ferias:false},
+    {nome:"Núbia De Cássia Viana",capa:200,meta:40,real:0,reno:0,a5:0,ferias:false},
+    {nome:"Thais Almeida Otoni",capa:321,meta:50,real:0,reno:0,a5:0,ferias:false},
+    {nome:"Dabila Jormane Souza Silva",capa:195,meta:33,real:0,reno:0,a5:0,ferias:false},
+    {nome:"Elias Andrade De Almeida Alves",capa:309,meta:43,real:0,reno:0,a5:0,ferias:false},
+    {nome:"Diego De Souza Alle",capa:323,meta:45,real:0,reno:0,a5:0,ferias:false},
+    {nome:"Dennas Pereira Prates",capa:290,meta:46,real:0,reno:0,a5:0,ferias:false},
+    {nome:"Isaac Magno Soares De Souza",capa:248,meta:45,real:0,reno:0,a5:0,ferias:false},
+    {nome:"Erika Priscila Razzano Da Silva",capa:279,meta:42,real:0,reno:0,a5:0,ferias:false},
+    {nome:"Gabriela Borges De Oliveira",capa:253,meta:40,real:0,reno:0,a5:0,ferias:false},
+    {nome:"Taynara Roberta Ferreira",capa:280,meta:39,real:0,reno:0,a5:0,ferias:false},
+    {nome:"Nicole Victoria De Souza Soares",capa:234,meta:35,real:0,reno:0,a5:0,ferias:false},
+    {nome:"Marcos Vinicius Joseph Dos Santos",capa:380,meta:53,real:0,reno:0,a5:0,ferias:false},
+    {nome:"Thais De Cássia Rezende Silva",capa:200,meta:32,real:0,reno:0,a5:0,ferias:false},
+    {nome:"Beatriz Diniz Gonçalves",capa:193,meta:31,real:0,reno:0,a5:0,ferias:false},
+    {nome:"Álax felicidade",capa:1,meta:0,real:0,reno:0,a5:0,ferias:false}
+];
+
+function loadMesData(mesIdx){
+    const saved=localStorage.getItem(STORAGE_PREFIX+mesIdx);
+    if(saved){const d=JSON.parse(saved);if(d.promotores)d.promotores=d.promotores.map(p=>({ferias:false,...p}));return d;}
+    if(mesIdx===new Date().getMonth()){
+        const leg=localStorage.getItem('fenixData2026_Final');
+        if(leg){const d=JSON.parse(leg);if(d.promotores)d.promotores=d.promotores.map(p=>({ferias:false,...p}));return d;}
+    }
+    return{metaGeral:629,metaReno:69,metaA5:69,promotores:defaultPromotores()};
+}
+function saveMesData(mesIdx,data){
+    localStorage.setItem(STORAGE_PREFIX+mesIdx,JSON.stringify(data));
+    if(window._fbSet)window._fbSet('fenix2026/mes_'+mesIdx,data)
+        .then(()=>showSync('✅ Salvo na nuvem','verde')).catch(()=>showSync('⚠️ Salvo local','amarelo'));
+}
+function showSync(msg,tipo){
+    const el=document.getElementById('syncStatus');if(!el)return;
+    el.textContent=msg;el.style.color=tipo==='verde'?'#10b981':'#f59e0b';
+    el.style.opacity='1';setTimeout(()=>el.style.opacity='0',3000);
+}
+function setupFirebaseSync(){
+    if(!window._fbListen)return;
+    for(let m=0;m<12;m++){
+        (function(mi){window._fbListen('fenix2026/mes_'+mi,(data)=>{if(!data)return;if(data.promotores)data.promotores=data.promotores.map(p=>({ferias:false,...p}));localStorage.setItem(STORAGE_PREFIX+mi,JSON.stringify(data));if(mi===mesSelecionado){fenixData=data;render();}});})(m);
+    }
+    window._fbListen('fenix2026/banner',(data)=>{if(!data)return;bannerData=data;renderBanner();localStorage.setItem('fenixBanner2026',JSON.stringify(data));});
+    window._fbListen('fenix2026/cardLabels',(data)=>{if(!data)return;cardLabels={...cardLabels,...data};localStorage.setItem('fenixCardLabels',JSON.stringify(cardLabels));renderCardLabels();});
+    window._fbListen('fenix2026/regrasComissao',(data)=>{if(!data)return;regrasComissao={...regrasComissao,...data};localStorage.setItem('fenixRegrasComissao',JSON.stringify(regrasComissao));});
+    window._fbListen('fenix2026/regrasPromotor',(data)=>{if(!data)return;regrasPromotor={...regrasPromotor,...data};localStorage.setItem('fenixRegrasPromotor',JSON.stringify(regrasPromotor));});
+}
+
+let mesSelecionado=new Date().getMonth();
+let fenixData=loadMesData(mesSelecionado);
+
+// ── Labels editáveis dos cards de topo ──
+let cardLabels=JSON.parse(localStorage.getItem('fenixCardLabels'))||{reno:'RENO 14F',a6pro:'META A6 PRO',metaReno:69,metaA6Pro:69};
+
+function renderCardLabels(){
+    const el1=document.getElementById('labelReno');if(el1)el1.textContent=cardLabels.reno||'RENO 14F';
+    const el2=document.getElementById('labelA6Pro');if(el2)el2.textContent=cardLabels.a6pro||'META A6 PRO';
+    const ml1=document.getElementById('modalLabelReno');if(ml1)ml1.textContent=cardLabels.reno||'RENO 14F';
+    const ml2=document.getElementById('modalLabelA6Pro');if(ml2)ml2.textContent=cardLabels.a6pro||'A6 Pro';
+    const ch=document.getElementById('colHeaderA6Pro');if(ch)ch.textContent=cardLabels.a6pro||'A6 PRO';
+}
+renderCardLabels();
+
+function selecionarMes(idx){
+    mesSelecionado=idx;fenixData=loadMesData(idx);atualizarHeader();
+    document.querySelectorAll('.month-tab').forEach((b,i)=>b.classList.toggle('active',i===idx));
+    render();
+}
+function atualizarHeader(){
+    const label=meses[mesSelecionado]+' '+new Date().getFullYear();
+    document.getElementById('mesAtual').innerText=label;
+    const ml=document.getElementById('modalMesLabel');if(ml)ml.innerText=label;
+}
+atualizarHeader();
+document.querySelectorAll('.month-tab').forEach((b,i)=>b.classList.toggle('active',i===mesSelecionado));
+
+// ══ CÁLCULOS ══
+function getDiasUteisRestantes(){
+    const hoje=new Date(),ano=hoje.getFullYear(),mc=hoje.getMonth();
+    const ultimo=new Date(ano,mesSelecionado+1,0);
+    let inicio=mesSelecionado===mc?new Date(ano,mesSelecionado,hoje.getDate()):new Date(ano,mesSelecionado,1);
+    let c=0;for(let d=new Date(inicio);d<=ultimo;d.setDate(d.getDate()+1))if(d.getDay()!==0)c++;
+    return Math.max(c,1);
+}
+function getTotalDiasUteis(mesIdx){
+    const ano=new Date().getFullYear(),ultimo=new Date(ano,mesIdx+1,0);
+    let c=0;for(let d=new Date(ano,mesIdx,1);d<=ultimo;d.setDate(d.getDate()+1))if(d.getDay()!==0)c++;
+    return Math.max(c,1);
+}
+function calcDiaria(meta,real,dias){if(!meta||meta<=0)return 0;const f=meta-real;if(f<=0)return 0;return Math.ceil(f/dias);}
+function calcPct(real,meta){if(!meta||meta<=0)return 0;return Math.ceil((real/meta)*100);}
+function scoreRanking(p,dias){if(p.ferias||!p.meta||p.meta===0)return -Infinity;return(p.real/p.meta)*100-(calcDiaria(p.meta,p.real,dias)*5);}
+function primeiroNome(nome){const p=nome.trim().split(' ').filter(Boolean);return p.length===1?p[0]:p[0]+' '+p[1];}
+function promAtivos(){return fenixData.promotores.filter(p=>!p.ferias);}
+
+// ══ ALERTA ══
+function atualizarAlerta(realTotal,metaGeral,dias){
+    const el=document.getElementById('alertaRisco');
+    const icon=document.getElementById('alertaIcon');
+    const titulo=document.getElementById('alertaTitulo');
+    const desc=document.getElementById('alertaDesc');
+    if(!metaGeral||metaGeral===0){el.classList.add('hidden');return;}
+    const pct=realTotal/metaGeral;
+    const totalDias=getTotalDiasUteis(mesSelecionado);
+    const diasPassados=totalDias-dias;
+    const progEsperado=diasPassados/totalDias;
+    el.classList.remove('hidden','critico','atencao','otimo');
+    if(pct===0&&diasPassados>3){el.classList.add('critico');icon.textContent='🚨';titulo.textContent='Nenhuma venda registrada ainda!';desc.textContent=`Já se passaram ${diasPassados} dias úteis. Atualize os dados da equipe.`;}
+    else if(pct<0.30&&progEsperado>0.40){el.classList.add('critico');icon.textContent='🚨';titulo.textContent=`Situação crítica — apenas ${Math.round(pct*100)}% da meta atingida`;desc.textContent=`Nesse ritmo a equipe encerrará o mês com ~${Math.round(pct*100/progEsperado)}% da meta.`;}
+    else if(pct<0.55&&progEsperado>0.55){el.classList.add('atencao');icon.textContent='⚠️';titulo.textContent=`Atenção — ${Math.round(pct*100)}% da meta, abaixo do esperado`;desc.textContent=`Projeção: ~${Math.round(pct*100/Math.max(progEsperado,0.01))}% ao fim do mês. Faltam ${metaGeral-realTotal} vendas.`;}
+    else if(pct>=0.95){el.classList.add('otimo');el.style.background='linear-gradient(135deg,#f0fdf4,#dcfce7)';el.style.border='2px solid #86efac';icon.textContent='🏆';titulo.textContent=`Excelente! ${Math.round(pct*100)}% da meta atingida`;desc.textContent=pct>=1?'Meta batida! 🎉 Continue acelerando.':`Faltam apenas ${metaGeral-realTotal} vendas para bater a meta!`;}
+    else{el.classList.add('hidden');}
+}
+
+// ══ EDIÇÃO INLINE ══
+function editNomeInline(idx){
+    const nameEl=document.getElementById(`pname_${idx}`);
+    const wrapEl=document.getElementById(`pwrap_${idx}`);
+    if(!nameEl||wrapEl.querySelector('.p-name-input'))return;
+    const current=fenixData.promotores[idx].nome;
+    const input=document.createElement('input');
+    input.type='text';input.value=current;input.className='p-name-input';
+    nameEl.replaceWith(input);input.focus();input.select();
+    const confirm=()=>{const n=input.value.trim();if(n&&n!==current){fenixData.promotores[idx].nome=n;saveMesData(mesSelecionado,fenixData);showSync('✏️ Nome atualizado','verde');}render();};
+    input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();confirm();}if(e.key==='Escape')render();});
+    input.addEventListener('blur',confirm);
+}
+function toggleFeriasCard(idx){fenixData.promotores[idx].ferias=!fenixData.promotores[idx].ferias;saveMesData(mesSelecionado,fenixData);render();}
+
+// ══ BANNER ══
+let bannerData=JSON.parse(localStorage.getItem('fenixBanner2026'))||{titulo:'🏆 PREMIAÇÃO ESPECIAL: LINHA RENO + A6 PRO',desc:'6 a 10 aparelhos: <b>+ R$ 50,00</b> | 11 ou mais: <b>+ R$ 100,00 por unidade</b>'};
+function renderBanner(){document.getElementById('bannerTitulo').innerHTML=bannerData.titulo;document.getElementById('bannerDesc').innerHTML=bannerData.desc;}
+renderBanner();
+function toggleBannerEdit(e){e.stopPropagation();const p=document.getElementById('bannerPopover');if(!p.classList.contains('open')){document.getElementById('bannerTituloInput').value=bannerData.titulo.replace(/<[^>]*>/g,'');document.getElementById('bannerDescInput').value=bannerData.desc.replace(/<b>|<\/b>/g,'');p.classList.add('open');}else p.classList.remove('open');}
+function closeBannerEdit(){document.getElementById('bannerPopover').classList.remove('open');}
+function saveBanner(){bannerData.titulo=document.getElementById('bannerTituloInput').value;bannerData.desc=document.getElementById('bannerDescInput').value;localStorage.setItem('fenixBanner2026',JSON.stringify(bannerData));if(window._fbSet)window._fbSet('fenix2026/banner',bannerData);renderBanner();closeBannerEdit();}
+document.addEventListener('click',e=>{const p=document.getElementById('bannerPopover');if(p.classList.contains('open')&&!p.contains(e.target)&&!e.target.classList.contains('btn-banner-edit'))p.classList.remove('open');});
+
+// ══ MODAL GESTÃO ══
+function openModal(){
+    document.getElementById('editModal').style.display='block';
+    document.getElementById('modalMesLabel').innerText=meses[mesSelecionado]+' '+new Date().getFullYear();
+    document.getElementById('metaRenoInput').value=fenixData.metaReno||69;
+    document.getElementById('metaA5Input').value=fenixData.metaA5||69;
+    // Preenche campos de nome dos cards de topo e fecha-os
+    const ilr=document.getElementById('inputLabelReno');if(ilr)ilr.value=cardLabels.reno||'RENO 14F';
+    const ila=document.getElementById('inputLabelA6Pro');if(ila)ila.value=cardLabels.a6pro||'META A6 PRO';
+    const er=document.getElementById('editRenoNome');if(er)er.style.display='none';
+    const ea=document.getElementById('editA6ProNome');if(ea)ea.style.display='none';
+    const br=document.getElementById('btnEditReno');if(br)br.style.color='#94a3b8';
+    const ba=document.getElementById('btnEditA6Pro');if(ba)ba.style.color='#94a3b8';
+    renderForm();
+    setTimeout(()=>{atualizarSomaMeta();atualizarEspelhosModal();},50);
+}
+// Toggle visibilidade do campo de nome Reno no modal
+function toggleEditReno(){
+    const el=document.getElementById('editRenoNome');
+    const btn=document.getElementById('btnEditReno');
+    if(!el)return;
+    const aberto=el.style.display!=='none';
+    el.style.display=aberto?'none':'block';
+    btn.style.color=aberto?'#94a3b8':'#f97316';
+}
+// Toggle visibilidade do campo de nome A6Pro no modal
+function toggleEditA6Pro(){
+    const el=document.getElementById('editA6ProNome');
+    const btn=document.getElementById('btnEditA6Pro');
+    if(!el)return;
+    const aberto=el.style.display!=='none';
+    el.style.display=aberto?'none':'block';
+    btn.style.color=aberto?'#94a3b8':'#06b6d4';
+}
+// Atualiza espelhos Meta/Real dos cards no modal conforme digitação
+function atualizarEspelhosModal(){
+    // Soma das colunas Reno e A6Pro dos inputs da lista
+    let somaReno=0,somaA6=0;
+    fenixData.promotores.forEach((p,i)=>{
+        const fbtn=document.getElementById('fbtn_'+i);
+        const emFerias=fbtn?fbtn.classList.contains('on'):(p.ferias||false);
+        if(!emFerias){
+            somaReno+=(parseInt(document.getElementById('re_'+i)?.value)||0);
+            somaA6+=(parseInt(document.getElementById('a_'+i)?.value)||0);
+        }
+    });
+    const metaReno=parseInt(document.getElementById('metaRenoInput')?.value)||0;
+    const metaA6=parseInt(document.getElementById('metaA5Input')?.value)||0;
+    const mr=document.getElementById('modalRenoMeta');if(mr)mr.innerText=metaReno;
+    const rr=document.getElementById('modalRenoReal');if(rr)rr.innerText=somaReno;
+    const ma=document.getElementById('modalA6Meta');if(ma)ma.innerText=metaA6;
+    const ra=document.getElementById('modalA6Real');if(ra)ra.innerText=somaA6;
+}
+function atualizarSomaMeta(){
+    let soma=0;
+    fenixData.promotores.forEach((p,i)=>{
+        const el=document.getElementById('m_'+i);
+        const fbtn=document.getElementById('fbtn_'+i);
+        const emFerias=fbtn?fbtn.classList.contains('on'):(p.ferias||false);
+        if(!emFerias&&el)soma+=parseInt(el.value)||0;
+    });
+    const el=document.getElementById('somaMetaModal');if(el)el.innerText=soma;
+    atualizarEspelhosModal();
+}
+function renderForm(){
+    let html='';
+    fenixData.promotores.forEach((p,i)=>{
+        const fc=p.ferias?'on':'off',ft=p.ferias?'🏖️ Ativo':'🏖️ Férias';
+        html+=`<div class="edit-row" id="erow_${i}" style="${p.ferias?'opacity:0.65;background:#f0fdf4;border-radius:8px;padding:4px;':''}">
+            <input type="text" value="${p.nome}" id="n_${i}">
+            <input type="number" value="${p.capa}" id="c_${i}" min="0">
+            <input type="number" value="${p.meta}" id="m_${i}" min="0" oninput="atualizarSomaMeta()">
+            <input type="number" value="${p.real}" id="r_${i}" min="0">
+            <input type="number" value="${p.reno}" id="re_${i}" min="0" oninput="atualizarEspelhosModal()">
+            <input type="number" value="${p.a5}" id="a_${i}" min="0" oninput="atualizarEspelhosModal()">
+            <div style="display:flex;gap:4px;align-items:center;">
+                <button type="button" class="btn-ferias-modal ${fc}" id="fbtn_${i}" onclick="toggleFeriasModal(${i})">${ft}</button>
+                <button type="button" class="btn-del" onclick="removeRow(${i})">×</button>
+            </div>
+        </div>`;
+    });
+    document.getElementById('formLista').innerHTML=html;
+}
+function toggleFeriasModal(i){const btn=document.getElementById(`fbtn_${i}`),row=document.getElementById(`erow_${i}`),isOn=btn.classList.contains('on');if(isOn){btn.classList.replace('on','off');btn.textContent='🏖️ Férias';row.style.cssText='';}else{btn.classList.replace('off','on');btn.textContent='🏖️ Ativo';row.style.cssText='opacity:0.65;background:#f0fdf4;border-radius:8px;padding:4px;';}atualizarSomaMeta();atualizarEspelhosModal();}
+function addRow(){fenixData.promotores.push({nome:'',capa:0,meta:0,real:0,reno:0,a5:0,ferias:false});renderForm();}
+function removeRow(i){fenixData.promotores.splice(i,1);renderForm();}
+function closeModal(){document.getElementById('editModal').style.display='none';}
+function saveAll(){
+    fenixData.metaGeral=fenixData.promotores.filter(p=>!p.ferias).reduce((a,b)=>a+(parseInt(document.getElementById('m_'+fenixData.promotores.indexOf(b))?.value)||0),0);
+    fenixData.metaReno=parseInt(document.getElementById('metaRenoInput').value)||69;
+    fenixData.metaA5=parseInt(document.getElementById('metaA5Input').value)||69;
+    fenixData.promotores=fenixData.promotores.map((p,i)=>{
+        const fbtn=document.getElementById(`fbtn_${i}`);
+        return{nome:document.getElementById(`n_${i}`).value,capa:parseInt(document.getElementById(`c_${i}`).value)||0,meta:parseInt(document.getElementById(`m_${i}`).value)||0,real:parseInt(document.getElementById(`r_${i}`).value)||0,reno:parseInt(document.getElementById(`re_${i}`).value)||0,a5:parseInt(document.getElementById(`a_${i}`).value)||0,ferias:fbtn?fbtn.classList.contains('on'):(p.ferias||false)};
+    });
+    // Salva nomes dos cards de topo
+    const ilr=document.getElementById('inputLabelReno');const ila=document.getElementById('inputLabelA6Pro');
+    if(ilr&&ilr.value.trim())cardLabels.reno=ilr.value.trim();
+    if(ila&&ila.value.trim())cardLabels.a6pro=ila.value.trim();
+    localStorage.setItem('fenixCardLabels',JSON.stringify(cardLabels));
+    if(window._fbSet)window._fbSet('fenix2026/cardLabels',cardLabels);
+    saveMesData(mesSelecionado,fenixData);closeModal();render();metasJaCelebradas=new Set(JSON.parse(localStorage.getItem('fenixCelebradas2026')||'[]'));
+}
+
+// ══ PAINEL ══
+function openPainel(){
+    const dias=getDiasUteisRestantes();
+    document.getElementById('painelMes').innerText=meses[mesSelecionado]+' '+new Date().getFullYear();
+    const sorted=[...fenixData.promotores].sort((a,b)=>scoreRanking(b,dias)-scoreRanking(a,dias));
+    const ativos=fenixData.promotores.filter(p=>!p.ferias);
+    const rT=ativos.reduce((a,b)=>a+(b.real||0),0),rnT=ativos.reduce((a,b)=>a+(b.reno||0),0),a5T=ativos.reduce((a,b)=>a+(b.a5||0),0),cT=ativos.reduce((a,b)=>a+(b.capa||0),0);
+    const somaM=ativos.filter(p=>p.meta>0).reduce((a,b)=>a+(b.meta||0),0);
+    const lReno=cardLabels.reno||'RENO';const lA6=cardLabels.a6pro||'A6 PRO';
+    const rk=['🥇','🥈','🥉'];let mi=0,rows='';
+    sorted.forEach((p,idx)=>{
+        const ef=p.ferias,sm=!p.meta||p.meta===0,pct=calcPct(p.real,p.meta),dr=ef?'—':calcDiaria(p.meta,p.real,dias);
+        const pc=ef?'pct-ferias':pct>=100?'pct-verde':pct>=50?'pct-amarelo':'pct-vermelho';
+        const pl=ef?'🏖️':pct+'%';const medal=ef?'🏖️':sm?'—':(mi<3?rk[mi++]:`${idx+1}º`);
+        if(!ef&&!sm&&!['🥇','🥈','🥉'].includes(medal)&&mi<=3)mi++;
+        rows+=`<tr class="${ef?'row-ferias':''}"><td>${medal} ${p.nome}${ef?' <small style="color:#065f46;">(Férias)</small>':''}</td><td>${p.capa}</td><td>${p.meta}</td><td>${p.real}</td><td><span class="pct-cell ${pc}">${pl}</span></td><td>${p.reno}</td><td>${p.a5}</td><td>${dr}</td></tr>`;
+    });
+    const ptc=calcPct(rT,somaM),ptcc=ptc>=100?'pct-verde':ptc>=50?'pct-amarelo':'pct-vermelho';
+    document.getElementById('painelTabela').innerHTML=`<div style="font-size:10px;color:#64748b;font-weight:700;margin-bottom:8px;">⚠️ Promotores em férias não são contabilizados nos totais.</div><table class="painel-table"><thead><tr><th>Promotor</th><th>Capa</th><th>Meta</th><th>Real</th><th>Ating.%</th><th>${lReno}</th><th>${lA6}</th><th>Diária</th></tr></thead><tbody>${rows}<tr class="painel-totais"><td>EQUIPE (ativos)</td><td>${cT}</td><td>${somaM}</td><td>${rT}</td><td><span class="pct-cell ${ptcc}">${ptc}%</span></td><td>${rnT}</td><td>${a5T}</td><td>${calcDiaria(somaM,rT,dias)}</td></tr></tbody></table>`;
+    document.getElementById('painelModal').style.display='block';
+}
+function closePainel(){document.getElementById('painelModal').style.display='none';}
+
+// ══ COMPARATIVO ══
+function openComparativo(){document.getElementById('compModal').style.display='block';buildComparativo();}
+function closeComparativo(){document.getElementById('compModal').style.display='none';}
+function buildComparativo(){
+    const todosMeses=[];for(let m=0;m<12;m++)todosMeses.push(loadMesData(m));
+    const mesesComDados=[];
+    for(let m=0;m<12;m++){const total=todosMeses[m].promotores.reduce((a,b)=>a+(b.real||0),0);if(total>0||m<=mesSelecionado)mesesComDados.push(m);}
+    const mesesVisiveis=mesesComDados.slice(0,8);
+    const nomesSet=new Set();fenixData.promotores.forEach(p=>nomesSet.add(p.nome));const nomes=[...nomesSet];
+    let headerCols='<th>Promotor</th>';
+    mesesVisiveis.forEach(m=>{headerCols+=`<th class="mes-col-hdr">${mesesAbrev[m]}</th>`;});
+    headerCols+='<th>Média</th><th>Tendência</th>';
+    let rows='';
+    nomes.forEach(nome=>{
+        let cols=`<td>${primeiroNome(nome)}</td>`;const vals=[];
+        mesesVisiveis.forEach(m=>{
+            const mesData=todosMeses[m];const p=mesData.promotores.find(x=>x.nome===nome);
+            const pct=p&&p.meta>0?calcPct(p.real,p.meta):null;vals.push(pct);
+            if(pct===null){cols+='<td style="color:#cbd5e1;">—</td>';}
+            else{const bg=pct>=100?'#dcfce7':pct>=70?'#eff6ff':pct>=50?'#fef9c3':'#fee2e2';const fc=pct>=100?'#166534':pct>=70?'#3730a3':pct>=50?'#92400e':'#991b1b';cols+=`<td><span style="background:${bg};color:${fc};font-weight:900;font-size:11px;padding:2px 7px;border-radius:5px;">${pct}%</span></td>`;}
+        });
+        const valid=vals.filter(v=>v!==null);const media=valid.length>0?Math.round(valid.reduce((a,b)=>a+b,0)/valid.length):null;
+        let trend='';
+        if(valid.length>=2){const ultimo=valid[valid.length-1],penultimo=valid[valid.length-2];if(ultimo>penultimo+5)trend=`<span class="trend-up">↑ +${ultimo-penultimo}%</span>`;else if(ultimo<penultimo-5)trend=`<span class="trend-down">↓ ${ultimo-penultimo}%</span>`;else trend=`<span class="trend-eq">→ Estável</span>`;}
+        const mediaBg=media===null?'':media>=80?'#dcfce7':media>=50?'#fef9c3':'#fee2e2';
+        const mediaFc=media===null?'#94a3b8':media>=80?'#166534':media>=50?'#92400e':'#991b1b';
+        cols+=`<td><span style="background:${mediaBg};color:${mediaFc};font-weight:900;font-size:11px;padding:2px 7px;border-radius:5px;">${media!==null?media+'%':'—'}</span></td>`;
+        cols+=`<td style="font-size:11px;">${trend||'—'}</td>`;rows+=`<tr>${cols}</tr>`;
+    });
+    let totalRow='<td style="font-weight:900;">EQUIPE</td>';
+    mesesVisiveis.forEach(m=>{
+        const d=todosMeses[m];const atv=d.promotores.filter(p=>!p.ferias);
+        const rT=atv.reduce((a,b)=>a+(b.real||0),0);
+        const somaM=atv.filter(p=>p.meta>0).reduce((a,b)=>a+(b.meta||0),0);
+        const pct=calcPct(rT,somaM);
+        const bg=pct>=100?'#dcfce7':pct>=70?'#eff6ff':pct>=50?'#fef9c3':'#fee2e2';
+        const fc=pct>=100?'#166534':pct>=70?'#3730a3':pct>=50?'#92400e':'#991b1b';
+        totalRow+=`<td><span style="background:${bg};color:${fc};font-weight:900;font-size:12px;padding:3px 8px;border-radius:5px;">${pct}%</span></td>`;
+    });
+    totalRow+='<td colspan="2"></td>';
+    document.getElementById('compTabela').innerHTML=`<table class="comp-table"><thead><tr>${headerCols}</tr></thead><tbody>${rows}<tr style="background:#f8fafc;border-top:2px solid #e2e8f0;">${totalRow}</tr></tbody></table><div style="font-size:10px;color:#94a3b8;font-weight:600;margin-top:12px;">↑ Subiu mais de 5% | ↓ Caiu mais de 5% | → Estável (variação ≤ 5%)</div>`;
+}
+
+// ══ WHATSAPP ══
+let wppTipo='ranking';
+function openWpp(){document.getElementById('wppModal').style.display='block';gerarWpp('ranking');}
+function closeWpp(){document.getElementById('wppModal').style.display='none';}
+function gerarWpp(tipo){
+    wppTipo=tipo;
+    document.querySelectorAll('[id^="wbtn-"]').forEach(b=>{b.style.background='#f1f5f9';b.style.color='#1e293b';});
+    document.getElementById('wbtn-'+tipo).style.background='#25D366';document.getElementById('wbtn-'+tipo).style.color='white';
+    const dias=getDiasUteisRestantes();const mes=meses[mesSelecionado];
+    const ativos=fenixData.promotores.filter(p=>!p.ferias);
+    const rT=ativos.reduce((a,b)=>a+(b.real||0),0);
+    const somaMetasAtivos=ativos.filter(p=>p.meta>0).reduce((a,b)=>a+(b.meta||0),0);
+    const pctEq=calcPct(rT,somaMetasAtivos);
+    const hoje=new Date().toLocaleDateString('pt-BR');let txt='';
+    if(tipo==='ranking'){
+        const sorted=[...ativos].filter(p=>p.meta>0).sort((a,b)=>scoreRanking(b,dias)-scoreRanking(a,dias));
+        const medals=['🥇','🥈','🥉'];
+        txt=`🦅 *FÊNIX DO OESTE — RANKING ${mes}*\n📅 ${hoje}\n${'─'.repeat(30)}\n\n`;
+        sorted.forEach((p,i)=>{const pct=calcPct(p.real,p.meta);const m=i<3?medals[i]:`${i+1}º`;const bar=Math.round(pct/10);const emoji=pct>=100?'🟦':pct>=70?'🟩':pct>=50?'🟨':pct>=30?'🟧':'🟥';const barra=emoji.repeat(Math.min(bar,10))+'⬜'.repeat(Math.max(10-bar,0));txt+=`${m} *${primeiroNome(p.nome)}*\n   ${barra} ${pct}%\n   📱 ${p.real}/${p.meta} vendas\n\n`;});
+        txt+=`${'─'.repeat(30)}\n🎯 *Equipe: ${rT}/${somaMetasAtivos} (${pctEq}%)*\n⚡ Diária necessária: *${calcDiaria(somaMetasAtivos,rT,dias)} vendas/dia*`;
+    } else if(tipo==='diaria'){
+        txt=`⚡ *METAS DIÁRIAS — ${mes}*\n📅 ${hoje} | ${dias} dias úteis restantes\n${'─'.repeat(30)}\n\n`;
+        const sorted=[...ativos].filter(p=>p.meta>0).sort((a,b)=>{const dA=calcDiaria(a.meta,a.real,dias);const dB=calcDiaria(b.meta,b.real,dias);if(dA===0&&dB!==0)return 1;if(dB===0&&dA!==0)return -1;return dB-dA;});
+        sorted.forEach(p=>{const dr=calcDiaria(p.meta,p.real,dias);const pct=calcPct(p.real,p.meta);const emoji=dr===0?'✅':dr<=2?'🟡':dr<=4?'🟠':'🔴';txt+=`${emoji} *${primeiroNome(p.nome)}*: ${dr} venda${dr!==1?'s':''}/dia`;if(dr===0)txt+=' (META BATIDA! 🎉)';else txt+=` | ${pct}% atingido`;txt+='\n';});
+        txt+=`\n${'─'.repeat(30)}\n🎯 Equipe precisa de *${calcDiaria(somaMetasAtivos,rT,dias)} vendas/dia* para bater a meta`;
+    } else if(tipo==='resumo'){
+        const rnT=ativos.reduce((a,b)=>a+(b.reno||0),0);const a5T=ativos.reduce((a,b)=>a+(b.a5||0),0);const cT=ativos.reduce((a,b)=>a+(b.capa||0),0);const acima80=ativos.filter(p=>p.meta>0&&calcPct(p.real,p.meta)>=80).length;
+        txt=`📊 *RESUMO GERAL — ${mes}*\n📅 ${hoje}\n${'─'.repeat(30)}\n\n🎯 *Meta da equipe:* ${somaMetasAtivos}\n📱 *Realizado:* ${rT} _(${pctEq}%)_\n⚡ *Diária necessária:* ${calcDiaria(somaMetasAtivos,rT,dias)}/dia\n\n🔥 *${cardLabels.reno||'Reno'} vendidos:* ${rnT}/${fenixData.metaReno||69}\n💎 *${cardLabels.a6pro||'A6 Pro'} vendidos:* ${a5T}/${fenixData.metaA5||69}\n📈 *Market Share:* ${calcPct(rT,cT)}%\n\n✅ *Promotores acima de 80%:* ${acima80}\n\n${'─'.repeat(30)}\n_Fênix do Oeste 🦅_`;
+    }
+    document.getElementById('wppPreview').textContent=txt;
+}
+function copiarWpp(){const txt=document.getElementById('wppPreview').textContent;navigator.clipboard.writeText(txt).then(()=>{const btn=document.querySelector('.btn-wpp-copy');btn.textContent='✅ COPIADO! Cole no WhatsApp';setTimeout(()=>btn.innerHTML='📋 COPIAR MENSAGEM',2500);}).catch(()=>{alert('Selecione o texto acima e copie manualmente (Ctrl+C)');});}
+
+// ══ GRÁFICOS ══
+let chartInstances={};
+function destroyChart(id){if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id];}}
+function openGraficos(){document.getElementById('graficosMes').innerText=meses[mesSelecionado]+' '+new Date().getFullYear();document.getElementById('graficosModal').style.display='block';switchTab('performance');}
+function closeGraficos(){document.getElementById('graficosModal').style.display='none';['chartPerformance','chartAtencao','chartProdDonut','chartProdBar'].forEach(destroyChart);}
+function switchTab(tab){
+    // Remove active de todos os tabs
+    ['performance','atencao','produtos','comissao','promotor'].forEach(t=>{
+        const el=document.getElementById('gtab-'+t);
+        if(el) el.classList.remove('active');
+    });
+    // Ativa o tab clicado
+    const activeEl=document.getElementById('gtab-'+tab);
+    if(activeEl) activeEl.classList.add('active');
+    // Troca painel
+    document.querySelectorAll('.graf-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('tab-'+tab).classList.add('active');
+    setTimeout(()=>{
+        if(tab==='performance')buildChartPerformance();
+        if(tab==='atencao')buildChartAtencao();
+        if(tab==='produtos')buildChartProdutos();
+        if(tab==='comissao')buildComissaoSupervisor();
+        if(tab==='promotor')buildComissaoPromotor();
+    },50);
+}
+function buildChartPerformance(){
+    destroyChart('chartPerformance');
+    const dias=getDiasUteisRestantes(),comMeta=promAtivos().filter(p=>p.meta>0);
+    const sorted=[...comMeta].sort((a,b)=>scoreRanking(b,dias)-scoreRanking(a,dias)).slice(0,10);
+    const labels=sorted.map(p=>primeiroNome(p.nome)),pcts=sorted.map(p=>calcPct(p.real,p.meta));
+    const colors=pcts.map(p=>p>=100?'#10b981':p>=70?'#6366f1':p>=50?'#f59e0b':'#ef4444');
+    const melhor=sorted[0],maisVendas=[...comMeta].sort((a,b)=>b.real-a.real)[0];
+    document.getElementById('insightPerf').innerHTML=`<div class="insight-card" style="border-left-color:#10b981;"><div class="i-label">🏆 Maior atingimento</div><div class="i-val" style="color:#10b981;">${calcPct(melhor?.real,melhor?.meta)}%</div><div class="i-name">${melhor?primeiroNome(melhor.nome):'—'}</div></div><div class="insight-card" style="border-left-color:#6366f1;"><div class="i-label">📦 Maior volume</div><div class="i-val" style="color:#6366f1;">${maisVendas?.real||0}</div><div class="i-name">${maisVendas?primeiroNome(maisVendas.nome):'—'}</div></div><div class="insight-card" style="border-left-color:#f59e0b;"><div class="i-label">✅ Acima de 80%</div><div class="i-val" style="color:#f59e0b;">${comMeta.filter(p=>calcPct(p.real,p.meta)>=80).length}</div><div class="i-name">promotores</div></div><div class="insight-card" style="border-left-color:#ef4444;"><div class="i-label">🎯 Bateram 100%</div><div class="i-val" style="color:#ef4444;">${comMeta.filter(p=>p.real>=p.meta).length}</div><div class="i-name">promotores</div></div>`;
+    chartInstances['chartPerformance']=new Chart(document.getElementById('chartPerformance'),{type:'bar',data:{labels,datasets:[{label:'% Atingimento',data:pcts,backgroundColor:colors,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y}% da meta`}}},scales:{y:{beginAtZero:true,max:Math.max(120,...pcts),ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#f1f5f9'}},x:{ticks:{font:{size:10}},grid:{display:false}}}}});
+}
+function buildChartAtencao(){
+    destroyChart('chartAtencao');
+    const dias=getDiasUteisRestantes(),comMeta=promAtivos().filter(p=>p.meta>0);
+    const v=comMeta.filter(p=>calcPct(p.real,p.meta)<50),am=comMeta.filter(p=>{const pct=calcPct(p.real,p.meta);return pct>=50&&pct<80;}),vd=comMeta.filter(p=>calcPct(p.real,p.meta)>=80);
+    const mD=[...comMeta].sort((a,b)=>calcDiaria(b.meta,b.real,dias)-calcDiaria(a.meta,a.real,dias))[0];
+    document.getElementById('insightAtencao').innerHTML=`<div class="insight-card" style="border-left-color:#ef4444;"><div class="i-label">🔴 Risco alto (&lt;50%)</div><div class="i-val" style="color:#ef4444;">${v.length}</div><div class="i-name">promotores</div></div><div class="insight-card" style="border-left-color:#f59e0b;"><div class="i-label">🟡 Atenção (50-79%)</div><div class="i-val" style="color:#f59e0b;">${am.length}</div><div class="i-name">promotores</div></div><div class="insight-card" style="border-left-color:#10b981;"><div class="i-label">🟢 No caminho (≥80%)</div><div class="i-val" style="color:#10b981;">${vd.length}</div><div class="i-name">promotores</div></div><div class="insight-card" style="border-left-color:#6366f1;"><div class="i-label">⚡ Maior diária</div><div class="i-val" style="color:#6366f1;">${calcDiaria(mD?.meta,mD?.real,dias)}</div><div class="i-name">${mD?primeiroNome(mD.nome):'—'}</div></div>`;
+    const all=[...comMeta].sort((a,b)=>calcPct(a.real,a.meta)-calcPct(b.real,b.meta));
+    chartInstances['chartAtencao']=new Chart(document.getElementById('chartAtencao'),{type:'bar',data:{labels:all.map(p=>primeiroNome(p.nome)),datasets:[{label:'% Atingimento',data:all.map(p=>calcPct(p.real,p.meta)),backgroundColor:all.map(p=>{const pct=calcPct(p.real,p.meta);return pct<50?'rgba(239,68,68,0.8)':pct<80?'rgba(245,158,11,0.8)':'rgba(16,185,129,0.8)';}),borderRadius:5,borderSkipped:false,yAxisID:'y'},{label:'Diária necessária',data:all.map(p=>calcDiaria(p.meta,p.real,dias)),type:'line',borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,0.1)',pointBackgroundColor:'#6366f1',pointRadius:4,tension:0.3,yAxisID:'y2'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:10},boxWidth:12}},tooltip:{mode:'index',intersect:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'#f1f5f9'}},y2:{position:'right',beginAtZero:true,ticks:{font:{size:10}},grid:{drawOnChartArea:false}},x:{ticks:{font:{size:9}},grid:{display:false}}}}});
+}
+function buildChartProdutos(){
+    destroyChart('chartProdDonut');destroyChart('chartProdBar');
+    const atv=promAtivos(),rT=atv.reduce((a,b)=>a+(b.real||0),0),rnT=atv.reduce((a,b)=>a+(b.reno||0),0),a5T=atv.reduce((a,b)=>a+(b.a5||0),0),outros=Math.max(0,rT-rnT-a5T);
+    const mR=fenixData.metaReno||69,mA=fenixData.metaA5||69;
+    const tR=[...atv].filter(p=>(p.reno||0)>0).sort((a,b)=>(b.reno||0)-(a.reno||0))[0]||null;
+    const tA=[...atv].filter(p=>(p.a5||0)>0).sort((a,b)=>(b.a5||0)-(a.a5||0))[0]||null;
+    const lReno=cardLabels.reno||'Reno';const lA6=cardLabels.a6pro||'A6 Pro';
+    document.getElementById('insightProd').innerHTML=`<div class="insight-card" style="border-left-color:var(--reno);"><div class="i-label">🔥 ${lReno} total</div><div class="i-val" style="color:var(--reno);">${rnT} <small style="font-size:13px;font-weight:700;">(${calcPct(rnT,mR)}%)</small></div><div class="i-name">de ${mR} na meta</div></div><div class="insight-card" style="border-left-color:var(--a5pro);"><div class="i-label">💎 ${lA6} total</div><div class="i-val" style="color:var(--a5pro);">${a5T} <small style="font-size:13px;font-weight:700;">(${calcPct(a5T,mA)}%)</small></div><div class="i-name">de ${mA} na meta</div></div><div class="insight-card" style="border-left-color:var(--reno);"><div class="i-label">⭐ Top ${lReno}</div><div class="i-val" style="color:var(--reno);">${tR?.reno||0}</div><div class="i-name">${tR?primeiroNome(tR.nome):'—'}</div></div><div class="insight-card" style="border-left-color:var(--a5pro);"><div class="i-label">⭐ Top ${lA6}</div><div class="i-val" style="color:var(--a5pro);">${tA?.a5||0}</div><div class="i-name">${tA?primeiroNome(tA.nome):'—'}</div></div>`;
+    chartInstances['chartProdDonut']=new Chart(document.getElementById('chartProdDonut'),{type:'doughnut',data:{labels:[lReno,lA6,'Outros'],datasets:[{data:[rnT,a5T,outros],backgroundColor:['#f97316','#06b6d4','#6366f1'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed} unid.`}}}}});
+    const top8=[...atv].sort((a,b)=>((b.reno||0)+(b.a5||0))-((a.reno||0)+(a.a5||0))).slice(0,8);
+    chartInstances['chartProdBar']=new Chart(document.getElementById('chartProdBar'),{type:'bar',data:{labels:top8.map(p=>primeiroNome(p.nome)),datasets:[{label:lReno,data:top8.map(p=>p.reno||0),backgroundColor:'#f97316',borderRadius:4},{label:lA6,data:top8.map(p=>p.a5||0),backgroundColor:'#06b6d4',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:10},boxWidth:12}}},scales:{x:{stacked:false,ticks:{font:{size:9}},grid:{display:false}},y:{beginAtZero:true,ticks:{font:{size:10}},grid:{color:'#f1f5f9'}}}}});
+}
+
+// ══════════════════════════════════════════
+//  COMISSÃO SUPERVISOR
+//  Regras: supervisor recebe por unidade vendida
+//  baseado na MÉDIA dos promotores de cada loja
+//  Nível definido pela média de vendas do promotor
+//  Supervisor recebe sobre cada unidade do promotor
+// ══════════════════════════════════════════
+// ══ REGRAS SUPERVISOR (comissão do supervisor sobre vendas médias dos promotores) ══
+let regrasComissao=JSON.parse(localStorage.getItem('fenixRegrasComissao'))||{
+    varejo_nivel2:25, op_nivel2:15,
+    n1:{a6x:0.50,a40:1.50,a58:2.00,a60:4.00,reno11f:9.00,a5pro:6.00,reno14:14.00},
+    n2:{a6x:1.50,a40:3.00,a58:4.00,a60:8.00,reno11f:18.00,a5pro:12.00,reno14:28.00},
+    inc_min:7, inc_val:10.00
+};
+
+// ══ REGRAS PROMOTOR (comissão individual por unidade vendida) ══
+// ══ REGRAS PROMOTOR — valores do PDF ══
+// Tabela N1: A6x=3 | A40/A5=8 | A58=16 | A60/A79=32 | A5(5G)=40 | Reno11F/A5Pro/A6Pro=56 | Reno13F/14F=144 | Reno13/14=160
+// Tabela N2: A6x=6 | A40/A5=10 | A58=20 | A60/A79=40 | A5(5G)=50 | Reno11F/A5Pro/A6Pro=70 | Reno13F/14F=180 | Reno13/14=200
+let regrasPromotor=JSON.parse(localStorage.getItem('fenixRegrasPromotor'))||{
+    varejo_nivel2:25, op_nivel2:15,
+    n1:{a6x:3.00,a40:8.00,a58:16.00,a60:32.00,a5g:40.00,reno11f:56.00,reno13f:144.00,reno14:160.00},
+    n2:{a6x:6.00,a40:10.00,a58:20.00,a60:40.00,a5g:50.00,reno11f:70.00,reno13f:180.00,reno14:200.00},
+    inc1_min:6,inc1_max:10,inc1_val:50.00,
+    inc2_min:11,inc2_val:100.00
+};
+
+// ── Sync / get Supervisor ──
+function getRegras(){
+    return{
+        varejo_nivel2:parseInt(document.getElementById('reg_varejo_nivel2')?.value||regrasComissao.varejo_nivel2),
+        op_nivel2:parseInt(document.getElementById('reg_op_nivel2')?.value||regrasComissao.op_nivel2),
+        n1:{a6x:parseFloat(document.getElementById('reg_n1_a6x')?.value||regrasComissao.n1.a6x),a40:parseFloat(document.getElementById('reg_n1_a40')?.value||regrasComissao.n1.a40),a58:parseFloat(document.getElementById('reg_n1_a58')?.value||regrasComissao.n1.a58),a60:parseFloat(document.getElementById('reg_n1_a60')?.value||regrasComissao.n1.a60),reno11f:parseFloat(document.getElementById('reg_n1_reno11f')?.value||regrasComissao.n1.reno11f),a5pro:parseFloat(document.getElementById('reg_n1_a5pro')?.value||regrasComissao.n1.a5pro),reno14:parseFloat(document.getElementById('reg_n1_reno14')?.value||regrasComissao.n1.reno14)},
+        n2:{a6x:parseFloat(document.getElementById('reg_n2_a6x')?.value||regrasComissao.n2.a6x),a40:parseFloat(document.getElementById('reg_n2_a40')?.value||regrasComissao.n2.a40),a58:parseFloat(document.getElementById('reg_n2_a58')?.value||regrasComissao.n2.a58),a60:parseFloat(document.getElementById('reg_n2_a60')?.value||regrasComissao.n2.a60),reno11f:parseFloat(document.getElementById('reg_n2_reno11f')?.value||regrasComissao.n2.reno11f),a5pro:parseFloat(document.getElementById('reg_n2_a5pro')?.value||regrasComissao.n2.a5pro),reno14:parseFloat(document.getElementById('reg_n2_reno14')?.value||regrasComissao.n2.reno14)},
+        inc_min:parseInt(document.getElementById('reg_inc_min')?.value||regrasComissao.inc_min),
+        inc_val:parseFloat(document.getElementById('reg_inc_val')?.value||regrasComissao.inc_val)
+    };
+}
+function syncRegrasInputs(){
+    const r=regrasComissao;const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
+    set('reg_varejo_nivel2',r.varejo_nivel2);set('reg_op_nivel2',r.op_nivel2);
+    set('reg_n1_a6x',r.n1.a6x);set('reg_n1_a40',r.n1.a40);set('reg_n1_a58',r.n1.a58);set('reg_n1_a60',r.n1.a60);set('reg_n1_reno11f',r.n1.reno11f);set('reg_n1_a5pro',r.n1.a5pro);set('reg_n1_reno14',r.n1.reno14);
+    set('reg_n2_a6x',r.n2.a6x);set('reg_n2_a40',r.n2.a40);set('reg_n2_a58',r.n2.a58);set('reg_n2_a60',r.n2.a60);set('reg_n2_reno11f',r.n2.reno11f);set('reg_n2_a5pro',r.n2.a5pro);set('reg_n2_reno14',r.n2.reno14);
+    set('reg_inc_min',r.inc_min);set('reg_inc_val',r.inc_val);
+}
+function openRegrasPopover(){syncRegrasInputs();document.getElementById('regrasPopover').classList.add('open');}
+function closeRegrasPopover(){document.getElementById('regrasPopover').classList.remove('open');}
+function salvarRegras(){
+    regrasComissao=getRegras();localStorage.setItem('fenixRegrasComissao',JSON.stringify(regrasComissao));
+    if(window._fbSet)window._fbSet('fenix2026/regrasComissao',regrasComissao);
+    closeRegrasPopover();buildComissaoSupervisor();showSync('✅ Regras Supervisor salvas!','verde');
+}
+
+// ── Sync / get Promotor ──
+function getRegrasPromotor(){
+    return{
+        varejo_nivel2:parseInt(document.getElementById('preg_varejo_nivel2')?.value||regrasPromotor.varejo_nivel2),
+        op_nivel2:parseInt(document.getElementById('preg_op_nivel2')?.value||regrasPromotor.op_nivel2),
+        n1:{a6x:parseFloat(document.getElementById('preg_n1_a6x')?.value||regrasPromotor.n1.a6x),a40:parseFloat(document.getElementById('preg_n1_a40')?.value||regrasPromotor.n1.a40),a58:parseFloat(document.getElementById('preg_n1_a58')?.value||regrasPromotor.n1.a58),a60:parseFloat(document.getElementById('preg_n1_a60')?.value||regrasPromotor.n1.a60),a5g:parseFloat(document.getElementById('preg_n1_a5g')?.value||regrasPromotor.n1.a5g),reno11f:parseFloat(document.getElementById('preg_n1_reno11f')?.value||regrasPromotor.n1.reno11f),reno13f:parseFloat(document.getElementById('preg_n1_reno13f')?.value||regrasPromotor.n1.reno13f),reno14:parseFloat(document.getElementById('preg_n1_reno14')?.value||regrasPromotor.n1.reno14)},
+        n2:{a6x:parseFloat(document.getElementById('preg_n2_a6x')?.value||regrasPromotor.n2.a6x),a40:parseFloat(document.getElementById('preg_n2_a40')?.value||regrasPromotor.n2.a40),a58:parseFloat(document.getElementById('preg_n2_a58')?.value||regrasPromotor.n2.a58),a60:parseFloat(document.getElementById('preg_n2_a60')?.value||regrasPromotor.n2.a60),a5g:parseFloat(document.getElementById('preg_n2_a5g')?.value||regrasPromotor.n2.a5g),reno11f:parseFloat(document.getElementById('preg_n2_reno11f')?.value||regrasPromotor.n2.reno11f),reno13f:parseFloat(document.getElementById('preg_n2_reno13f')?.value||regrasPromotor.n2.reno13f),reno14:parseFloat(document.getElementById('preg_n2_reno14')?.value||regrasPromotor.n2.reno14)},
+        inc1_min:parseInt(document.getElementById('preg_inc1_min')?.value||regrasPromotor.inc1_min),
+        inc1_max:parseInt(document.getElementById('preg_inc1_max')?.value||regrasPromotor.inc1_max),
+        inc1_val:parseFloat(document.getElementById('preg_inc1_val')?.value||regrasPromotor.inc1_val),
+        inc2_min:parseInt(document.getElementById('preg_inc2_min')?.value||regrasPromotor.inc2_min),
+        inc2_val:parseFloat(document.getElementById('preg_inc2_val')?.value||regrasPromotor.inc2_val)
+    };
+}
+function syncRegrasPromotorInputs(){
+    const r=regrasPromotor;const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
+    set('preg_varejo_nivel2',r.varejo_nivel2);set('preg_op_nivel2',r.op_nivel2);
+    set('preg_n1_a6x',r.n1.a6x);set('preg_n1_a40',r.n1.a40);set('preg_n1_a58',r.n1.a58);set('preg_n1_a60',r.n1.a60);set('preg_n1_a5g',r.n1.a5g);set('preg_n1_reno11f',r.n1.reno11f);set('preg_n1_reno13f',r.n1.reno13f);set('preg_n1_reno14',r.n1.reno14);
+    set('preg_n2_a6x',r.n2.a6x);set('preg_n2_a40',r.n2.a40);set('preg_n2_a58',r.n2.a58);set('preg_n2_a60',r.n2.a60);set('preg_n2_a5g',r.n2.a5g);set('preg_n2_reno11f',r.n2.reno11f);set('preg_n2_reno13f',r.n2.reno13f);set('preg_n2_reno14',r.n2.reno14);
+    set('preg_inc1_min',r.inc1_min);set('preg_inc1_max',r.inc1_max);set('preg_inc1_val',r.inc1_val);
+    set('preg_inc2_min',r.inc2_min);set('preg_inc2_val',r.inc2_val);
+}
+function openRegrasPromotorPopover(){syncRegrasPromotorInputs();document.getElementById('regrasPromotorPopover').classList.add('open');}
+function closeRegrasPromotorPopover(){document.getElementById('regrasPromotorPopover').classList.remove('open');}
+function salvarRegrasPromotor(){
+    regrasPromotor=getRegrasPromotor();localStorage.setItem('fenixRegrasPromotor',JSON.stringify(regrasPromotor));
+    if(window._fbSet)window._fbSet('fenix2026/regrasPromotor',regrasPromotor);
+    closeRegrasPromotorPopover();buildComissaoPromotor();showSync('✅ Regras Promotores salvas!','verde');
+}
+
+// ══ CÁLCULO SUPERVISOR (PDF) ══
+// Supervisor recebe comissão por UNIDADE vendida de cada promotor.
+// Nível do promotor (total real) define qual tabela usar.
+// O INCENTIVO é calculado SEPARADAMENTE com base na MÉDIA de (A5Pro+Reno) de TODOS os promotores.
+// → calcComissaoSupervResult retorna só a BASE por promotor, sem incentivo individual.
+function calcComissaoSupervResult(p, r){
+    const media     = p.real||0;
+    const nivel     = media >= r.varejo_nivel2 ? 2 : 1;
+    const tab       = nivel === 2 ? r.n2 : r.n1;
+    const vendReno  = p.reno||0;   // Reno 13/13F/14/14F → tab.reno14 (R$14/R$28)
+    const vendA6Pro = p.a5||0;     // A5Pro/A6Pro → tab.a5pro (R$6/R$12)
+    const vendOutras= Math.max(0, media - vendReno - vendA6Pro); // proxy A60 (R$4/R$8)
+    const comReno   = vendReno   * tab.reno14;
+    const comA6Pro  = vendA6Pro  * tab.a5pro;
+    const comOutras = vendOutras * tab.a60;
+    const totalBase = comReno + comA6Pro + comOutras;
+    const totalEspecial = vendReno + vendA6Pro; // usado para calcular média da equipe
+    // ⚠️ INCENTIVO NÃO É POR PROMOTOR — é calculado na buildComissaoSupervisor()
+    // com base na MÉDIA de A5Pro+Reno de TODOS os promotores ativos.
+    return{nivel,media,vendReno,vendA6Pro,vendOutras,comReno,comA6Pro,comOutras,totalBase,totalEspecial,tab};
+}
+
+// ══ INLINE INCENTIVE POPOVERS ══
+let _incPopAnchor=null;
+function closeAllIncPops(){['popIncSup','popIncProF1','popIncProF2'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('open');});}
+document.addEventListener('click',e=>{
+    if(_incPopAnchor&&!_incPopAnchor.contains(e.target)){
+        const inPop=['popIncSup','popIncProF1','popIncProF2'].some(id=>{const el=document.getElementById(id);return el&&el.contains(e.target);});
+        if(!inPop)closeAllIncPops();
+    }
+});
+function posPopover(popId,btn){
+    closeAllIncPops();
+    const pop=document.getElementById(popId);if(!pop)return;
+    const rect=btn.getBoundingClientRect();
+    pop.style.top=(rect.bottom+window.scrollY+6)+'px';
+    pop.style.left=Math.max(10,rect.left+window.scrollX-80)+'px';
+    pop.classList.add('open');_incPopAnchor=btn;
+}
+function openIncSup(btn){document.getElementById('is_min').value=regrasComissao.inc_min;document.getElementById('is_val').value=regrasComissao.inc_val;posPopover('popIncSup',btn);}
+function closeIncSup(){document.getElementById('popIncSup').classList.remove('open');}
+function salvarIncSup(){
+    regrasComissao.inc_min=parseInt(document.getElementById('is_min').value)||7;
+    regrasComissao.inc_val=parseFloat(document.getElementById('is_val').value)||10;
+    localStorage.setItem('fenixRegrasComissao',JSON.stringify(regrasComissao));
+    if(window._fbSet)window._fbSet('fenix2026/regrasComissao',regrasComissao);
+    closeIncSup();buildComissaoSupervisor();showSync('✅ Incentivo Supervisor salvo!','verde');
+}
+function openIncProF1(btn){document.getElementById('if1_min').value=regrasPromotor.inc1_min;document.getElementById('if1_max').value=regrasPromotor.inc1_max;document.getElementById('if1_val').value=regrasPromotor.inc1_val;posPopover('popIncProF1',btn);}
+function closeIncProF1(){document.getElementById('popIncProF1').classList.remove('open');}
+function salvarIncProF1(){
+    regrasPromotor.inc1_min=parseInt(document.getElementById('if1_min').value)||6;
+    regrasPromotor.inc1_max=parseInt(document.getElementById('if1_max').value)||10;
+    regrasPromotor.inc1_val=parseFloat(document.getElementById('if1_val').value)||50;
+    localStorage.setItem('fenixRegrasPromotor',JSON.stringify(regrasPromotor));
+    if(window._fbSet)window._fbSet('fenix2026/regrasPromotor',regrasPromotor);
+    closeIncProF1();buildComissaoPromotor();showSync('✅ Incentivo F1 salvo!','verde');
+}
+function openIncProF2(btn){document.getElementById('if2_min').value=regrasPromotor.inc2_min;document.getElementById('if2_val').value=regrasPromotor.inc2_val;posPopover('popIncProF2',btn);}
+function closeIncProF2(){document.getElementById('popIncProF2').classList.remove('open');}
+function salvarIncProF2(){
+    regrasPromotor.inc2_min=parseInt(document.getElementById('if2_min').value)||11;
+    regrasPromotor.inc2_val=parseFloat(document.getElementById('if2_val').value)||100;
+    localStorage.setItem('fenixRegrasPromotor',JSON.stringify(regrasPromotor));
+    if(window._fbSet)window._fbSet('fenix2026/regrasPromotor',regrasPromotor);
+    closeIncProF2();buildComissaoPromotor();showSync('✅ Incentivo F2 salvo!','verde');
+}
+
+// ══ MODAL DETALHE PROMOTOR — TODOS OS MODELOS ══
+// Produtos do PDF promotores (N1 / N2)
+// A6x: 3/6 | A40/A5: 8/10 | A58: 16/20 | A60/A79: 32/40 | A5(5G): 40/50
+// Reno11F/A5Pro/A6Pro: 56/70 | Reno13F/14F: 144/180 | Reno13/14: 160/200
+// Reno e A6Pro são preenchidos automaticamente das colunas do sistema.
+
+const PRODUTOS_PROMOTOR = [
+    {key:'a6x',    nome:'A6x',              n1:3,   n2:6,   auto:false},
+    {key:'a40',    nome:'A40 / A5 4G',       n1:8,   n2:10,  auto:false},
+    {key:'a58',    nome:'A58',              n1:16,  n2:20,  auto:false},
+    {key:'a60',    nome:'A60 / A79',        n1:32,  n2:40,  auto:false},
+    {key:'a5g',    nome:'A5 (5G)',          n1:40,  n2:50,  auto:false},
+    {key:'reno11', nome:'Reno11F / A5Pro / A6Pro', n1:56, n2:70, auto:true,  autoKey:'a6pro'},
+    {key:'reno13f',nome:'Reno 13F / 14F',  n1:144, n2:180, auto:false},
+    {key:'reno14', nome:'Reno 13 / 14',    n1:160, n2:200, auto:true,  autoKey:'reno'},
+];
+
+// Formata moeda BR: R$ 1.234,56
+function fmtBRL(v){
+    return fmtBRL(v).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+
+// Armazena qtds manuais por promotor: {nome: {key: qtd}}
+let pdQtds = {};
+let pdPromAtual = null;
+
+function pdRecalc(){
+    if(!pdPromAtual) return;
+    const p = pdPromAtual;
+    const r = regrasPromotor;
+    const total = p.real||0;
+    const nivel = total >= r.varejo_nivel2 ? 2 : 1;
+    const qs = pdQtds[p.nome]||{};
+    const lReno = cardLabels.reno||'Reno';
+    const lA6   = cardLabels.a6pro||'A6 Pro';
+
+    // Reno e A6Pro vêm automáticos do sistema
+    qs['reno14'] = p.reno||0;   // coluna RENO → Reno 13/14
+    qs['reno11'] = p.a5||0;     // coluna A6Pro → Reno11F/A5Pro/A6Pro
+    pdQtds[p.nome] = qs;
+
+    let baseTotal = 0;
+    let renoPlusA6 = 0; // para incentivo
+    const prodRows = PRODUTOS_PROMOTOR.map(prod=>{
+        const preco = nivel===2 ? prod.n2 : prod.n1;
+        const qtd   = parseInt(qs[prod.key])||0;
+        const com   = qtd * preco;
+        baseTotal  += com;
+        if(prod.key==='reno14'||prod.key==='reno11') renoPlusA6 += qtd;
+
+        const isAuto = prod.auto;
+        const destaque = com>0;
+        const inputEl = isAuto
+            ? `<span style="font-weight:900;color:#6366f1;">${qtd} <small style="font-size:9px;color:#94a3b8;">(auto)</small></span>`
+            : `<input type="number" min="0" value="${qtd}"
+                style="width:56px;border:1.5px solid ${destaque?'#10b981':'#e2e8f0'};border-radius:6px;padding:4px 6px;font-size:13px;font-weight:800;text-align:center;font-family:inherit;"
+                oninput="pdSetQtd('${prod.key}',this.value)"
+                onchange="pdSetQtd('${prod.key}',this.value)">`;
+        const prodLabel = prod.key==='reno11' ? `${lA6} / Reno11F / A5Pro` : prod.key==='reno14' ? lReno+' (Reno 13/14)' : prod.nome;
+        return `<tr class="${destaque?'prod-row-highlight':''}">
+            <td>${prodLabel}${isAuto?' <span style="background:#e0f2fe;color:#0369a1;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:4px;">automático</span>':''}</td>
+            <td style="text-align:center;">${inputEl}</td>
+            <td style="text-align:center;">${fmtBRL(preco)}</td>
+            <td style="text-align:right;${destaque?'color:#059669;font-weight:900;':'color:#94a3b8;'}">${fmtBRL(com)}</td>
+        </tr>`;
+    }).join('');
+
+    // Incentivo
+    let incentivo = 0;
+    if(renoPlusA6>=r.inc2_min) incentivo=r.inc2_val;
+    else if(renoPlusA6>=r.inc1_min) incentivo=r.inc1_val;
+    const totalFinal = baseTotal + incentivo;
+
+    // Atualiza mini-cards
+    document.getElementById('pdNivel').textContent = 'Nível '+nivel;
+    document.getElementById('pdNivelNum').textContent = nivel;
+    document.getElementById('pdBase').textContent   = fmtBRL(baseTotal);
+    document.getElementById('pdTotal').textContent  = fmtBRL(totalFinal);
+
+    // Nota nível
+    const faltaN2 = Math.max(0,r.varejo_nivel2-total);
+    document.getElementById('pdNivelNota').innerHTML = nivel===2
+        ?`<b>Nível 2 ativo</b> — ${total} vendas ≥ ${r.varejo_nivel2} (tabela maior)`
+        :`<b>Nível 1</b> — Faltam <b>${faltaN2}</b> unidades para Nível 2 (comissões maiores em todos os produtos)`;
+
+    // Tabela
+    document.getElementById('pdLinhas').innerHTML = prodRows;
+    document.getElementById('pdRodape').innerHTML = `<tr>
+        <td colspan="3" style="padding:9px 10px;text-align:left;font-weight:900;">BASE TOTAL</td>
+        <td style="padding:9px 10px;text-align:right;font-weight:900;font-size:15px;">${fmtBRL(baseTotal)}</td>
+    </tr>`;
+
+    // Incentivo bloco
+    let incHtml='';
+    if(renoPlusA6>=r.inc2_min){
+        incHtml=`<div style="background:#dcfce7;border:1px solid #86efac;border-radius:10px;padding:12px 16px;">
+            <div style="font-size:11px;font-weight:900;color:#166534;">🏆 Incentivo Faixa 2 — ≥${r.inc2_min} unid. Reno+${lA6}/A5Pro</div>
+            <div style="font-size:24px;font-weight:900;color:#059669;margin:4px 0;">${fmtBRL(incentivo)}</div>
+            <div style="font-size:10px;color:#166534;">${renoPlusA6} unidades especiais vendidas</div>
+        </div>`;
+    } else if(renoPlusA6>=r.inc1_min){
+        incHtml=`<div style="background:#fef9c3;border:1px solid #fcd34d;border-radius:10px;padding:12px 16px;">
+            <div style="font-size:11px;font-weight:900;color:#92400e;">🎁 Incentivo Faixa 1 — ${r.inc1_min}–${r.inc1_max} unid. Reno+${lA6}/A5Pro</div>
+            <div style="font-size:24px;font-weight:900;color:#92400e;margin:4px 0;">${fmtBRL(incentivo)}</div>
+            <div style="font-size:10px;color:#92400e;">${renoPlusA6} unid. especiais — faltam ${r.inc2_min-renoPlusA6} para Faixa 2 (${fmtBRL(r.inc2_val)})</div>
+        </div>`;
+    } else {
+        const falta=r.inc1_min-renoPlusA6;
+        incHtml=`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;">
+            <div style="font-size:11px;font-weight:800;color:#64748b;">Sem incentivo adicional</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:4px;">Faltam ${falta} unidade(s) Reno+${lA6}/A5Pro para Faixa 1 (${fmtBRL(r.inc1_val)})</div>
+        </div>`;
+    }
+    document.getElementById('pdIncentivoWrap').innerHTML=incHtml;
+}
+
+function pdSetQtd(key, val){
+    if(!pdPromAtual)return;
+    if(!pdQtds[pdPromAtual.nome]) pdQtds[pdPromAtual.nome]={};
+    pdQtds[pdPromAtual.nome][key]=parseInt(val)||0;
+    pdRecalc();
+}
+
+function abrirDetalhePromotor(nomeBusca){
+    const p=fenixData.promotores.find(x=>primeiroNome(x.nome)===nomeBusca);
+    if(!p)return;
+    pdPromAtual = p;
+    const pct=calcPct(p.real,p.meta);
+    document.getElementById('promDetailNome').textContent=p.nome;
+    document.getElementById('promDetailSub').textContent=meses[mesSelecionado]+' | '+p.real+' vendas ('+pct+'% da meta de '+p.meta+')';
+    // Inicializa qtds se não existir (zera manuais, auto vem do p)
+    if(!pdQtds[p.nome]) pdQtds[p.nome]={};
+    // Garante auto
+    pdQtds[p.nome]['reno14'] = p.reno||0;
+    pdQtds[p.nome]['reno11'] = p.a5||0;
+    pdRecalc();
+    document.getElementById('promDetailOverlay').classList.add('open');
+}
+function fecharDetalhePromotor(e){if(!e||e.target===document.getElementById('promDetailOverlay'))document.getElementById('promDetailOverlay').classList.remove('open');}
+
+function buildComissaoSupervisor(){
+    const r=regrasComissao;
+    const ativos=fenixData.promotores.filter(p=>!p.ferias&&parseInt(p.meta)>0);
+    const mes=meses[mesSelecionado];
+    if(ativos.length===0){document.getElementById('comissaoConteudo').innerHTML='<div style="text-align:center;padding:40px;color:#94a3b8;font-weight:700;">Nenhum promotor ativo com meta definida para '+mes+'.</div>';return;}
+    const lReno=cardLabels.reno||'Reno'; const lA6=cardLabels.a6pro||'A6 Pro';
+
+    // ── CÁLCULO CORRETO CONFORME PDF ──
+    // 1) Comissão base: por promotor, usando tabela de nível
+    // 2) Incentivo: MÉDIA de (A5Pro+Reno) de TODOS os promotores
+    //    Se MÉDIA ≥ inc_min (7 unid) → +R$10,00 para o supervisor (valor único)
+
+    let totalBase=0, totalN2=0;
+    const somaEspecial = ativos.reduce((acc,p)=>acc+((p.reno||0)+(p.a5||0)),0);
+    const mediaEspecial = ativos.length > 0 ? somaEspecial / ativos.length : 0;
+    const incentivo = mediaEspecial >= r.inc_min ? r.inc_val : 0;
+
+    const rows=ativos.map(p=>{
+        const c=calcComissaoSupervResult(p,r);
+        totalBase+=c.totalBase; if(c.nivel===2)totalN2++;
+        const nivelBg=c.nivel===2?'#dcfce7':'#fef9c3';
+        const nivelCor=c.nivel===2?'#166534':'#92400e';
+        const baseDetail=`<div style="font-size:10px;line-height:1.8;text-align:left;">
+            <span style="color:#f97316;">🔥 ${lReno}(${c.vendReno}×R$${c.nivel===2?r.n2.reno14:r.n1.reno14}): ${fmtBRL(c.comReno)}</span><br>
+            <span style="color:#06b6d4;">💎 ${lA6}(${c.vendA6Pro}×R$${c.nivel===2?r.n2.a5pro:r.n1.a5pro}): ${fmtBRL(c.comA6Pro)}</span><br>
+            <span style="color:#64748b;">📦 Outras(${c.vendOutras}×R$${c.nivel===2?r.n2.a60:r.n1.a60}): ${fmtBRL(c.comOutras)}</span>
+        </div>`;
+        return`<tr>
+            <td>${primeiroNome(p.nome)}</td>
+            <td><span style="background:${nivelBg};color:${nivelCor};font-weight:800;font-size:10px;padding:2px 8px;border-radius:20px;">N${c.nivel} (${c.media} vendas)</span></td>
+            <td style="text-align:center;">${c.vendReno}</td>
+            <td style="text-align:center;">${c.vendA6Pro}</td>
+            <td style="text-align:center;font-weight:700;">${c.vendReno+c.vendA6Pro}</td>
+            <td>${baseDetail}</td>
+            <td style="text-align:center;font-weight:900;color:#166534;">${fmtBRL(c.totalBase)}</td>
+        </tr>`;
+    }).join('');
+
+    const totalGeral=totalBase+incentivo;
+
+    // Card incentivo — explicação da média
+    const mediaStr=mediaEspecial.toFixed(1).replace('.',',');
+    const incCard = incentivo>0
+        ?`<div style="background:#dcfce7;border:1px solid #86efac;border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:16px;">
+            <div style="font-size:28px;">🏆</div>
+            <div>
+                <div style="font-size:12px;font-weight:900;color:#166534;">INCENTIVO ADICIONAL ATIVADO</div>
+                <div style="font-size:22px;font-weight:900;color:#059669;">${fmtBRL(incentivo)}</div>
+                <div style="font-size:11px;color:#166534;margin-top:2px;">
+                    Média de ${lReno}+${lA6}/A5Pro = <b>${mediaStr} unid.</b> (≥${r.inc_min} necessário) 
+                    <button class="inc-edit-btn" onclick="openIncSup(this)" title="Editar regra">✏️</button>
+                </div>
+            </div>
+          </div>`
+        :`<div style="background:#fef9c3;border:1px solid #fcd34d;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:14px;">
+            <div style="font-size:22px;">⚠️</div>
+            <div>
+                <div style="font-size:11px;font-weight:900;color:#92400e;">Incentivo NÃO atingido</div>
+                <div style="font-size:11px;color:#92400e;margin-top:2px;">
+                    Média atual: <b>${mediaStr} unid.</b> | Necessário: <b>≥${r.inc_min} unid.</b> de ${lReno}+${lA6}/A5Pro
+                    <button class="inc-edit-btn" onclick="openIncSup(this)" title="Editar regra">✏️</button>
+                </div>
+                <div style="font-size:10px;color:#92400e;margin-top:3px;">
+                    Fórmula: (soma ${lReno}+${lA6} de todos promotores) ÷ ${ativos.length} promotores = ${mediaStr} unid./promotor
+                </div>
+            </div>
+          </div>`;
+
+    document.getElementById('comissaoConteudo').innerHTML=`
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+            <div>
+                <div style="font-size:15px;font-weight:900;color:#0f172a;">💰 Comissão Supervisor — ${mes}</div>
+                <div style="font-size:11px;color:#64748b;font-weight:600;margin-top:2px;">Comissão por unidade × tabela | Incentivo pela média da equipe</div>
+            </div>
+            <button class="btn-edit-regras" onclick="openRegrasPopover()">✏️ Tabela completa</button>
+        </div>
+
+        ${incCard}
+
+        <div class="comissao-info" style="margin-bottom:12px;">
+            📋 <b>Como funciona:</b>
+            Supervisor recebe por <b>cada unidade</b> vendida pelos promotores.
+            Nível do promotor define qual tabela usar (N1 se &lt;${r.varejo_nivel2} vendas | N2 se ≥${r.varejo_nivel2}).
+            <b>Tabela N1:</b> Reno R$${r.n1.reno14} | ${lA6}/A5Pro R$${r.n1.a5pro} | Outras R$${r.n1.a60}.
+            <b>Tabela N2:</b> Reno R$${r.n2.reno14} | ${lA6}/A5Pro R$${r.n2.a5pro} | Outras R$${r.n2.a60}.
+        </div>
+
+        <div class="sup-cards" style="margin-bottom:16px;">
+            <div class="sup-card" style="border-top:4px solid #6366f1;">
+                <div class="s-label">💰 Total Supervisor</div>
+                <div class="s-val" style="color:#6366f1;">${fmtBRL(totalGeral)}</div>
+                <div class="s-sub">Base${incentivo>0?' + incentivo':''}</div>
+            </div>
+            <div class="sup-card" style="border-top:4px solid #10b981;">
+                <div class="s-label">📦 Comissão Base</div>
+                <div class="s-val" style="color:#10b981;">${fmtBRL(totalBase)}</div>
+                <div class="s-sub">Soma de todos os promotores</div>
+            </div>
+            <div class="sup-card" style="border-top:4px solid #f59e0b;">
+                <div class="s-label">📊 Média ${lReno}+${lA6}</div>
+                <div class="s-val" style="color:#f59e0b;">${mediaStr}</div>
+                <div class="s-sub">unid./promotor (mín. ${r.inc_min} p/ incentivo)</div>
+            </div>
+            <div class="sup-card" style="border-top:4px solid #059669;">
+                <div class="s-label">⭐ Promotores N2</div>
+                <div class="s-val" style="color:#059669;">${totalN2}</div>
+                <div class="s-sub">de ${ativos.length} ativos</div>
+            </div>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table class="tabela-sup-detalhe">
+                <thead><tr>
+                    <th style="text-align:left;">Promotor</th>
+                    <th>Nível (total vendas)</th>
+                    <th>${lReno}</th>
+                    <th>${lA6}/A5Pro</th>
+                    <th>Soma especial</th>
+                    <th style="text-align:left;">Base detalhada (qtd × R$/unid.)</th>
+                    <th>Base Total</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+                <tfoot>
+                    <tr style="background:#f8fafc;font-weight:900;border-top:2px solid #e2e8f0;">
+                        <td style="padding:8px 10px;text-align:left;" colspan="4">Soma especial total (${lReno}+${lA6})</td>
+                        <td style="padding:8px 10px;text-align:center;font-weight:900;">${somaEspecial}</td>
+                        <td style="padding:8px 10px;text-align:left;color:#64748b;font-size:10px;">Média: ${mediaStr} unid./promotor</td>
+                        <td style="padding:8px 10px;text-align:center;">${fmtBRL(totalBase)}</td>
+                    </tr>
+                    <tr style="background:#0f172a;color:white;font-weight:900;">
+                        <td style="padding:9px 10px;text-align:left;" colspan="6">TOTAL SUPERVISOR (Base + Incentivo)</td>
+                        <td style="padding:9px 10px;text-align:center;font-size:14px;">${fmtBRL(totalGeral)}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:10px;">
+            * "Outras" = vendas reais − ${lReno} − ${lA6}, aplicando tabela A60/A79 como referência.
+            Incentivo único de ${fmtBRL(r.inc_val)} ao supervisor quando média ≥ ${r.inc_min} unid. de produtos especiais.
+        </div>`;
+}
+
+// ══ CÁLCULO PROMOTOR ══
+// REGRA PDF: Promotor recebe POR UNIDADE VENDIDA no mês.
+// Nível: varejo <25=N1, >=25=N2 | operadora <15=N1, >=15=N2
+// Tabela Promotor: A6x | A40/A5 | A58 | A60/A79 | A5(5G) | Reno11F/A5Pro/A6Pro | Reno13F/14F | Reno13/14
+// Incentivo A5Pro+Reno: 6-10 unid → +R$50 | 11+ unid → +R$100
+function calcComissaoPromotorResult(p, r){
+    const total     = p.real||0;
+    const nivel     = total >= r.varejo_nivel2 ? 2 : 1;
+    const tab       = nivel === 2 ? r.n2 : r.n1;
+    const vendReno  = p.reno||0;   // coluna Reno → Reno 13/14 (tab.reno14 → R$160/R$200)
+    const vendA6Pro = p.a5||0;     // coluna A6Pro → Reno11F/A5Pro/A6Pro (tab.reno11f → R$56/R$70)
+    const vendOutras= Math.max(0, total - vendReno - vendA6Pro); // outras → A60/A79 proxy
+    const comReno   = vendReno   * tab.reno14;   // Reno 13/14: R$160 N1 / R$200 N2
+    const comA6Pro  = vendA6Pro  * tab.reno11f;  // Reno11F/A5Pro/A6Pro: R$56 N1 / R$70 N2
+    const comOutras = vendOutras * tab.a60;      // A60/A79: R$32 N1 / R$40 N2
+    const totalBase = comReno + comA6Pro + comOutras;
+    const totalEspecial = vendReno + vendA6Pro;
+    let incentivo = 0;
+    if(totalEspecial >= r.inc2_min)      incentivo = r.inc2_val;
+    else if(totalEspecial >= r.inc1_min) incentivo = r.inc1_val;
+    return{nivel,total,vendReno,vendA6Pro,vendOutras,comReno,comA6Pro,comOutras,totalBase,incentivo,totalFinal:totalBase+incentivo,totalEspecial,tab};
+}
+
+function buildComissaoPromotor(){
+    const r=regrasPromotor;
+    const ativos=fenixData.promotores.filter(p=>!p.ferias&&parseInt(p.meta)>0);
+    const mes=meses[mesSelecionado];
+    if(ativos.length===0){document.getElementById('comissaoPromotorConteudo').innerHTML='<div style="text-align:center;padding:40px;color:#94a3b8;font-weight:700;">Nenhum promotor ativo com meta definida para '+mes+'.</div>';return;}
+    const lReno=cardLabels.reno||'Reno'; const lA6=cardLabels.a6pro||'A6 Pro';
+    let totalGeralP=0,totalIncP=0,totalN2P=0;
+    const rows=ativos.map(p=>{
+        const c=calcComissaoPromotorResult(p,r);
+        totalGeralP+=c.totalFinal; totalIncP+=c.incentivo; if(c.nivel===2)totalN2P++;
+        const pctMeta=calcPct(p.real,p.meta);
+        const corPct=pctMeta>=100?'#166534':pctMeta>=70?'#3730a3':pctMeta>=50?'#92400e':'#991b1b';
+        const bgPct=pctMeta>=100?'#dcfce7':pctMeta>=70?'#eff6ff':pctMeta>=50?'#fef9c3':'#fee2e2';
+        const nivelBg=c.nivel===2?'#dcfce7':'#fef9c3'; const nivelCor=c.nivel===2?'#166534':'#92400e';
+        // Incentivo badge
+        let incBadge='<span style="color:#94a3b8;">—</span>';
+        if(c.totalEspecial>=r.inc2_min)
+            incBadge=`<span class="inc-balloon f2">🏆 +${fmtBRL(c.incentivo)}<br><small>≥${r.inc2_min} unid.</small></span>`;
+        else if(c.totalEspecial>=r.inc1_min)
+            incBadge=`<span class="inc-balloon f1">🎁 +${fmtBRL(c.incentivo)}<br><small>${r.inc1_min}–${r.inc1_max} unid.</small></span>`;
+        // BASE detalhada
+        const baseDetail=`<div style="font-size:10px;line-height:1.7;text-align:left;">
+            <span style="color:#f97316;">Reno(${c.vendReno}×R$${c.tab.reno13f}): ${fmtBRL(c.comReno)}</span><br>
+            <span style="color:#06b6d4;">${lA6}(${c.vendA6Pro}×R$${c.tab.reno11f}): ${fmtBRL(c.comA6Pro)}</span><br>
+            <span style="color:#64748b;">Outras(${c.vendOutras}×R$${c.tab.a60}): ${fmtBRL(c.comOutras)}</span>
+        </div>`;
+        return`<tr style="cursor:pointer;" onclick="abrirDetalhePromotor('${primeiroNome(p.nome)}')" title="Clique para ver detalhes">
+            <td>${primeiroNome(p.nome)} <span style="font-size:10px;color:#94a3b8;">🔍</span></td>
+            <td><span style="background:${nivelBg};color:${nivelCor};font-weight:800;font-size:10px;padding:2px 8px;border-radius:20px;">N${c.nivel}</span></td>
+            <td><span style="background:${bgPct};color:${corPct};font-weight:900;font-size:10px;padding:2px 7px;border-radius:5px;">${p.real}<br>(${pctMeta}%)</span></td>
+            <td style="text-align:center;">${c.vendReno}</td>
+            <td style="text-align:center;">${c.vendA6Pro}</td>
+            <td>${baseDetail}</td>
+            <td style="text-align:center;font-weight:900;color:#166534;">${fmtBRL(c.totalBase)}</td>
+            <td style="text-align:center;">${incBadge}</td>
+            <td style="text-align:center;font-weight:900;color:#059669;">${fmtBRL(c.totalFinal)}</td>
+        </tr>`;
+    }).join('');
+    const totalBaseP=ativos.reduce((a,p)=>a+calcComissaoPromotorResult(p,r).totalBase,0);
+    const qtdInc1=ativos.filter(p=>{const c=calcComissaoPromotorResult(p,r);return c.totalEspecial>=r.inc1_min&&c.totalEspecial<r.inc2_min;}).length;
+    const qtdInc2=ativos.filter(p=>calcComissaoPromotorResult(p,r).totalEspecial>=r.inc2_min).length;
+    document.getElementById('comissaoPromotorConteudo').innerHTML=`
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+            <div>
+                <div style="font-size:15px;font-weight:900;color:#0f172a;">💵 Comissão Promotores — ${mes}</div>
+                <div style="font-size:11px;color:#64748b;font-weight:600;margin-top:2px;">Clique em qualquer promotor para ver o detalhamento completo 🔍</div>
+            </div>
+            <button class="btn-edit-regras" onclick="openRegrasPromotorPopover()" style="background:#f0fdf4;border-color:#86efac;color:#166534;">✏️ Tabela completa</button>
+        </div>
+        <div class="comissao-info" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#86efac;color:#166534;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+            <span>📋 <b>Nível:</b> Varejo ≥${r.varejo_nivel2}=N2 | Operadora ≥${r.op_nivel2}=N2</span>
+            <span>|</span>
+            <span><b>N1:</b> Reno13F R$${r.n1.reno13f} | ${lA6}/Reno11F R$${r.n1.reno11f} | A60 R$${r.n1.a60}</span>
+            <span>|</span>
+            <span><b>N2:</b> Reno13F R$${r.n2.reno13f} | ${lA6}/Reno11F R$${r.n2.reno11f} | A60 R$${r.n2.a60}</span>
+            <span>|</span>
+            <span>🎁 <b>F1:</b> ${r.inc1_min}–${r.inc1_max} unid.=+R$${r.inc1_val}
+                <button class="inc-edit-btn" onclick="openIncProF1(this)" title="Editar Faixa 1">✏️</button>
+            </span>
+            <span>|</span>
+            <span>🏆 <b>F2:</b> ≥${r.inc2_min} unid.=+R$${r.inc2_val}
+                <button class="inc-edit-btn" onclick="openIncProF2(this)" title="Editar Faixa 2">✏️</button>
+            </span>
+        </div>
+        <div class="sup-cards">
+            <div class="sup-card" style="border-top:4px solid #059669;"><div class="s-label">💵 Total Promotores</div><div class="s-val" style="color:#059669;">${fmtBRL(totalGeralP)}</div><div class="s-sub">Todos ativos</div></div>
+            <div class="sup-card" style="border-top:4px solid #10b981;"><div class="s-label">📦 Base Total</div><div class="s-val" style="color:#10b981;">${fmtBRL(totalBaseP)}</div><div class="s-sub">Sem incentivo</div></div>
+            <div class="sup-card" style="border-top:4px solid #f59e0b;"><div class="s-label">🎁 Faixa 1 (${r.inc1_min}–${r.inc1_max})</div><div class="s-val" style="color:#f59e0b;">${qtdInc1}</div><div class="s-sub">promotores → +R$${r.inc1_val}</div></div>
+            <div class="sup-card" style="border-top:4px solid #6366f1;"><div class="s-label">🏆 Faixa 2 (≥${r.inc2_min})</div><div class="s-val" style="color:#6366f1;">${qtdInc2}</div><div class="s-sub">promotores → +R$${r.inc2_val}</div></div>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="tabela-sup-detalhe">
+                <thead><tr>
+                    <th style="text-align:left;">Promotor 🔍</th>
+                    <th>Nível</th>
+                    <th>Real<br>(ating.)</th>
+                    <th>${lReno}</th>
+                    <th>${lA6}</th>
+                    <th style="text-align:left;">Base detalhada (qtd × R$/unid.)</th>
+                    <th>Base Total</th>
+                    <th>Incentivo</th>
+                    <th>TOTAL</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+                <tfoot><tr style="background:#059669;color:white;font-weight:900;">
+                    <td style="padding:9px 10px;text-align:left;" colspan="6">TOTAL PROMOTORES</td>
+                    <td style="padding:9px 10px;text-align:center;">${fmtBRL(totalBaseP)}</td>
+                    <td style="padding:9px 10px;text-align:center;">${fmtBRL(totalIncP)}</td>
+                    <td style="padding:9px 10px;text-align:center;font-size:14px;">${fmtBRL(totalGeralP)}</td>
+                </tr></tfoot>
+            </table>
+        </div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:10px;">
+            * Base = (${lReno} × R$Reno13F) + (${lA6}/A5Pro × R$Reno11F/A5Pro) + (Outras × R$A60). Clique no promotor para ver breakdown completo.
+        </div>`;
+}
+
+// ══ SOM ══
+function tocarSomMeta(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const notas=[523,659,784,1047];notas.forEach((freq,i)=>{const osc=ctx.createOscillator();const gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.frequency.value=freq;osc.type='sine';const t=ctx.currentTime+i*0.15;gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(0.4,t+0.05);gain.gain.exponentialRampToValueAtTime(0.001,t+0.4);osc.start(t);osc.stop(t+0.4);});}catch(e){}}
+
+// ══ CELEBRAÇÃO ══
+let metasJaCelebradas=new Set(JSON.parse(localStorage.getItem('fenixCelebradas2026')||'[]'));
+function verificarMetas(promotores){promotores.forEach(p=>{if(!p.meta||p.meta===0||p.ferias)return;const key=mesSelecionado+'_'+p.nome;if(p.real>=p.meta&&!metasJaCelebradas.has(key)){metasJaCelebradas.add(key);localStorage.setItem('fenixCelebradas2026',JSON.stringify([...metasJaCelebradas]));setTimeout(()=>mostrarCelebracao(p),400);}});}
+function mostrarCelebracao(p){tocarSomMeta();document.getElementById('celNome').textContent=primeiroNome(p.nome);document.getElementById('celSub').textContent=`${p.real} vendas — ${calcPct(p.real,p.meta)}% da meta! 🎉`;const box=document.getElementById('celebracaoBox');box.querySelectorAll('.confetti').forEach(c=>c.remove());const cores=['#6366f1','#f97316','#10b981','#f59e0b','#06b6d4','#ef4444','#a855f7'];for(let i=0;i<30;i++){const c=document.createElement('div');c.className='confetti';c.style.cssText=`left:${Math.random()*100}%;top:-10px;background:${cores[i%cores.length]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;animation-delay:${Math.random()*1}s;animation-duration:${1.5+Math.random()}s;`;box.appendChild(c);}document.getElementById('celebracaoOverlay').classList.add('show');setTimeout(fecharCelebracao,5000);}
+function fecharCelebracao(){document.getElementById('celebracaoOverlay').classList.remove('show');}
+
+// ══ TV ══
+function openTv(){document.getElementById('tvMes').textContent=meses[mesSelecionado]+' '+new Date().getFullYear();document.getElementById('tvOverlay').classList.add('active');renderTv();document.addEventListener('keydown',tvKeyHandler);if(tvInterval)clearInterval(tvInterval);tvInterval=setInterval(renderTv,30000);}
+let tvInterval=null;
+function closeTv(){document.getElementById('tvOverlay').classList.remove('active');document.removeEventListener('keydown',tvKeyHandler);if(tvInterval){clearInterval(tvInterval);tvInterval=null;}}
+function tvKeyHandler(e){if(e.key==='Escape')closeTv();}
+function renderTv(){
+    const dias=getDiasUteisRestantes();const ativos=fenixData.promotores.filter(p=>!p.ferias);
+    const rT=ativos.reduce((a,b)=>a+(b.real||0),0);const somaM=ativos.filter(p=>p.meta>0).reduce((a,b)=>a+(b.meta||0),0);
+    const pctEq=calcPct(rT,somaM);const renoT=ativos.reduce((a,b)=>a+(b.reno||0),0);const a5T=ativos.reduce((a,b)=>a+(b.a5||0),0);
+    document.getElementById('tvReal').textContent=rT;document.getElementById('tvMeta').textContent=somaM;document.getElementById('tvPct').textContent=pctEq+'%';document.getElementById('tvDiaria').textContent=calcDiaria(somaM,rT,dias);
+    const drEl=document.getElementById('tvDiasRest');if(drEl)drEl.textContent=dias;
+    const pctEl=document.getElementById('tvPct');pctEl.style.color=pctEq>=100?'#10b981':pctEq>=70?'#6366f1':pctEq>=50?'#f59e0b':'#ef4444';
+    const sorted=[...fenixData.promotores].filter(p=>!p.ferias&&p.meta>0).sort((a,b)=>scoreRanking(b,dias)-scoreRanking(a,dias));
+    const rankEmoji=['🥇','🥈','🥉'];const body=document.getElementById('tvBody');body.innerHTML='';
+    const maxCards=Math.min(sorted.length,9);
+    sorted.slice(0,maxCards).forEach((p,i)=>{
+        const pct=calcPct(p.real,p.meta);const dr=calcDiaria(p.meta,p.real,dias);
+        const cor=pct>=100?'#10b981':pct>=70?'#6366f1':pct>=50?'#f59e0b':'#ef4444';
+        const resultClass=pct>=100?'tv-ótimo':pct>=70?'tv-bom':pct>=50?'tv-alerta':'tv-risco';
+        const posClass=i<3?'tv-pos-'+i:(i%2===0?'tv-par':'tv-impar');
+        const diariaClass=dr===0?'diaria-ok':dr<=3?'diaria-warn':'diaria-bad';
+        const barGrad=pct>=100?'linear-gradient(90deg,#10b981,#34d399)':pct>=70?'linear-gradient(90deg,#6366f1,#818cf8)':pct>=50?'linear-gradient(90deg,#f59e0b,#fbbf24)':'linear-gradient(90deg,#ef4444,#f87171)';
+        const card=document.createElement('div');card.className=`tv-card ${posClass} ${resultClass}`;card.style.animationDelay=(i*0.07)+'s';
+        card.innerHTML=`<div class="tv-rank">${i<3?rankEmoji[i]:`<span style="font-size:18px;color:#94a3b8;font-weight:900;">${i+1}º</span>`}</div><div><div class="tv-name">${p.nome}</div><div class="tv-capa">CAPA ${p.capa}</div></div><div class="tv-bar-wrap"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:10px;font-weight:800;color:#64748b;">Progresso</span><span style="font-size:10px;font-weight:900;color:${cor};">${p.real} / ${p.meta}</span></div><div class="tv-bar-bg"><div class="tv-bar-fill" style="width:${Math.min(pct,100)}%;background:${barGrad}"></div></div><div class="tv-pct" style="color:${cor};">${pct}% da meta${pct>=100?' 🏆':''}</div></div><div class="tv-num"><div class="tv-num-val" style="color:${cor};font-size:24px;">${pct}%</div><div class="tv-num-lbl">Atingimento</div></div><div class="tv-num"><div class="tv-num-val" style="color:#f97316;">${p.reno||0}</div><div class="tv-num-lbl">Reno</div></div><div class="tv-num"><span class="tv-diaria-pill ${diariaClass}">${dr===0?'✅ Meta!':dr+'/dia'}</span><div class="tv-num-lbl" style="margin-top:5px;">Diária</div></div>`;
+        body.appendChild(card);
+    });
+    document.getElementById('tvTicker').textContent=`🦅 FÊNIX DO OESTE   ·   ${meses[mesSelecionado]}   ·   Equipe: ${rT}/${somaM} (${pctEq}%)   ·   🔥 ${cardLabels.reno||'Reno'}: ${renoT}/${fenixData.metaReno||69}   ·   💎 ${cardLabels.a6pro||'A6 Pro'}: ${a5T}/${fenixData.metaA5||69}   ·   ${sorted.slice(0,3).map((p,i)=>`${rankEmoji[i]} ${primeiroNome(p.nome)}: ${calcPct(p.real,p.meta)}%`).join('   ·   ')}   ·   ⚡ Diária: ${calcDiaria(somaM,rT,dias)} vendas/dia   ·   📅 ${dias} dias úteis restantes   ·   `;
+}
+
+// ══ HISTÓRICO ══
+let histChart=null;
+function getHistKey(){return'fenixHist2026_mes_'+mesSelecionado;}
+function loadHist(){const s=localStorage.getItem(getHistKey());return s?JSON.parse(s):{};}
+function saveHist(data){localStorage.setItem(getHistKey(),JSON.stringify(data));if(window._fbSet)window._fbSet('fenix2026/hist_mes_'+mesSelecionado,data);}
+function sincHistComReal(){const hoje=new Date().toISOString().split('T')[0];const hist=loadHist();if(!hist[hoje])hist[hoje]={};let alterou=false;fenixData.promotores.forEach(p=>{if(!p.ferias&&p.meta>0&&(p.real||0)>0){if(hist[hoje][p.nome]!==p.real){hist[hoje][p.nome]=p.real;alterou=true;}}});if(alterou)saveHist(hist);}
+function openHist(){document.getElementById('histMes').textContent=meses[mesSelecionado]+' '+new Date().getFullYear();document.getElementById('histModal').style.display='block';document.getElementById('histData').value=new Date().toISOString().split('T')[0];renderHistCards();}
+function closeHist(){document.getElementById('histModal').style.display='none';if(histChart){histChart.destroy();histChart=null;}}
+document.addEventListener('change',e=>{if(e.target.id==='histData')renderHistInputs();});
+function abrirRegistroDia(){const wrap=document.getElementById('histFormWrap');wrap.style.display=wrap.style.display==='none'?'block':'none';if(wrap.style.display==='block')renderHistInputs();}
+function renderHistInputs(){const ativos=fenixData.promotores.filter(p=>!p.ferias&&p.meta>0);const data=document.getElementById('histData').value;const hist=loadHist();const diaData=hist[data]||{};let html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">';ativos.forEach(p=>{const val=diaData[p.nome]||0;html+=`<div style="background:white;border:1px solid #e2e8f0;border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:800;color:#64748b;margin-bottom:4px;">${primeiroNome(p.nome)}</div><input type="number" min="0" value="${val}" id="hinput_${p.nome.replace(/\s/g,'_')}" style="width:100%;border:1.5px solid #e2e8f0;border-radius:6px;padding:6px 10px;font-size:16px;font-weight:900;text-align:center;font-family:inherit;" placeholder="0"></div>`;});html+='</div>';document.getElementById('histInputsPromotores').innerHTML=html;}
+function salvarDia(){const data=document.getElementById('histData').value;if(!data){alert('Selecione uma data!');return;}const hist=loadHist();if(!hist[data])hist[data]={};const ativos=fenixData.promotores.filter(p=>!p.ferias&&p.meta>0);ativos.forEach(p=>{const el=document.getElementById('hinput_'+p.nome.replace(/\s/g,'_'));if(el)hist[data][p.nome]=parseInt(el.value)||0;});saveHist(hist);document.getElementById('histFormWrap').style.display='none';renderHistCards();showSync('📅 Dia registrado!','verde');}
+function renderHistCards(){
+    const hist=loadHist();const ativos=fenixData.promotores.filter(p=>!p.ferias&&p.meta>0);const datas=Object.keys(hist).sort();
+    if(histChart){histChart.destroy();histChart=null;}
+    if(datas.length>0){const labels=datas.map(d=>{const[y,m,dia]=d.split('-');return`${dia}/${m}`;});let acum=0;const vals=datas.map(d=>{const total=Object.values(hist[d]||{}).reduce((a,b)=>a+b,0);acum+=total;return acum;});const meta=ativos.reduce((a,b)=>a+(b.meta||0),0);histChart=new Chart(document.getElementById('chartHistEquipe'),{type:'line',data:{labels,datasets:[{label:'Acumulado',data:vals,borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,0.1)',fill:true,tension:0.3,pointRadius:5,pointBackgroundColor:'#6366f1'},{label:'Meta',data:datas.map(()=>meta),borderColor:'#ef4444',borderDash:[6,3],pointRadius:0,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:10},boxWidth:12}}},scales:{y:{beginAtZero:true,ticks:{font:{size:10}},grid:{color:'#f1f5f9'}},x:{ticks:{font:{size:10}},grid:{display:false}}}}});}
+    let html='';
+    ativos.forEach(p=>{let rows='';let acum=0;datas.forEach((d)=>{const val=(hist[d]||{})[p.nome]||0;acum+=val;const delta=val;const[y,m,dia]=d.split('-');const deltaHtml=delta>0?`<span class="hist-day-delta trend-up">+${delta}</span>`:`<span class="hist-day-delta trend-eq">—</span>`;rows+=`<div class="hist-day-row"><span class="hist-day-lbl">${dia}/${m}</span><span class="hist-day-val">${acum}</span>${deltaHtml}</div>`;});if(!rows)rows='<div style="font-size:11px;color:#94a3b8;padding:8px 0;">Sem registros ainda</div>';const pct=calcPct(acum,p.meta);const corTop=pct>=100?'#10b981':pct>=70?'#6366f1':pct>=50?'#f59e0b':'#ef4444';html+=`<div class="hist-card" style="border-top-color:${corTop}"><div class="hist-card-name">📌 ${p.nome}</div><div style="display:flex;justify-content:space-between;font-size:10px;color:#64748b;font-weight:700;margin-bottom:6px;"><span>Acumulado: <b style="color:${corTop}">${acum}</b></span><span>Meta: <b>${p.meta}</b> (${pct}%)</span></div><div style="height:4px;background:#f1f5f9;border-radius:4px;overflow:hidden;margin-bottom:8px;"><div style="height:100%;width:${Math.min(pct,100)}%;background:${corTop};border-radius:4px;"></div></div>${rows}</div>`;});
+    document.getElementById('histCards').innerHTML=html||'<div style="color:#94a3b8;font-size:13px;padding:20px;text-align:center;">Nenhum registro ainda. Clique em ➕ Registrar dia para começar.</div>';
+}
+function setupHistFirebaseSync(){if(!window._fbListen)return;for(let m=0;m<12;m++){(function(mi){window._fbListen('fenix2026/hist_mes_'+mi,(data)=>{if(!data)return;localStorage.setItem('fenixHist2026_mes_'+mi,JSON.stringify(data));});})(m);}}
+
+// ══ RENDER PRINCIPAL ══
+function render(){
+    const dias=getDiasUteisRestantes();
+    const ativos=fenixData.promotores.filter(p=>!p.ferias);
+    const rT=ativos.reduce((a,b)=>a+(parseInt(b.real)||0),0);
+    const rnT=ativos.reduce((a,b)=>a+(parseInt(b.reno)||0),0);
+    const a5T=ativos.reduce((a,b)=>a+(parseInt(b.a5)||0),0);
+    const cT=ativos.reduce((a,b)=>a+(parseInt(b.capa)||0),0);
+    const somaMetasGeral=ativos.filter(p=>p.meta>0).reduce((a,b)=>a+(parseInt(b.meta)||0),0);
+
+    document.getElementById("realGeral").innerText=rT;
+    document.getElementById("renoGeral").innerText=rnT;
+    document.getElementById("a5Geral").innerText=a5T;
+    document.getElementById("marketGeral").innerText=calcPct(rT,cT)+"%";
+    document.getElementById("pctGeral").innerText=calcPct(rT,somaMetasGeral)+"%";
+    document.getElementById("diariaEquipe").innerText=calcDiaria(somaMetasGeral,rT,dias);
+    document.getElementById("metaGeralLabel").innerText=somaMetasGeral;
+    // Update dual cards metas
+    const elMR2=document.getElementById('metaRenoLabel2');if(elMR2)elMR2.innerText=fenixData.metaReno||69;
+    const elMA2=document.getElementById('metaA5Label2');if(elMA2)elMA2.innerText=fenixData.metaA5||69;
+
+    atualizarHeader();
+    atualizarAlerta(rT,somaMetasGeral,dias);
+    renderCardLabels();
+
+    const sorted=[...fenixData.promotores].sort((a,b)=>scoreRanking(b,dias)-scoreRanking(a,dias));
+    const rankClass=['rank-1','rank-2','rank-3'],rankEmoji=['🥇','🥈','🥉'];
+    let medalIdx=0,html='';
+    const lReno=cardLabels.reno||'RENO';const lA6=cardLabels.a6pro||'A6 PRO';
+
+    sorted.forEach((p,idx)=>{
+        const semMeta=!p.meta||p.meta===0,emFerias=p.ferias;
+        const pct=calcPct(p.real,p.meta);const dRest=emFerias?'—':calcDiaria(p.meta,p.real,dias);
+        const corBarra=emFerias?'#10b981':semMeta?'#e2e8f0':pct>=100?'var(--success-dark)':pct>=70?'var(--primary)':pct>=50?'var(--warning)':'var(--danger)';
+        let diariaClass='';if(!emFerias&&!semMeta){diariaClass=dRest===0?'diaria-ok':dRest<=2?'diaria-ok':dRest<=4?'diaria-warn':'diaria-bad';}
+        let badgeClass,badgeConteudo;
+        if(emFerias){badgeClass='rank-n';badgeConteudo='🏖️';}
+        else if(semMeta){badgeClass='rank-n';badgeConteudo=`${idx+1}º`;}
+        else{badgeClass=medalIdx<3?rankClass[medalIdx]:'rank-n';badgeConteudo=medalIdx<3?rankEmoji[medalIdx]:`${idx+1}º`;medalIdx++;}
+        const feriasBadge=emFerias?`<span class="ferias-badge">🏖️ Férias</span>`:'';
+        const diariaDisplay=emFerias?`<span style="color:#94a3b8;">—</span>`:semMeta?`<span style="color:#94a3b8;">—</span>`:dRest===0?`<span class="diaria-pill diaria-ok">✅ 0</span>`:`<span class="diaria-pill ${diariaClass}">${dRest}/dia</span>`;
+        html+=`<div class="promotor-card ${emFerias?'ferias':''}" style="border-left-color:${corBarra}">
+            <div class="rank-badge ${badgeClass}">${badgeConteudo}</div>
+            <div>
+                <div class="p-name-wrap" id="pwrap_${idx}">
+                    <span class="p-name" id="pname_${idx}" onclick="editNomeInline(${idx})" title="Clique para editar">${p.nome}</span>
+                    ${feriasBadge}
+                    <button class="btn-ferias-toggle ${emFerias?'ativo':''}" onclick="toggleFeriasCard(${idx})" title="${emFerias?'Remover férias':'Marcar férias'}">🏖️</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:5px;margin-top:3px;">
+                    <div style="background:#f1f5f9;color:#64748b;font-size:10px;font-weight:800;padding:2px 8px;border-radius:4px;display:inline-block;">CAPA ${p.capa}</div>
+                </div>
+            </div>
+            <div>
+                <div class="progress-bg"><div class="progress-fill" style="width:${emFerias?100:Math.min(pct,100)}%;background:${corBarra}"></div></div>
+                <div class="pct-label" style="color:${corBarra}">${emFerias?'🏖️ EM FÉRIAS':pct+'% DA META'}</div>
+            </div>
+            <div class="meta-group">
+                <div class="m-item"><span>Meta</span><b>${emFerias?'—':p.meta}</b></div>
+                <div class="m-item"><span>Real</span><b style="color:${pct>=100?'var(--success-dark)':'inherit'}">${p.real}</b></div>
+                <div class="m-item"><span>${lReno}</span><b style="color:var(--reno)">${p.reno||0}</b></div>
+                <div class="m-item diaria-item"><span>Diária</span><b>${diariaDisplay}</b></div>
+            </div>
+        </div>`;
+    });
+
+    document.getElementById("listaPromotores").innerHTML=html;
+    verificarMetas(fenixData.promotores);
+    sincHistComReal();
+}
+
+render();
+if(window._firebaseReady){setupFirebaseSync();setupHistFirebaseSync();}
+else{window.addEventListener('firebaseReady',()=>{setupFirebaseSync();setupHistFirebaseSync();});}
+</script>
+</body>
+</html>
