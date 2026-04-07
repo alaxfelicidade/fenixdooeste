@@ -131,8 +131,11 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
 /* ── MODAL OVERLAY ── */
 .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,42,0.95);z-index:2000;overflow-y:auto;padding:20px 0;}
 .modal-content{background:white;max-width:940px;margin:auto;padding:25px;border-radius:15px;}
-.edit-row{display:grid;grid-template-columns:2fr 0.7fr 0.7fr 0.7fr 0.7fr 1.3fr 90px;gap:6px;margin-bottom:8px;align-items:center;}
-.edit-row input{padding:8px;border:1px solid #ddd;border-radius:5px;width:100%;font-size:11px;font-family:inherit;}
+.edit-row{display:grid;grid-template-columns:88px 120px minmax(180px,2fr) 70px 70px 70px 70px minmax(120px,1fr) 78px;gap:4px;margin-bottom:6px;align-items:center;}
+.edit-row input,.edit-row select{padding:6px 8px;border:1px solid #ddd;border-radius:5px;width:100%;font-size:10.5px;font-family:inherit;background:white;height:36px;}
+.edit-row .filial-input{text-align:center;font-weight:800;padding:6px 4px;}
+.edit-row .rede-select{padding-right:24px;font-weight:700;}
+.edit-row .nome-input{padding-right:6px;}
 .btn-ferias-modal{border:none;border-radius:6px;padding:8px 6px;cursor:pointer;font-size:10px;font-weight:800;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:3px;transition:all 0.18s;white-space:nowrap;}
 .btn-ferias-modal.off{background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;}
 .btn-ferias-modal.off:hover{background:#e0fdf4;color:#065f46;border-color:#6ee7b7;}
@@ -265,7 +268,7 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
 .regra-section{font-size:10px;font-weight:800;color:#0f172a;text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 8px;padding-bottom:4px;border-bottom:2px solid #f1f5f9;}
 
 @media print{body *{visibility:hidden;}#painelModal,#painelModal *{visibility:visible;}#painelModal{position:absolute;top:0;left:0;background:white;padding:0;}.painel-content{border-radius:0;box-shadow:none;padding:16px;}.btn-print,.btn-fechar-painel{display:none;}}
-@media(max-width:768px){.promotor-card{grid-template-columns:44px 1fr;}.promotor-card>div:nth-child(3),.promotor-card>div:nth-child(4){grid-column:1/-1;}header h1{font-size:14px;}.banner-popover{width:calc(100vw - 40px);}.graficos-content,.painel-content,.modal-content{padding:16px;}.meta-group{grid-template-columns:repeat(4,1fr);}}
+@media(max-width:768px){.promotor-card{grid-template-columns:44px 1fr;}.promotor-card>div:nth-child(3),.promotor-card>div:nth-child(4){grid-column:1/-1;}header h1{font-size:14px;}.banner-popover{width:calc(100vw - 40px);}.graficos-content,.painel-content,.modal-content{padding:16px;}.meta-group{grid-template-columns:repeat(4,1fr);}.edit-row{grid-template-columns:1fr;}}
 
 /* ── TV MODE ── */
 /* ── MODAL DETALHE PROMOTOR ── */
@@ -617,8 +620,8 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
         <div style="background:#f0fdf4;border:1px solid #6ee7b7;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#065f46;font-weight:700;display:flex;align-items:center;gap:8px;">
             🏖️ <span>Promotor em <b>FÉRIAS</b> não entra nos cálculos de metas e atingimento da equipe.</span>
         </div>
-        <div style="display:grid;grid-template-columns:2fr 0.7fr 0.7fr 0.7fr 0.7fr 1.3fr 90px;gap:6px;padding:8px;font-weight:bold;font-size:10px;color:#64748b;text-align:center;background:#f8fafc;border-radius:6px;">
-            <div style="text-align:left;">NOME</div><div>CAPA</div><div>META</div><div>REAL</div><div>RENO</div>
+        <div style="display:grid;grid-template-columns:88px 120px minmax(180px,2fr) 70px 70px 70px 70px minmax(120px,1fr) 78px;gap:4px;padding:7px 8px;font-weight:bold;font-size:9.5px;color:#64748b;text-align:center;background:#f8fafc;border-radius:6px;">
+            <div style="text-align:left;">FILIAL</div><div style="text-align:left;">REDE</div><div style="text-align:left;">NOME</div><div>CAPA</div><div>META</div><div>REAL</div><div>RENO</div>
             <div style="color:var(--a5pro);" id="colHeaderA6Pro">A6 PRO</div><div>FÉRIAS</div>
         </div>
         <div id="formLista" style="margin-top:10px;"></div>
@@ -903,9 +906,11 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
 const meses=["JANEIRO","FEVEREIRO","MARÇO","ABRIL","MAIO","JUNHO","JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"];
 const mesesAbrev=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
 const STORAGE_PREFIX='fenixData2026_mes_';
+const REDES_OPTIONS=['MAGALU','CASAS BAHIA','PONTO','FASTSHOP'];
+const normalizePromotor=p=>({filial:'',rede:'MAGALU',ferias:false,...p});
 
 const defaultPromotores=()=>[
-    {nome:"Erika Aparecida Maneia De Oliveira",capa:367,meta:55,real:0,reno:0,a5:0,ferias:false},
+    {filial:'237',rede:'MAGALU',nome:"Erika Aparecida Maneia De Oliveira",capa:367,meta:55,real:0,reno:0,a5:0,ferias:false},
     {nome:"Núbia De Cássia Viana",capa:200,meta:40,real:0,reno:0,a5:0,ferias:false},
     {nome:"Thais Almeida Otoni",capa:321,meta:50,real:0,reno:0,a5:0,ferias:false},
     {nome:"Dabila Jormane Souza Silva",capa:195,meta:33,real:0,reno:0,a5:0,ferias:false},
@@ -925,10 +930,10 @@ const defaultPromotores=()=>[
 
 function loadMesData(mesIdx){
     const saved=localStorage.getItem(STORAGE_PREFIX+mesIdx);
-    if(saved){const d=JSON.parse(saved);if(d.promotores)d.promotores=d.promotores.map(p=>({ferias:false,...p}));return d;}
+    if(saved){const d=JSON.parse(saved);if(d.promotores)d.promotores=d.promotores.map(normalizePromotor);return d;}
     if(mesIdx===new Date().getMonth()){
         const leg=localStorage.getItem('fenixData2026_Final');
-        if(leg){const d=JSON.parse(leg);if(d.promotores)d.promotores=d.promotores.map(p=>({ferias:false,...p}));return d;}
+        if(leg){const d=JSON.parse(leg);if(d.promotores)d.promotores=d.promotores.map(normalizePromotor);return d;}
     }
     return{metaGeral:629,metaReno:69,metaA5:69,promotores:defaultPromotores()};
 }
@@ -945,7 +950,7 @@ function showSync(msg,tipo){
 function setupFirebaseSync(){
     if(!window._fbListen)return;
     for(let m=0;m<12;m++){
-        (function(mi){window._fbListen('fenix2026/mes_'+mi,(data)=>{if(!data)return;if(data.promotores)data.promotores=data.promotores.map(p=>({ferias:false,...p}));localStorage.setItem(STORAGE_PREFIX+mi,JSON.stringify(data));if(mi===mesSelecionado){fenixData=data;render();}});})(m);
+        (function(mi){window._fbListen('fenix2026/mes_'+mi,(data)=>{if(!data)return;if(data.promotores)data.promotores=data.promotores.map(normalizePromotor);localStorage.setItem(STORAGE_PREFIX+mi,JSON.stringify(data));if(mi===mesSelecionado){fenixData=data;render();}});})(m);
     }
     window._fbListen('fenix2026/banner',(data)=>{if(!data)return;bannerData=data;renderBanner();localStorage.setItem('fenixBanner2026',JSON.stringify(data));});
     window._fbListen('fenix2026/cardLabels',(data)=>{if(!data)return;cardLabels={...cardLabels,...data};localStorage.setItem('fenixCardLabels',JSON.stringify(cardLabels));renderCardLabels();});
@@ -1111,23 +1116,26 @@ function renderForm(){
     let html='';
     fenixData.promotores.forEach((p,i)=>{
         const fc=p.ferias?'on':'off',ft=p.ferias?'🏖️ Ativo':'🏖️ Férias';
+        const redeOptions=REDES_OPTIONS.map(rede=>`<option value="${rede}" ${String(p.rede||'MAGALU')===rede?'selected':''}>${rede}</option>`).join('');
         html+=`<div class="edit-row" id="erow_${i}" style="${p.ferias?'opacity:0.65;background:#f0fdf4;border-radius:8px;padding:4px;':''}">
-            <input type="text" value="${p.nome}" id="n_${i}">
+            <input type="text" value="${p.filial||''}" id="fil_${i}" class="filial-input" inputmode="numeric" placeholder="237">
+            <select id="rede_${i}" class="rede-select">${redeOptions}</select>
+            <input type="text" value="${p.nome}" id="n_${i}" class="nome-input">
             <input type="number" value="${p.capa}" id="c_${i}" min="0">
             <input type="number" value="${p.meta}" id="m_${i}" min="0" oninput="atualizarSomaMeta()">
             <input type="number" value="${p.real}" id="r_${i}" min="0">
             <input type="number" value="${p.reno}" id="re_${i}" min="0" oninput="atualizarEspelhosModal()">
             <input type="number" value="${p.a5}" id="a_${i}" min="0" oninput="atualizarEspelhosModal()">
-            <div style="display:flex;gap:4px;align-items:center;">
-                <button type="button" class="btn-ferias-modal ${fc}" id="fbtn_${i}" onclick="toggleFeriasModal(${i})">${ft}</button>
-                <button type="button" class="btn-del" onclick="removeRow(${i})">×</button>
+            <div style="display:flex;gap:2px;align-items:center;justify-content:space-between;">
+                <button type="button" class="btn-ferias-modal ${fc}" id="fbtn_${i}" onclick="toggleFeriasModal(${i})" style="padding:7px 5px;font-size:9px;flex:1;">${ft}</button>
+                <button type="button" class="btn-del" onclick="removeRow(${i})" style="font-size:16px;padding:0 2px;">×</button>
             </div>
         </div>`;
     });
     document.getElementById('formLista').innerHTML=html;
 }
 function toggleFeriasModal(i){const btn=document.getElementById(`fbtn_${i}`),row=document.getElementById(`erow_${i}`),isOn=btn.classList.contains('on');if(isOn){btn.classList.replace('on','off');btn.textContent='🏖️ Férias';row.style.cssText='';}else{btn.classList.replace('off','on');btn.textContent='🏖️ Ativo';row.style.cssText='opacity:0.65;background:#f0fdf4;border-radius:8px;padding:4px;';}atualizarSomaMeta();atualizarEspelhosModal();}
-function addRow(){fenixData.promotores.push({nome:'',capa:0,meta:0,real:0,reno:0,a5:0,ferias:false});renderForm();}
+function addRow(){fenixData.promotores.push({filial:'',rede:'MAGALU',nome:'',capa:0,meta:0,real:0,reno:0,a5:0,ferias:false});renderForm();}
 function removeRow(i){fenixData.promotores.splice(i,1);renderForm();}
 function closeModal(){document.getElementById('editModal').style.display='none';}
 function saveAll(){
@@ -1136,7 +1144,7 @@ function saveAll(){
     fenixData.metaA5=parseInt(document.getElementById('metaA5Input').value)||69;
     fenixData.promotores=fenixData.promotores.map((p,i)=>{
         const fbtn=document.getElementById(`fbtn_${i}`);
-        return{nome:document.getElementById(`n_${i}`).value,capa:parseInt(document.getElementById(`c_${i}`).value)||0,meta:parseInt(document.getElementById(`m_${i}`).value)||0,real:parseInt(document.getElementById(`r_${i}`).value)||0,reno:parseInt(document.getElementById(`re_${i}`).value)||0,a5:parseInt(document.getElementById(`a_${i}`).value)||0,ferias:fbtn?fbtn.classList.contains('on'):(p.ferias||false)};
+        return{filial:document.getElementById(`fil_${i}`).value,rede:document.getElementById(`rede_${i}`).value,nome:document.getElementById(`n_${i}`).value,capa:parseInt(document.getElementById(`c_${i}`).value)||0,meta:parseInt(document.getElementById(`m_${i}`).value)||0,real:parseInt(document.getElementById(`r_${i}`).value)||0,reno:parseInt(document.getElementById(`re_${i}`).value)||0,a5:parseInt(document.getElementById(`a_${i}`).value)||0,ferias:fbtn?fbtn.classList.contains('on'):(p.ferias||false)};
     });
     // Salva nomes dos cards de topo
     const ilr=document.getElementById('inputLabelReno');const ila=document.getElementById('inputLabelA6Pro');
@@ -2188,11 +2196,337 @@ if(window._fbListen){
 }
 </script>
 
+<style>
+/* ===== V12 UX/MOBILE/TV PATCH ===== */
+.promotor-card{padding:11px 14px;gap:10px;grid-template-columns:40px 1.6fr 1.8fr 1.45fr;}
+.meta-group{grid-template-columns:repeat(3,minmax(52px,1fr));gap:4px;}
+.m-item{padding:2px 0;}
+.m-item b{font-size:13px;}
+.m-item.diaria-item b{font-size:14px;}
+.p-subline,.p-insight{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px;}
+.mini-chip{display:inline-flex;align-items:center;gap:4px;background:#f8fafc;border:1px solid #e2e8f0;color:#475569;font-size:9px;font-weight:800;padding:2px 7px;border-radius:999px;white-space:nowrap;}
+.mini-chip.good{background:#ecfdf5;border-color:#86efac;color:#166534;}
+.mini-chip.warn{background:#fff7ed;border-color:#fdba74;color:#9a3412;}
+.mini-chip.info{background:#eef2ff;border-color:#c7d2fe;color:#4338ca;}
+.pct-label{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:9px;}
+.compact-note{font-size:9px;font-weight:800;color:#64748b;}
+.edit-row{grid-template-columns:70px 110px 1.9fr 80px 80px 80px 70px 70px 70px 28px!important;gap:6px;}
+.edit-row input,.edit-row select{padding:6px 7px;border:1px solid #dbe4ef;border-radius:6px;font-size:11px;font-family:inherit;min-width:0;}
+.edit-row input[type=number],.edit-row input[type=text].filial-input{text-align:center;font-weight:700;}
+.edit-row .nome-input{text-align:left;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.edit-row .rede-select{font-size:11px;}
+.btn-ferias-modal{min-width:70px;padding:6px 4px!important;font-size:10px!important;}
+.btn-del{width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
+.equipe-header-row,.equipe-total-row{display:grid;grid-template-columns:70px 110px 1.9fr 80px 80px 80px 70px 70px 70px 28px;gap:6px;align-items:center;}
+.equipe-header-row{position:sticky;top:0;z-index:5;background:#f8fafc;border:1px solid #e2e8f0;padding:8px;border-radius:8px;margin-bottom:8px;box-shadow:0 2px 8px rgba(15,23,42,.04);}
+.equipe-total-row{margin-top:8px;background:#0f172a;color:#fff;padding:8px;border-radius:8px;font-size:10px;font-weight:800;}
+.equipe-total-row div{text-align:center;}
+.equipe-total-row div:nth-child(3){text-align:left;}
+.tv-overlay{display:none;position:fixed;inset:0;background:#0b1120;z-index:9000;flex-direction:column;}
+.tv-header{padding:12px 22px;gap:10px;flex-wrap:wrap;}
+.tv-stats{display:grid;grid-template-columns:repeat(6,minmax(92px,1fr));gap:10px;flex:1;}
+.tv-stat{padding:8px 10px;}
+.tv-stat-val{font-size:22px;}
+.tv-body{padding:12px 22px;gap:6px;}
+.tv-card{padding:10px 16px;grid-template-columns:52px 1.7fr 2.2fr 88px 88px 105px 118px;gap:12px;}
+.tv-name{font-size:14px;}
+.tv-capa{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.tv-chip{display:inline-flex;align-items:center;gap:4px;background:#eef2ff;border:1px solid #c7d2fe;color:#4338ca;font-size:9px;font-weight:800;padding:2px 7px;border-radius:999px;}
+.tv-chip.alt{background:#f8fafc;border-color:#e2e8f0;color:#475569;}
+.tv-footnote{font-size:9px;color:#94a3b8;font-weight:700;margin-top:4px;}
+.tv-proj{font-size:11px;font-weight:900;color:#f8fafc;background:#1e293b;border:1px solid #334155;padding:4px 10px;border-radius:999px;display:inline-flex;gap:5px;align-items:center;}
+.tv-ticker{padding:8px 18px;font-size:10px;}
+@media(max-width:768px){
+  .header-top{gap:10px;align-items:flex-start;}
+  .header-buttons{flex-wrap:wrap;justify-content:flex-end;}
+  .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .promotor-card{grid-template-columns:40px 1fr;gap:8px;padding:10px 12px;}
+  .promotor-card>div:nth-child(3),.promotor-card>div:nth-child(4){grid-column:1/-1;}
+  .meta-group{grid-template-columns:repeat(3,minmax(0,1fr));}
+  #editModal .modal-content{padding:14px;}
+  #formLista{overflow-x:auto;padding-bottom:4px;}
+  .equipe-header-row,.edit-row,.equipe-total-row{min-width:820px;}
+  .tv-header{padding:10px 14px;}
+  .tv-stats{grid-template-columns:repeat(2,minmax(0,1fr));width:100%;}
+  .tv-body{padding:10px 14px;overflow:auto;}
+  .tv-card{min-width:900px;}
+}
+</style>
+<script>
+(function(){
+  const fmtBR = n => Number(n||0).toLocaleString('pt-BR');
+  const fmtBRL2 = n => Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  const safe = n => Number(n||0);
+  function isDiaUtilRetail(date){ return date.getDay() !== 0; } // varejo considera domingo como único dia não útil
+  window.getMesContext = function(mesIdx){
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const atual = hoje.getMonth();
+    const primeiro = new Date(ano, mesIdx, 1);
+    const ultimo = new Date(ano, mesIdx + 1, 0);
+    let total = 0, passados = 0, restantes = 0;
+    for(let d = new Date(primeiro); d <= ultimo; d.setDate(d.getDate()+1)){
+      if(!isDiaUtilRetail(d)) continue;
+      total++;
+      const copia = new Date(d);
+      copia.setHours(0,0,0,0);
+      const hoje0 = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+      if(mesIdx < atual){ passados++; }
+      else if(mesIdx > atual){ restantes++; }
+      else {
+        if(copia <= hoje0) passados++;
+        if(copia >= hoje0) restantes++;
+      }
+    }
+    if(mesIdx < atual) restantes = 1;
+    if(mesIdx > atual) passados = 0;
+    return {ano, primeiro, ultimo, total:Math.max(total,1), passados:Math.max(passados,0), restantes:Math.max(restantes,1)};
+  };
+  window.getDiasUteisRestantes = function(){ return getMesContext(mesSelecionado).restantes; };
+  window.getTotalDiasUteis = function(mesIdx){ return getMesContext(mesIdx).total; };
+  window.calcDiariaExata = function(meta, real, dias){ const faltam = Math.max(safe(meta)-safe(real),0); return faltam<=0?0:Number((faltam/Math.max(safe(dias),1)).toFixed(1)); };
+  window.calcDiaria = function(meta, real, dias){ const faltam = Math.max(safe(meta)-safe(real),0); return faltam<=0?0:Math.ceil(faltam/Math.max(safe(dias),1)); };
+  window.calcFaltamMeta = function(meta, real){ return Math.max(safe(meta)-safe(real),0); };
+  window.calcProjecaoFechamento = function(realTotal){ const ctx = getMesContext(mesSelecionado); if(ctx.passados<=0) return safe(realTotal); return Math.round((safe(realTotal)/ctx.passados)*ctx.total); };
+  window.calcRitmoPercentual = function(realTotal, meta){ if(!safe(meta)) return 0; return Math.round((calcProjecaoFechamento(realTotal)/safe(meta))*100); };
+  window.calcImpactoMaisUm = function(p, tipo){
+    if(typeof calcComissaoPromotorResult !== 'function') return 0;
+    const base = calcComissaoPromotorResult(p, regrasPromotor).totalFinal || 0;
+    const clone = JSON.parse(JSON.stringify(p||{}));
+    clone.real = safe(clone.real)+1;
+    if(tipo==='reno') clone.reno = safe(clone.reno)+1;
+    if(tipo==='a6') clone.a5 = safe(clone.a5)+1;
+    const novo = calcComissaoPromotorResult(clone, regrasPromotor).totalFinal || 0;
+    return Math.max(0, novo - base);
+  };
+
+  const prevOpenModal = window.openModal;
+  window.openModal = function(){
+    prevOpenModal();
+    setTimeout(()=>{
+      const hdr = document.querySelector('#editModal .modal-content > div[style*="grid-template-columns:88px 120px"]');
+      if(hdr){ hdr.classList.add('equipe-header-row'); hdr.style=''; }
+    },0);
+  };
+
+  window.renderForm = function(){
+    let html='';
+    let tc=0, tm=0, tr=0, tre=0, ta=0;
+    fenixData.promotores.forEach((p,i)=>{
+      const fc=p.ferias?'on':'off',ft=p.ferias?'🏖️ Ativo':'🏖️ Férias';
+      const redeOptions=REDES_OPTIONS.map(rede=>`<option value="${rede}" ${String(p.rede||'')===rede?'selected':''}>${rede}</option>`).join('');
+      tc += safe(p.capa); tm += safe(p.meta); tr += safe(p.real); tre += safe(p.reno); ta += safe(p.a5);
+      html += `<div class="edit-row" id="erow_${i}" style="${p.ferias?'opacity:0.68;background:#f0fdf4;border-radius:8px;padding:4px;':''}">
+        <input type="text" value="${p.filial||''}" id="fil_${i}" class="filial-input" inputmode="numeric" placeholder="237">
+        <select id="rede_${i}" class="rede-select">${redeOptions}</select>
+        <input type="text" value="${(p.nome||'').replace(/"/g,'&quot;')}" id="n_${i}" class="nome-input" title="${(p.nome||'').replace(/"/g,'&quot;')}">
+        <input type="number" value="${safe(p.capa)}" id="c_${i}" min="0">
+        <input type="number" value="${safe(p.meta)}" id="m_${i}" min="0" oninput="atualizarSomaMeta()">
+        <input type="number" value="${safe(p.real)}" id="r_${i}" min="0">
+        <input type="number" value="${safe(p.reno)}" id="re_${i}" min="0" oninput="atualizarEspelhosModal()">
+        <input type="number" value="${safe(p.a5)}" id="a_${i}" min="0" oninput="atualizarEspelhosModal()">
+        <button type="button" class="btn-ferias-modal ${fc}" id="fbtn_${i}" onclick="toggleFeriasModal(${i})">${ft}</button>
+        <button type="button" class="btn-del" onclick="removeRow(${i})">×</button>
+      </div>`;
+    });
+    html += `<div class="equipe-total-row"><div>—</div><div>—</div><div>TOTAIS</div><div>${fmtBR(tc)}</div><div>${fmtBR(tm)}</div><div>${fmtBR(tr)}</div><div>${fmtBR(tre)}</div><div>${fmtBR(ta)}</div><div>—</div><div>—</div></div>`;
+    document.getElementById('formLista').innerHTML = html;
+  };
+
+  document.addEventListener('keydown', function(e){
+    const el = e.target;
+    if(!el || !document.getElementById('editModal') || document.getElementById('editModal').style.display!=='block') return;
+    if(e.key !== 'Enter') return;
+    if(!(el.closest('#formLista') || el.id==='metaRenoInput' || el.id==='metaA5Input')) return;
+    e.preventDefault();
+    const focusables = [...document.querySelectorAll('#editModal input, #editModal select, #editModal button.btn-ferias-modal')].filter(x=>x.offsetParent!==null);
+    const idx = focusables.indexOf(el);
+    if(idx>=0 && focusables[idx+1]) focusables[idx+1].focus();
+  });
+
+  window.gerarWpp = function(tipo){
+    wppTipo=tipo;
+    document.querySelectorAll('[id^="wbtn-"]').forEach(b=>{b.style.background='#f1f5f9';b.style.color='#1e293b';});
+    document.getElementById('wbtn-'+tipo).style.background='#25D366';document.getElementById('wbtn-'+tipo).style.color='white';
+    const dias=getDiasUteisRestantes(); const ctx=getMesContext(mesSelecionado); const mes=meses[mesSelecionado];
+    const ativos=fenixData.promotores.filter(p=>!p.ferias);
+    const rT=ativos.reduce((a,b)=>a+safe(b.real),0);
+    const somaMetasAtivos=ativos.filter(p=>safe(p.meta)>0).reduce((a,b)=>a+safe(b.meta),0);
+    const pctEq=calcPct(rT,somaMetasAtivos);
+    const proj=calcProjecaoFechamento(rT); const faltamEq=calcFaltamMeta(somaMetasAtivos,rT);
+    const hoje=new Date().toLocaleDateString('pt-BR'); let txt='';
+    const sorted=[...ativos].filter(p=>safe(p.meta)>0).sort((a,b)=>scoreRanking(b,dias)-scoreRanking(a,dias));
+    if(tipo==='ranking'){
+      const medals=['🥇','🥈','🥉'];
+      txt=`🦅 *FÊNIX DO OESTE — RANKING ${mes}*\n📅 ${hoje}\n${'─'.repeat(30)}\n\n`;
+      sorted.slice(0,10).forEach((p,i)=>{
+        const pct=calcPct(p.real,p.meta);
+        const m=i<3?medals[i]:`${i+1}º`;
+        const bar=Math.round(pct/10);
+        const emoji=pct>=100?'🟦':pct>=70?'🟩':pct>=50?'🟨':pct>=30?'🟧':'🟥';
+        const barra=emoji.repeat(Math.min(bar,10))+'⬜'.repeat(Math.max(10-bar,0));
+        txt += `${m} *${primeiroNome(p.nome)}*\n`+
+               `   ${barra} ${pct}%\n`+
+               `   📱 ${safe(p.real)}/${safe(p.meta)} vendas\n\n`;
+      });
+      txt += `${'─'.repeat(30)}\n🎯 *Equipe:* ${rT}/${somaMetasAtivos} (${pctEq}%)\n⚡ *Diária da equipe:* ${calcDiaria(somaMetasAtivos,rT,dias)}/dia\n🔮 *Projeção de fechamento:* ${proj}\n📦 *Faltam:* ${faltamEq}`;
+    } else if(tipo==='diaria'){
+      txt=`⚡ *METAS DIÁRIAS — ${mes}*\n📅 ${hoje} | ${ctx.restantes} dias úteis restantes\n${'─'.repeat(34)}\n\n`;
+      [...sorted].sort((a,b)=>calcDiaria(b.meta,b.real,dias)-calcDiaria(a.meta,a.real,dias)).forEach(p=>{
+        const dr=calcDiaria(p.meta,p.real,dias); const dex=calcDiariaExata(p.meta,p.real,dias); const faltam=calcFaltamMeta(p.meta,p.real);
+        const emoji=dr===0?'✅':dr<=2?'🟡':dr<=4?'🟠':'🔴';
+        txt += `${emoji} *${primeiroNome(p.nome)}*\n   faltam ${faltam} • diária alvo ${dr}/dia (${dex})\n`;
+      });
+      txt += `\n${'─'.repeat(34)}\n🎯 Equipe precisa de *${calcDiaria(somaMetasAtivos,rT,dias)} vendas/dia*\n🔮 Projeção no ritmo atual: *${proj}* aparelhos`;
+    } else {
+      const rnT=ativos.reduce((a,b)=>a+safe(b.reno),0); const a5T=ativos.reduce((a,b)=>a+safe(b.a5),0); const cT=ativos.reduce((a,b)=>a+safe(b.capa),0);
+      const top = [...sorted].sort((a,b)=>safe(b.real)-safe(a.real)).slice(0,3).map((p,i)=>`${i+1}º ${primeiroNome(p.nome)} ${safe(p.real)}v`).join(' | ');
+      txt=`📊 *RESUMO GERAL — ${mes}*\n📅 ${hoje}\n${'─'.repeat(30)}\n\n🎯 *Meta:* ${somaMetasAtivos}\n📱 *Realizado:* ${rT} (${pctEq}%)\n📦 *Faltam:* ${faltamEq}\n⚡ *Diária:* ${calcDiaria(somaMetasAtivos,rT,dias)}/dia\n🔮 *Projeção:* ${proj}\n📈 *Ritmo final:* ${calcRitmoPercentual(rT,somaMetasAtivos)}% da meta\n\n🔥 *${cardLabels.reno||'Reno'}:* ${rnT}/${fenixData.metaReno||69}\n💎 *${cardLabels.a6pro||'A6 Pro'}:* ${a5T}/${fenixData.metaA5||69}\n📊 *Market share:* ${calcPct(rT,cT)}%\n🏆 *Top 3 volume:* ${top}\n\n_Fênix do Oeste • Firebase online_`;
+    }
+    document.getElementById('wppPreview').textContent=txt;
+  };
+
+  window.renderTv = function(){
+    const dias=getDiasUteisRestantes(); const ctx=getMesContext(mesSelecionado);
+    const sorted=[...fenixData.promotores].filter(p=>!p.ferias&&safe(p.meta)>0).sort((a,b)=>scoreRanking(b,dias)-scoreRanking(a,dias));
+    const rT=sorted.reduce((a,b)=>a+safe(b.real),0); const metaT=sorted.reduce((a,b)=>a+safe(b.meta),0); const pctT=calcPct(rT,metaT); const proj=calcProjecaoFechamento(rT); const faltam=calcFaltamMeta(metaT,rT);
+    const stats=document.querySelector('.tv-stats');
+    if(stats){
+      stats.innerHTML = `
+        <div class="tv-stat"><div class="tv-stat-val" style="color:#6366f1;">${fmtBR(rT)}</div><div class="tv-stat-lbl">Realizado</div></div>
+        <div class="tv-stat"><div class="tv-stat-val" style="color:#94a3b8;">${fmtBR(metaT)}</div><div class="tv-stat-lbl">Meta</div></div>
+        <div class="tv-stat"><div class="tv-stat-val" style="color:#10b981;">${pctT}%</div><div class="tv-stat-lbl">Atingimento</div></div>
+        <div class="tv-stat"><div class="tv-stat-val" style="color:#ef4444;">${calcDiaria(metaT,rT,dias)}</div><div class="tv-stat-lbl">Diária</div></div>
+        <div class="tv-stat"><div class="tv-stat-val" style="color:#f59e0b;">${proj}</div><div class="tv-stat-lbl">Projeção</div></div>
+        <div class="tv-stat"><div class="tv-stat-val" style="color:#22c55e;">${faltam}</div><div class="tv-stat-lbl">Faltam</div></div>`;
+    }
+    document.getElementById('tvReal').textContent=fmtBR(rT);
+    document.getElementById('tvMeta').textContent=fmtBR(metaT);
+    document.getElementById('tvPct').textContent=pctT+'%';
+    document.getElementById('tvDiaria').textContent=calcDiaria(metaT,rT,dias);
+    document.getElementById('tvDiasRest').textContent=ctx.restantes;
+    const body=document.getElementById('tvBody'); body.innerHTML='';
+    const rankEmoji=['🥇','🥈','🥉'];
+    sorted.forEach((p,i)=>{
+      const pct=calcPct(p.real,p.meta), dr=calcDiaria(p.meta,p.real,dias), faltamP=calcFaltamMeta(p.meta,p.real), com=calcComissaoPromotorResult(p,regrasPromotor).totalFinal, impactR=calcImpactoMaisUm(p,'reno'), impactA=calcImpactoMaisUm(p,'a6');
+      const cor=pct>=100?'#10b981':pct>=70?'#6366f1':pct>=50?'#f59e0b':'#ef4444';
+      const diariaClass=dr===0?'diaria-ok':dr<=3?'diaria-warn':'diaria-bad';
+      const barGrad=pct>=100?'linear-gradient(90deg,#10b981,#34d399)':pct>=70?'linear-gradient(90deg,#6366f1,#818cf8)':pct>=50?'linear-gradient(90deg,#f59e0b,#fbbf24)':'linear-gradient(90deg,#ef4444,#f87171)';
+      const card=document.createElement('div');
+      card.className=`tv-card ${i<3?`tv-pos-${i}`:(i%2===0?'tv-par':'tv-impar')} ${pct>=100?'tv-ótimo':pct>=70?'tv-bom':pct>=50?'tv-alerta':'tv-risco'}`;
+      card.innerHTML=`
+        <div class="tv-rank">${i<3?rankEmoji[i]:`<span style="font-size:18px;color:#94a3b8;font-weight:900;">${i+1}º</span>`}</div>
+        <div>
+          <div class="tv-name">${p.nome}</div>
+          <div class="tv-capa"><span class="tv-chip">${p.rede||'Sem rede'}</span><span class="tv-chip alt">Filial ${p.filial||'—'}</span><span class="tv-chip alt">CAPA ${safe(p.capa)}</span></div>
+          <div class="tv-footnote">Faltam ${faltamP} • Comissão ${fmtBRL2(com)}</div>
+        </div>
+        <div class="tv-bar-wrap">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:10px;font-weight:800;color:#64748b;">Progresso</span><span style="font-size:10px;font-weight:900;color:${cor};">${safe(p.real)} / ${safe(p.meta)}</span></div>
+          <div class="tv-bar-bg"><div class="tv-bar-fill" style="width:${Math.min(pct,100)}%;background:${barGrad}"></div></div>
+          <div class="tv-pct" style="color:${cor};">${pct}% da meta ${pct>=100?'🏆':''}</div>
+          <div class="tv-footnote">+1 Reno ${fmtBRL2(impactR)} • +1 ${cardLabels.a6pro||'A6'} ${fmtBRL2(impactA)}</div>
+        </div>
+        <div class="tv-num"><div class="tv-num-val" style="color:${cor};font-size:24px;">${pct}%</div><div class="tv-num-lbl">Ating.</div></div>
+        <div class="tv-num"><div class="tv-num-val" style="color:#f97316;">${safe(p.reno)}</div><div class="tv-num-lbl">Reno</div></div>
+        <div class="tv-num"><div class="tv-num-val" style="color:#06b6d4;">${safe(p.a5)}</div><div class="tv-num-lbl">${(cardLabels.a6pro||'A6').replace('META ','')}</div></div>
+        <div class="tv-num"><span class="tv-diaria-pill ${diariaClass}">${dr===0?'✅ Meta!':dr+'/dia'}</span><div class="tv-num-lbl" style="margin-top:5px;">Diária • ${calcDiariaExata(p.meta,p.real,dias)}</div></div>`;
+      body.appendChild(card);
+    });
+    const top = sorted.slice(0,3).map((p,i)=>`${i+1}º ${primeiroNome(p.nome)} ${safe(p.real)}v`).join('  •  ');
+    const ticker=document.getElementById('tvTicker');
+    ticker.textContent=`${meses[mesSelecionado]} ${new Date().getFullYear()} • ${ctx.restantes} dias úteis restantes • projeção ${proj}/${metaT} • faltam ${faltam} • TOP: ${top||'Sem dados'} • Firebase online em tempo real`;
+  };
+
+  window.render = function(){
+    const dias=getDiasUteisRestantes(); const ctx=getMesContext(mesSelecionado);
+    const ativos=fenixData.promotores.filter(p=>!p.ferias);
+    const rT=ativos.reduce((a,b)=>a+safe(b.real),0); const rnT=ativos.reduce((a,b)=>a+safe(b.reno),0); const a5T=ativos.reduce((a,b)=>a+safe(b.a5),0); const cT=ativos.reduce((a,b)=>a+safe(b.capa),0); const somaMetasGeral=ativos.filter(p=>safe(p.meta)>0).reduce((a,b)=>a+safe(b.meta),0);
+    const proj=calcProjecaoFechamento(rT); const faltamEq=calcFaltamMeta(somaMetasGeral,rT);
+    document.getElementById('realGeral').innerText=fmtBR(rT);
+    document.getElementById('renoGeral').innerText=fmtBR(rnT);
+    document.getElementById('a5Geral').innerText=fmtBR(a5T);
+    document.getElementById('marketGeral').innerText=calcPct(rT,cT)+'%';
+    document.getElementById('pctGeral').innerText=calcPct(rT,somaMetasGeral)+'%';
+    document.getElementById('diariaEquipe').innerText=calcDiaria(somaMetasGeral,rT,dias);
+    document.getElementById('metaGeralLabel').innerText=fmtBR(somaMetasGeral);
+    const elMR2=document.getElementById('metaRenoLabel2'); if(elMR2) elMR2.innerText=fmtBR(fenixData.metaReno||69);
+    const elMA2=document.getElementById('metaA5Label2'); if(elMA2) elMA2.innerText=fmtBR(fenixData.metaA5||69);
+    atualizarHeader(); atualizarAlerta(rT,somaMetasGeral,dias); renderCardLabels();
+
+    const sorted=[...fenixData.promotores].sort((a,b)=>scoreRanking(b,dias)-scoreRanking(a,dias));
+    const rankClass=['rank-1','rank-2','rank-3'],rankEmoji=['🥇','🥈','🥉'];
+    let medalIdx=0,html=''; const lReno=cardLabels.reno||'RENO'; const lA6=cardLabels.a6pro||'A6 PRO';
+    sorted.forEach((p,idx)=>{
+      const originalIdx=fenixData.promotores.indexOf(p); const semMeta=!safe(p.meta), emFerias=!!p.ferias; const pct=calcPct(p.real,p.meta); const dRest=emFerias?'—':calcDiaria(p.meta,p.real,dias); const falta=calcFaltamMeta(p.meta,p.real); const dEx=calcDiariaExata(p.meta,p.real,dias); const contrib=rT>0?Math.round((safe(p.real)/rT)*100):0;
+      const corBarra=emFerias?'#10b981':semMeta?'#e2e8f0':pct>=100?'var(--success-dark)':pct>=70?'var(--primary)':pct>=50?'var(--warning)':'var(--danger)';
+      let diariaClass=''; if(!emFerias&&!semMeta){ diariaClass=dRest===0?'diaria-ok':dRest<=2?'diaria-ok':dRest<=4?'diaria-warn':'diaria-bad'; }
+      let badgeClass,badgeConteudo;
+      if(emFerias){badgeClass='rank-n';badgeConteudo='🏖️';}
+      else if(semMeta){badgeClass='rank-n';badgeConteudo=`${idx+1}º`;}
+      else {badgeClass=medalIdx<3?rankClass[medalIdx]:'rank-n'; badgeConteudo=medalIdx<3?rankEmoji[medalIdx]:`${idx+1}º`; medalIdx++;}
+      const feriasBadge=emFerias?`<span class="ferias-badge">🏖️ Férias</span>`:'';
+      const diariaDisplay=emFerias||semMeta?`<span style="color:#94a3b8;">—</span>`:dRest===0?`<span class="diaria-pill diaria-ok">✅ 0</span>`:`<span class="diaria-pill ${diariaClass}">${dRest}/dia</span>`;
+      const comissao = (!emFerias && safe(p.meta)>0 && typeof calcComissaoPromotorResult==='function') ? calcComissaoPromotorResult(p,regrasPromotor).totalFinal : 0;
+      const impactR = (!emFerias && safe(p.meta)>0) ? calcImpactoMaisUm(p,'reno') : 0;
+      const impactA = (!emFerias && safe(p.meta)>0) ? calcImpactoMaisUm(p,'a6') : 0;
+      html += `<div class="promotor-card ${emFerias?'ferias':''}" style="border-left-color:${corBarra}">
+        <div class="rank-badge ${badgeClass}">${badgeConteudo}</div>
+        <div>
+          <div class="p-name-wrap" id="pwrap_${originalIdx}">
+            <span class="p-name" id="pname_${originalIdx}" onclick="editNomeInline(${originalIdx})" title="Clique para editar">${p.nome}</span>
+            ${feriasBadge}
+            <button class="btn-ferias-toggle ${emFerias?'ativo':''}" onclick="toggleFeriasCard(${originalIdx})" title="${emFerias?'Remover férias':'Marcar férias'}">🏖️</button>
+          </div>
+          <div class="p-subline">
+            <span class="mini-chip">🏬 ${p.rede||'SEM REDE'}</span>
+            <span class="mini-chip">🏷️ Filial ${p.filial||'—'}</span>
+            <span class="mini-chip ${falta===0?'good':'warn'}">📦 Faltam ${falta}</span>
+          </div>
+          <div class="p-insight">
+            <span class="mini-chip info">💰 ${fmtBRL2(comissao)}</span>
+            <span class="mini-chip">+1 Reno ${fmtBRL2(impactR)}</span>
+            <span class="mini-chip">+1 ${lA6.replace('META ','')} ${fmtBRL2(impactA)}</span>
+          </div>
+        </div>
+        <div>
+          <div class="progress-bg"><div class="progress-fill" style="width:${emFerias?100:Math.min(pct,100)}%;background:${corBarra}"></div></div>
+          <div class="pct-label" style="color:${corBarra}"><span>${emFerias?'🏖️ EM FÉRIAS':pct+'% DA META'}</span><span class="compact-note">${ctx.restantes} dias • projeção ${proj}</span></div>
+        </div>
+        <div class="meta-group">
+          <div class="m-item"><span>Meta</span><b>${emFerias?'—':fmtBR(p.meta)}</b></div>
+          <div class="m-item"><span>Real</span><b style="color:${pct>=100?'var(--success-dark)':'inherit'}">${fmtBR(p.real)}</b></div>
+          <div class="m-item"><span>Faltam</span><b>${emFerias?'—':fmtBR(falta)}</b></div>
+          <div class="m-item"><span>${lReno}</span><b style="color:var(--reno)">${fmtBR(p.reno||0)}</b></div>
+          <div class="m-item"><span>${lA6}</span><b style="color:var(--a5pro)">${fmtBR(p.a5||0)}</b></div>
+          <div class="m-item diaria-item"><span>Diária</span><b>${diariaDisplay}</b></div>
+        </div>
+      </div>`;
+    });
+    document.getElementById('listaPromotores').innerHTML=html;
+    const bannerDesc=document.getElementById('bannerDesc');
+    if(bannerDesc){ bannerDesc.innerHTML = `Meta equipe <b>${fmtBR(somaMetasGeral)}</b> • faltam <b>${fmtBR(faltamEq)}</b> • projeção <b>${fmtBR(proj)}</b> • ${ctx.restantes} dias úteis restantes`; }
+    verificarMetas(fenixData.promotores); sincHistComReal();
+  };
+
+  window.openPainel = (function(prev){
+    return function(){ prev(); const dias=getDiasUteisRestantes(); const ativos=fenixData.promotores.filter(p=>!p.ferias); const rT=ativos.reduce((a,b)=>a+safe(b.real),0); const somaM=ativos.filter(p=>safe(p.meta)>0).reduce((a,b)=>a+safe(b.meta),0); const proj=calcProjecaoFechamento(rT); const faltam=calcFaltamMeta(somaM,rT);
+      const wrap=document.querySelector('#painelModal .painel-content');
+      if(wrap && !document.getElementById('painelResumoExtra')){
+        const box=document.createElement('div'); box.id='painelResumoExtra'; box.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:0 0 16px;';
+        box.innerHTML=`<div class="sup-card"><div class="s-label">Dias úteis</div><div class="s-val">${getMesContext(mesSelecionado).restantes}</div><div class="s-sub">restantes</div></div><div class="sup-card"><div class="s-label">Faltam</div><div class="s-val" style="color:#f97316;">${faltam}</div><div class="s-sub">para a meta</div></div><div class="sup-card"><div class="s-label">Projeção</div><div class="s-val" style="color:#6366f1;">${proj}</div><div class="s-sub">no ritmo atual</div></div><div class="sup-card"><div class="s-label">Diária</div><div class="s-val" style="color:#ef4444;">${calcDiaria(somaM,rT,dias)}</div><div class="s-sub">equipe / dia</div></div>`;
+        wrap.insertBefore(box, document.getElementById('painelTabela'));
+      } else if(document.getElementById('painelResumoExtra')) {
+        document.getElementById('painelResumoExtra').remove();
+        return openPainel();
+      }
+    }
+  })(window.openPainel);
+
+  render();
+})();
+</script>
+
+
 </body>
 </html>
-
-// Inicialização das quantidades manuais ao carregar
-window.addEventListener('load', () => {
-    const saved = localStorage.getItem('fenixPdQtds2026');
-    if(saved) pdQtds = JSON.parse(saved);
-});
