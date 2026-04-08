@@ -2152,8 +2152,21 @@ function render(){
 }
 
 render();
-if(window._firebaseReady){setupFirebaseSync();setupHistFirebaseSync();bootstrapCloudData().then(()=>render());}
-else{window.addEventListener('firebaseReady',()=>{setupFirebaseSync();setupHistFirebaseSync();bootstrapCloudData().then(()=>render());});}
+if(window._firebaseReady){
+    setupFirebaseSync();setupHistFirebaseSync();bootstrapCloudData().then(()=>render());
+}else{
+    let booted=false;
+    window.addEventListener('firebaseReady',()=>{
+        booted=true;
+        setupFirebaseSync();setupHistFirebaseSync();bootstrapCloudData().then(()=>render());
+    });
+    setTimeout(()=>{
+        if(!booted){
+            markCloudMode(false,'⚠️ Usando dados locais');
+            render();
+        }
+    },2500);
+}
 </script>
 
 <script>
