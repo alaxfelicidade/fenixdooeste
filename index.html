@@ -2,6 +2,8 @@
 
 
 
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1188,9 +1190,7 @@ function atualizarSomaMeta(){
     let soma=0;
     fenixData.promotores.forEach((p,i)=>{
         const el=document.getElementById('m_'+i);
-        const fbtn=document.getElementById('fbtn_'+i);
-        const emFerias=fbtn?fbtn.classList.contains('on'):(p.ferias||false);
-        if(!emFerias&&el)soma+=parseInt(el.value)||0;
+        if(el)soma+=parseInt(el.value)||0;
     });
     const el=document.getElementById('somaMetaModal');if(el)el.innerText=soma;
     atualizarEspelhosModal();
@@ -1218,8 +1218,8 @@ function renderForm(){
     document.getElementById('formLista').innerHTML=html;
 }
 function toggleFeriasModal(i){const btn=document.getElementById(`fbtn_${i}`),row=document.getElementById(`erow_${i}`),isOn=btn.classList.contains('on');if(isOn){btn.classList.replace('on','off');btn.textContent='🏖️ Férias';row.style.cssText='';}else{btn.classList.replace('off','on');btn.textContent='🏖️ Ativo';row.style.cssText='opacity:0.65;background:#f0fdf4;border-radius:8px;padding:4px;';}atualizarSomaMeta();atualizarEspelhosModal();}
-function addRow(){fenixData.promotores.push({filial:'',rede:'MAGALU',nome:'',capa:0,meta:0,real:0,reno:0,a5:0,ferias:false});renderForm();}
-function removeRow(i){fenixData.promotores.splice(i,1);renderForm();}
+function addRow(){fenixData.promotores.push({filial:'',rede:'MAGALU',nome:'',capa:0,meta:0,real:0,reno:0,a5:0,ferias:false});renderForm();atualizarSomaMeta();}
+function removeRow(i){fenixData.promotores.splice(i,1);renderForm();atualizarSomaMeta();}
 function closeModal(){document.getElementById('editModal').style.display='none';}
 function saveAll(){
     fenixData.metaGeral=fenixData.promotores.filter(p=>!p.ferias).reduce((a,b)=>a+(parseInt(document.getElementById('m_'+fenixData.promotores.indexOf(b))?.value)||0),0);
