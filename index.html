@@ -979,38 +979,11 @@ function loadMesData(mesIdx){
     }
     return normalizeMesData(getDefaultMesData());
 }
-async function waitForFirebaseReady(timeout=12000){
-    if(window._firebaseReady && typeof window._fbSet==='function' && typeof window._fbGet==='function') return true;
-    return await new Promise(resolve=>{
-        let done=false;
-        const finish=(ok)=>{ if(done) return; done=true; resolve(ok); };
-        const timer=setTimeout(()=>finish(false), timeout);
-        window.addEventListener('firebaseReady', ()=>{
-            clearTimeout(timer);
-            finish(!!(window._firebaseReady && typeof window._fbSet==='function' && typeof window._fbGet==='function'));
-        }, { once:true });
-    });
-}
-
-async function saveMesData(mesIdx,data){
+function saveMesData(mesIdx,data){
     const payload=normalizeMesData({...data,_updatedAt:Date.now()});
     localStorage.setItem(STORAGE_PREFIX+mesIdx,JSON.stringify(payload));
-
-    const firebaseOk = await waitForFirebaseReady();
-    if(!firebaseOk || typeof window._fbSet!=='function'){
-        showSync('⚠️ Firebase indisponível no momento','amarelo');
-        return false;
-    }
-
-    try{
-        await window._fbSet('fenix2026/mes_'+mesIdx,payload);
-        showSync('✅ Salvo na nuvem','verde');
-        return true;
-    }catch(err){
-        console.error('Erro ao salvar mes no Firebase:', err);
-        showSync('⚠️ Erro ao salvar na nuvem','amarelo');
-        return false;
-    }
+    if(window._fbSet)window._fbSet('fenix2026/mes_'+mesIdx,payload)
+        .then(()=>showSync('✅ Salvo na nuvem','verde')).catch(()=>showSync('⚠️ Salvo local','amarelo'));
 }
 function showSync(msg,tipo){
     const el=document.getElementById('syncStatus');if(!el)return;
@@ -1217,9 +1190,7 @@ function atualizarSomaMeta(){
     let soma=0;
     fenixData.promotores.forEach((p,i)=>{
         const el=document.getElementById('m_'+i);
-        const fbtn=document.getElementById('fbtn_'+i);
-        const emFerias=fbtn?fbtn.classList.contains('on'):(p.ferias||false);
-        if(!emFerias&&el)soma+=parseInt(el.value)||0;
+        if(el)soma+=parseInt(el.value)||0;
     });
     const el=document.getElementById('somaMetaModal');if(el)el.innerText=soma;
     atualizarEspelhosModal();
@@ -1251,7 +1222,7 @@ function addRow(){fenixData.promotores.push({filial:'',rede:'MAGALU',nome:'',cap
 function removeRow(i){fenixData.promotores.splice(i,1);renderForm();}
 function closeModal(){document.getElementById('editModal').style.display='none';}
 function saveAll(){
-    fenixData.metaGeral=fenixData.promotores.filter(p=>!p.ferias).reduce((a,b)=>a+(parseInt(document.getElementById('m_'+fenixData.promotores.indexOf(b))?.value)||0),0);
+    fenixData.metaGeral=fenixData.promotores.reduce((a,_,i)=>a+(parseInt(document.getElementById('m_'+i)?.value)||0),0);
     fenixData.metaReno=parseInt(document.getElementById('metaRenoInput').value)||69;
     fenixData.metaA5=parseInt(document.getElementById('metaA5Input').value)||69;
     fenixData.promotores=fenixData.promotores.map((p,i)=>{
@@ -2223,7 +2194,7 @@ async function iniciarFirebaseComSeguranca(){
             showSync('✅ Dados online carregados','verde');
         }catch(e){
             console.error(e);
-            showSync('⚠️ Falha ao ler Firebase','amarelo');
+            showSync('⚠️ Falha ao ler Firebase, usando dados locais','amarelo');
         }
         render();
         return;
@@ -2239,17 +2210,17 @@ async function iniciarFirebaseComSeguranca(){
             showSync('✅ Dados online carregados','verde');
         }catch(e){
             console.error(e);
-            showSync('⚠️ Falha ao ler Firebase','amarelo');
+            showSync('⚠️ Falha ao ler Firebase, usando dados locais','amarelo');
         }
         render();
     }, { once:true });
 
     setTimeout(()=>{
         if(!booted && !window._firebaseReady){
-            showSync('⚠️ Aguardando conexão com Firebase','amarelo');
+            showSync('⚠️ Firebase não respondeu, usando dados locais','amarelo');
             render();
         }
-    },12000);
+    },8000);
 }
 
 iniciarFirebaseComSeguranca();
