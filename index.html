@@ -1,6 +1,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -14,19 +15,50 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
         const firebaseConfig = {
             apiKey:"AIzaSyBCFPX0gknfN0CgIoC_4dWiJDg6Rnz0LqI",authDomain:"fenixdooeste.firebaseapp.com",
             databaseURL:"https://fenixdooeste-default-rtdb.firebaseio.com",projectId:"fenixdooeste",
             storageBucket:"fenixdooeste.firebasestorage.app",messagingSenderId:"276140570126",
             appId:"1:276140570126:web:a0af6a3a76ccf70977ae5f",measurementId:"G-WYDR7PTP9N"
         };
-        const app = initializeApp(firebaseConfig);
-        const db  = getDatabase(app);
-        window._fbSet    = (path,data) => set(ref(db,path),data);
-        window._fbGet    = (path)      => get(ref(db,path)).then(s=>s.exists()?s.val():null);
-        window._fbListen = (path,cb)   => onValue(ref(db,path),snap=>cb(snap.exists()?snap.val():null));
-        window._firebaseReady = true;
-        window.dispatchEvent(new Event('firebaseReady'));
+
+        try{
+            const app = initializeApp(firebaseConfig);
+            const db  = getDatabase(app);
+
+            window._fbSet = async (path,data) => {
+                try{
+                    await set(ref(db,path),data);
+                    return true;
+                }catch(err){
+                    console.error('Erro ao salvar no Firebase:', err);
+                    throw err;
+                }
+            };
+
+            window._fbGet = async (path) => {
+                try{
+                    const s = await get(ref(db,path));
+                    return s.exists() ? s.val() : null;
+                }catch(err){
+                    console.error('Erro ao ler do Firebase:', err);
+                    throw err;
+                }
+            };
+
+            window._fbListen = (path,cb) => onValue(
+                ref(db,path),
+                snap => cb(snap.exists() ? snap.val() : null),
+                err => console.error('Erro no listener Firebase:', path, err)
+            );
+
+            window._firebaseReady = true;
+            window.dispatchEvent(new Event('firebaseReady'));
+        }catch(err){
+            console.error('Falha ao iniciar Firebase:', err);
+            window._firebaseReady = false;
+        }
     </script>
 <style>
 :root {
@@ -2152,21 +2184,46 @@ function render(){
 }
 
 render();
-if(window._firebaseReady){
-    setupFirebaseSync();setupHistFirebaseSync();bootstrapCloudData().then(()=>render());
-}else{
+
+async function iniciarFirebaseComSeguranca(){
+    if(window._firebaseReady){
+        try{
+            setupFirebaseSync();
+            setupHistFirebaseSync();
+            await bootstrapCloudData();
+            showSync('✅ Dados online carregados','verde');
+        }catch(e){
+            console.error(e);
+            showSync('⚠️ Falha ao ler Firebase, usando dados locais','amarelo');
+        }
+        render();
+        return;
+    }
+
     let booted=false;
-    window.addEventListener('firebaseReady',()=>{
+    window.addEventListener('firebaseReady', async ()=>{
         booted=true;
-        setupFirebaseSync();setupHistFirebaseSync();bootstrapCloudData().then(()=>render());
-    });
+        try{
+            setupFirebaseSync();
+            setupHistFirebaseSync();
+            await bootstrapCloudData();
+            showSync('✅ Dados online carregados','verde');
+        }catch(e){
+            console.error(e);
+            showSync('⚠️ Falha ao ler Firebase, usando dados locais','amarelo');
+        }
+        render();
+    }, { once:true });
+
     setTimeout(()=>{
-        if(!booted){
-            markCloudMode(false,'⚠️ Usando dados locais');
+        if(!booted && !window._firebaseReady){
+            showSync('⚠️ Firebase não respondeu, usando dados locais','amarelo');
             render();
         }
-    },2500);
+    },8000);
 }
+
+iniciarFirebaseComSeguranca();
 </script>
 
 <script>
