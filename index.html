@@ -1190,7 +1190,9 @@ function atualizarSomaMeta(){
     let soma=0;
     fenixData.promotores.forEach((p,i)=>{
         const el=document.getElementById('m_'+i);
-        if(el)soma+=parseInt(el.value)||0;
+        const fbtn=document.getElementById('fbtn_'+i);
+        const emFerias=fbtn?fbtn.classList.contains('on'):(p.ferias||false);
+        if(!emFerias&&el)soma+=parseInt(el.value)||0;
     });
     const el=document.getElementById('somaMetaModal');if(el)el.innerText=soma;
     atualizarEspelhosModal();
@@ -1222,7 +1224,7 @@ function addRow(){fenixData.promotores.push({filial:'',rede:'MAGALU',nome:'',cap
 function removeRow(i){fenixData.promotores.splice(i,1);renderForm();}
 function closeModal(){document.getElementById('editModal').style.display='none';}
 function saveAll(){
-    fenixData.metaGeral=fenixData.promotores.reduce((a,_,i)=>a+(parseInt(document.getElementById('m_'+i)?.value)||0),0);
+    fenixData.metaGeral=fenixData.promotores.filter(p=>!p.ferias).reduce((a,b)=>a+(parseInt(document.getElementById('m_'+fenixData.promotores.indexOf(b))?.value)||0),0);
     fenixData.metaReno=parseInt(document.getElementById('metaRenoInput').value)||69;
     fenixData.metaA5=parseInt(document.getElementById('metaA5Input').value)||69;
     fenixData.promotores=fenixData.promotores.map((p,i)=>{
@@ -2621,6 +2623,159 @@ window.addEventListener("DOMContentLoaded",()=>{
 })();
 </script>
 
+
+
+<style id="meta-pct-patch-style">
+.edit-row{grid-template-columns:70px 110px 1.9fr 80px 64px 80px 80px 70px 70px 92px 28px!important;}
+.equipe-header-row,.equipe-total-row{grid-template-columns:70px 110px 1.9fr 80px 64px 80px 80px 70px 70px 92px 28px!important;}
+.meta-pct-input{text-align:center!important;font-weight:800!important;color:#4338ca;background:#eef2ff;border-color:#c7d2fe!important;}
+.meta-pct-input:focus{outline:none;border-color:#6366f1!important;background:#f5f3ff;}
+.meta-pct-hint{font-size:9px;font-weight:800;color:#6366f1;text-align:center;white-space:nowrap;}
+</style>
+<script id="meta-pct-patch">
+(function(){
+  const safeNum = v => Number(v || 0);
+  window.calcMetaByPct = function(capa, pct){
+    return Math.round((safeNum(capa) * safeNum(pct)) / 100);
+  };
+
+  window.patchEquipeHeaderPercent = function(){
+    const hdr = document.querySelector('#editModal .equipe-header-row') || document.querySelector('#editModal .modal-content > div[style*="grid-template-columns:88px 120px"]');
+    if(!hdr) return;
+    hdr.classList.add('equipe-header-row');
+    hdr.style = '';
+    const labels = ['FILIAL','REDE','NOME','CAPA','%','META','REAL','RENO', (window.cardLabels?.a6pro || 'A6 PRO'),'FÉRIAS',''];
+    while(hdr.children.length < labels.length){
+      const d = document.createElement('div');
+      hdr.appendChild(d);
+    }
+    [...hdr.children].forEach((child, idx) => {
+      child.textContent = labels[idx] || '';
+      child.style.textAlign = idx < 3 ? 'left' : 'center';
+      if(idx === 8){
+        child.style.color = 'var(--a5pro)';
+      }
+    });
+  };
+
+  window.atualizarLinhaEquipe = function(i){
+    const capaEl = document.getElementById('c_'+i);
+    const pctEl = document.getElementById('pct_'+i);
+    const metaEl = document.getElementById('m_'+i);
+    if(!capaEl || !pctEl || !metaEl) return;
+    metaEl.value = calcMetaByPct(capaEl.value, pctEl.value);
+    if(document.getElementById('pct_hint_'+i)){
+      document.getElementById('pct_hint_'+i).textContent = `${safeNum(capaEl.value)} × ${safeNum(pctEl.value)}%`;
+    }
+    atualizarSomaMeta();
+  };
+
+  window.atualizarSomaMeta = function(){
+    let soma = 0;
+    let capaTotal = 0;
+    for(let i=0;i<fenixData.promotores.length;i++){
+      const metaEl = document.getElementById('m_'+i);
+      const capaEl = document.getElementById('c_'+i);
+      soma += safeNum(metaEl?.value);
+      capaTotal += safeNum(capaEl?.value);
+    }
+    const el = document.getElementById('somaMetaModal');
+    if(el) el.innerText = soma.toLocaleString('pt-BR');
+    const metaTotalEl = document.getElementById('equipeTotalMeta');
+    if(metaTotalEl) metaTotalEl.innerText = soma.toLocaleString('pt-BR');
+    const capaTotalEl = document.getElementById('equipeTotalCapa');
+    if(capaTotalEl) capaTotalEl.innerText = capaTotal.toLocaleString('pt-BR');
+    atualizarEspelhosModal();
+  };
+
+  window.renderForm = function(){
+    let html = '';
+    let tc=0, tm=0, tr=0, tre=0, ta=0;
+    fenixData.promotores.forEach((p,i)=>{
+      const fc = p.ferias ? 'on' : 'off';
+      const ft = p.ferias ? '🏖️ Ativo' : '🏖️ Férias';
+      const redeOptions = REDES_OPTIONS.map(rede=>`<option value="${rede}" ${String(p.rede||'')===rede?'selected':''}>${rede}</option>`).join('');
+      const capa = safeNum(p.capa);
+      const pct = safeNum(p.metaPct || 20);
+      const meta = safeNum(p.meta || calcMetaByPct(capa, pct));
+      tc += capa; tm += meta; tr += safeNum(p.real); tre += safeNum(p.reno); ta += safeNum(p.a5);
+      html += `<div class="edit-row" id="erow_${i}" style="${p.ferias?'opacity:0.68;background:#f0fdf4;border-radius:8px;padding:4px;':''}">
+        <input type="text" value="${p.filial||''}" id="fil_${i}" class="filial-input" inputmode="numeric" placeholder="237">
+        <select id="rede_${i}" class="rede-select">${redeOptions}</select>
+        <input type="text" value="${(p.nome||'').replace(/"/g,'&quot;')}" id="n_${i}" class="nome-input" title="${(p.nome||'').replace(/"/g,'&quot;')}">
+        <input type="number" value="${capa}" id="c_${i}" min="0" oninput="atualizarLinhaEquipe(${i})">
+        <div>
+          <input type="number" value="${pct}" id="pct_${i}" min="0" step="0.1" class="meta-pct-input" oninput="atualizarLinhaEquipe(${i})">
+          <div class="meta-pct-hint" id="pct_hint_${i}">${capa} × ${pct}%</div>
+        </div>
+        <input type="number" value="${meta}" id="m_${i}" min="0" oninput="atualizarSomaMeta()">
+        <input type="number" value="${safeNum(p.real)}" id="r_${i}" min="0">
+        <input type="number" value="${safeNum(p.reno)}" id="re_${i}" min="0" oninput="atualizarEspelhosModal()">
+        <input type="number" value="${safeNum(p.a5)}" id="a_${i}" min="0" oninput="atualizarEspelhosModal()">
+        <button type="button" class="btn-ferias-modal ${fc}" id="fbtn_${i}" onclick="toggleFeriasModal(${i})">${ft}</button>
+        <button type="button" class="btn-del" onclick="removeRow(${i})">×</button>
+      </div>`;
+    });
+    html += `<div class="equipe-total-row">
+      <div>—</div><div>—</div><div>TOTAIS</div>
+      <div id="equipeTotalCapa">${tc.toLocaleString('pt-BR')}</div>
+      <div>—</div>
+      <div id="equipeTotalMeta">${tm.toLocaleString('pt-BR')}</div>
+      <div>${tr.toLocaleString('pt-BR')}</div>
+      <div>${tre.toLocaleString('pt-BR')}</div>
+      <div>${ta.toLocaleString('pt-BR')}</div>
+      <div>—</div><div>—</div>
+    </div>`;
+    document.getElementById('formLista').innerHTML = html;
+    patchEquipeHeaderPercent();
+    atualizarSomaMeta();
+  };
+
+  window.addRow = function(){
+    fenixData.promotores.push({filial:'',rede:'MAGALU',nome:'',capa:0,metaPct:20,meta:0,real:0,reno:0,a5:0,ferias:false});
+    renderForm();
+  };
+
+  const prevSaveAll = window.saveAll;
+  window.saveAll = function(){
+    fenixData.metaGeral = 0;
+    fenixData.metaReno = parseInt(document.getElementById('metaRenoInput').value) || 69;
+    fenixData.metaA5 = parseInt(document.getElementById('metaA5Input').value) || 69;
+    fenixData.promotores = fenixData.promotores.map((p,i)=>{
+      const fbtn = document.getElementById(`fbtn_${i}`);
+      const item = {
+        filial: document.getElementById(`fil_${i}`).value,
+        rede: document.getElementById(`rede_${i}`).value,
+        nome: document.getElementById(`n_${i}`).value,
+        capa: parseInt(document.getElementById(`c_${i}`).value) || 0,
+        metaPct: parseFloat(document.getElementById(`pct_${i}`)?.value) || 0,
+        meta: parseInt(document.getElementById(`m_${i}`).value) || 0,
+        real: parseInt(document.getElementById(`r_${i}`).value) || 0,
+        reno: parseInt(document.getElementById(`re_${i}`).value) || 0,
+        a5: parseInt(document.getElementById(`a_${i}`).value) || 0,
+        ferias: fbtn ? fbtn.classList.contains('on') : (p.ferias || false)
+      };
+      fenixData.metaGeral += item.meta;
+      return item;
+    });
+    const ilr=document.getElementById('inputLabelReno');const ila=document.getElementById('inputLabelA6Pro');
+    if(ilr&&ilr.value.trim())cardLabels.reno=ilr.value.trim();
+    if(ila&&ila.value.trim())cardLabels.a6pro=ila.value.trim();
+    localStorage.setItem('fenixCardLabels',JSON.stringify(cardLabels));
+    if(window._fbSet)window._fbSet('fenix2026/cardLabels',cardLabels);
+    saveMesData(mesSelecionado,fenixData);closeModal();render();metasJaCelebradas=new Set(JSON.parse(localStorage.getItem('fenixCelebradas2026')||'[]'));
+  };
+
+  const prevOpenModal2 = window.openModal;
+  window.openModal = function(){
+    prevOpenModal2();
+    setTimeout(()=>{
+      patchEquipeHeaderPercent();
+      renderForm();
+    },0);
+  };
+})();
+</script>
 
 </body>
 </html>
