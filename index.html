@@ -11,6 +11,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -3551,6 +3552,404 @@ window.addEventListener("DOMContentLoaded",()=>{
     }
   });
   setTimeout(syncTotaisEquipeFinal, 80);
+})();
+</script>
+
+
+<script>
+// ===== PATCH FINAL — ZERAR DADOS + CORREÇÃO TOTAL META =====
+(function(){
+  const n = v => parseInt(v,10) || 0;
+
+  function modalAberto(){
+    const modal = document.getElementById('editModal');
+    return !!modal && modal.style.display === 'block';
+  }
+
+  function garantirBotaoZerar(){
+    const addBtn = [...document.querySelectorAll('#editModal button')].find(b => (b.textContent||'').includes('Adicionar Promotor'));
+    if(!addBtn || document.getElementById('btnZerarEquipe')) return;
+    const btn = document.createElement('button');
+    btn.id = 'btnZerarEquipe';
+    btn.type = 'button';
+    btn.textContent = '🧹 ZERAR DADOS';
+    btn.style.margin = '0 0 12px';
+    btn.style.padding = '10px';
+    btn.style.cursor = 'pointer';
+    btn.style.width = '100%';
+    btn.style.border = '1px solid #fecaca';
+    btn.style.borderRadius = '8px';
+    btn.style.background = '#fef2f2';
+    btn.style.color = '#b91c1c';
+    btn.style.fontWeight = '800';
+    btn.style.fontFamily = 'inherit';
+    btn.onclick = window.zerarDadosEquipe;
+    addBtn.insertAdjacentElement('beforebegin', btn);
+  }
+
+  function getLinhasModal(){
+    return Array.from(document.querySelectorAll('#formLista .edit-row'));
+  }
+
+  function snapshotAtual(){
+    const base = Array.isArray(window.fenixData?.promotores) ? window.fenixData.promotores : [];
+    return base.map((p,i)=>{
+      const fbtn = document.getElementById('fbtn_'+i);
+      return {
+        filial: document.getElementById('fil_'+i)?.value ?? (p?.filial || ''),
+        rede: document.getElementById('rede_'+i)?.value ?? (p?.rede || 'MAGALU'),
+        nome: document.getElementById('n_'+i)?.value ?? (p?.nome || ''),
+        capa: n(document.getElementById('c_'+i)?.value ?? p?.capa),
+        meta: n(document.getElementById('m_'+i)?.value ?? p?.meta),
+        real: n(document.getElementById('r_'+i)?.value ?? p?.real),
+        reno: n(document.getElementById('re_'+i)?.value ?? p?.reno),
+        a5: n(document.getElementById('a_'+i)?.value ?? p?.a5),
+        ferias: fbtn ? fbtn.classList.contains('on') : !!p?.ferias,
+        metaPct: n(document.getElementById('pct_'+i)?.value ?? p?.metaPct ?? 20)
+      };
+    });
+  }
+
+  function setTxt(id, val){
+    const el = document.getElementById(id);
+    if(el) el.textContent = String(val);
+  }
+
+  function syncBarraFinalMeta(){
+    if(!modalAberto()) return;
+    const ativos = snapshotAtual().filter(p=>!p.ferias);
+    const totais = ativos.reduce((acc,p)=>{
+      acc.capa += n(p.capa);
+      acc.meta += n(p.meta);
+      acc.real += n(p.real);
+      acc.reno += n(p.reno);
+      acc.a5 += n(p.a5);
+      return acc;
+    }, {capa:0, meta:0, real:0, reno:0, a5:0});
+
+    setTxt('somaMetaModal', totais.meta);
+    setTxt('equipeTotalCapa', totais.capa);
+    setTxt('equipeTotalMeta', totais.meta);
+    setTxt('equipeTotalReal', totais.real);
+    setTxt('equipeTotalReno', totais.reno);
+    setTxt('equipeTotalA6', totais.a5);
+
+    setTxt('realGeral', totais.real);
+    setTxt('metaGeralLabel', totais.meta);
+    setTxt('renoGeral', totais.reno);
+    setTxt('a5Geral', totais.a5);
+
+    const metaReno = n(document.getElementById('metaRenoInput')?.value ?? window.fenixData?.metaReno);
+    const metaA5 = n(document.getElementById('metaA5Input')?.value ?? window.fenixData?.metaA5);
+    setTxt('metaRenoLabel2', metaReno);
+    setTxt('metaA5Label2', metaA5);
+    setTxt('modalRenoMeta', metaReno);
+    setTxt('modalRenoReal', totais.reno);
+    setTxt('modalA6Meta', metaA5);
+    setTxt('modalA6Real', totais.a5);
+
+    if(typeof window.calcPct === 'function'){
+      setTxt('pctGeral', window.calcPct(totais.real, totais.meta) + '%');
+      setTxt('marketGeral', window.calcPct(totais.real, totais.capa) + '%');
+    }
+    if(typeof window.calcDiaria === 'function'){
+      const dias = typeof window.getDiasUteisRestantes === 'function' ? window.getDiasUteisRestantes() : 1;
+      setTxt('diariaEquipe', window.calcDiaria(totais.meta, totais.real, dias));
+    }
+  }
+
+  window.zerarDadosEquipe = function(){
+    if(!confirm('Deseja zerar CAPA, META, REAL, RENO e A6 PRO de toda a equipe deste mês?')) return;
+    const linhas = getLinhasModal();
+    linhas.forEach((_,i)=>{
+      const pctEl = document.getElementById('pct_'+i);
+      const cEl = document.getElementById('c_'+i);
+      const mEl = document.getElementById('m_'+i);
+      const rEl = document.getElementById('r_'+i);
+      const reEl = document.getElementById('re_'+i);
+      const aEl = document.getElementById('a_'+i);
+      if(cEl) cEl.value = '0';
+      if(pctEl) pctEl.value = '20';
+      if(mEl) mEl.value = '0';
+      if(rEl) rEl.value = '0';
+      if(reEl) reEl.value = '0';
+      if(aEl) aEl.value = '0';
+      const hint = document.getElementById('pct_hint_'+i);
+      if(hint) hint.textContent = '0 × 20%';
+    });
+    const metaRenoInput = document.getElementById('metaRenoInput');
+    const metaA5Input = document.getElementById('metaA5Input');
+    if(metaRenoInput) metaRenoInput.value = '0';
+    if(metaA5Input) metaA5Input.value = '0';
+    syncBarraFinalMeta();
+  };
+
+  const originalOpenModalFinal = window.openModal;
+  window.openModal = function(){
+    if(typeof originalOpenModalFinal === 'function') originalOpenModalFinal();
+    setTimeout(()=>{ garantirBotaoZerar(); syncBarraFinalMeta(); }, 30);
+    setTimeout(()=>{ garantirBotaoZerar(); syncBarraFinalMeta(); }, 180);
+  };
+
+  const originalRenderFormFinal = window.renderForm;
+  window.renderForm = function(){
+    if(typeof originalRenderFormFinal === 'function') originalRenderFormFinal();
+    garantirBotaoZerar();
+    syncBarraFinalMeta();
+  };
+
+  const originalAtualizarLinhaEquipe = window.atualizarLinhaEquipe;
+  window.atualizarLinhaEquipe = function(i){
+    if(typeof originalAtualizarLinhaEquipe === 'function') originalAtualizarLinhaEquipe(i);
+    syncBarraFinalMeta();
+  };
+
+  const originalSaveAllFinal = window.saveAll;
+  window.saveAll = async function(){
+    if(modalAberto()){
+      window.fenixData.metaReno = n(document.getElementById('metaRenoInput')?.value ?? window.fenixData.metaReno);
+      window.fenixData.metaA5 = n(document.getElementById('metaA5Input')?.value ?? window.fenixData.metaA5);
+      window.fenixData.promotores = snapshotAtual().map(p => ({
+        filial: p.filial,
+        rede: p.rede,
+        nome: p.nome,
+        capa: p.capa,
+        meta: p.meta,
+        real: p.real,
+        reno: p.reno,
+        a5: p.a5,
+        ferias: p.ferias,
+        metaPct: p.metaPct
+      }));
+    }
+    syncBarraFinalMeta();
+    if(typeof originalSaveAllFinal === 'function') return await originalSaveAllFinal();
+  };
+
+  document.addEventListener('input', function(e){
+    if(e.target && (e.target.closest('#formLista') || e.target.id === 'metaRenoInput' || e.target.id === 'metaA5Input')){
+      syncBarraFinalMeta();
+    }
+  });
+  document.addEventListener('change', function(e){
+    if(e.target && (e.target.closest('#formLista') || e.target.id === 'metaRenoInput' || e.target.id === 'metaA5Input')){
+      syncBarraFinalMeta();
+    }
+  });
+
+  setTimeout(()=>{ garantirBotaoZerar(); syncBarraFinalMeta(); }, 120);
+})();
+</script>
+
+
+<script>
+// ===== PATCH FINAL V4 — GitHub-safe totals + zero only from META onward =====
+(function(){
+  const toInt = v => {
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  function modalExiste(){
+    return !!document.getElementById('editModal');
+  }
+
+  function modalVisivel(){
+    const modal = document.getElementById('editModal');
+    if(!modal) return false;
+    const cs = window.getComputedStyle(modal);
+    return cs.display !== 'none' && cs.visibility !== 'hidden';
+  }
+
+  function getBasePromotores(){
+    if(window.fenixData && Array.isArray(window.fenixData.promotores)) return window.fenixData.promotores;
+    return [];
+  }
+
+  function getPromotoresDoModalOuEstado(){
+    const base = getBasePromotores();
+    if(!modalExiste()) return base;
+    return base.map((p, i) => {
+      const fbtn = document.getElementById('fbtn_'+i);
+      return {
+        filial: document.getElementById('fil_'+i)?.value ?? p?.filial ?? '',
+        rede: document.getElementById('rede_'+i)?.value ?? p?.rede ?? 'MAGALU',
+        nome: document.getElementById('n_'+i)?.value ?? p?.nome ?? '',
+        capa: toInt(document.getElementById('c_'+i)?.value ?? p?.capa ?? 0),
+        meta: toInt(document.getElementById('m_'+i)?.value ?? p?.meta ?? 0),
+        real: toInt(document.getElementById('r_'+i)?.value ?? p?.real ?? 0),
+        reno: toInt(document.getElementById('re_'+i)?.value ?? p?.reno ?? 0),
+        a5: toInt(document.getElementById('a_'+i)?.value ?? p?.a5 ?? 0),
+        ferias: fbtn ? fbtn.classList.contains('on') : !!p?.ferias,
+        metaPct: toInt(document.getElementById('pct_'+i)?.value ?? p?.metaPct ?? 20)
+      };
+    });
+  }
+
+  function setTxt(id, val){
+    const el = document.getElementById(id);
+    if(el) el.textContent = String(val);
+  }
+
+  function setVal(id, val){
+    const el = document.getElementById(id);
+    if(el) el.value = String(val);
+  }
+
+  function syncTotaisGitHubSafe(){
+    const promotores = getPromotoresDoModalOuEstado();
+    const ativos = promotores.filter(p => !p.ferias);
+    const totais = ativos.reduce((acc, p) => {
+      acc.capa += toInt(p.capa);
+      acc.meta += toInt(p.meta);
+      acc.real += toInt(p.real);
+      acc.reno += toInt(p.reno);
+      acc.a5 += toInt(p.a5);
+      return acc;
+    }, {capa:0, meta:0, real:0, reno:0, a5:0});
+
+    const metaReno = toInt(document.getElementById('metaRenoInput')?.value ?? window.fenixData?.metaReno ?? 0);
+    const metaA5 = toInt(document.getElementById('metaA5Input')?.value ?? window.fenixData?.metaA5 ?? 0);
+
+    setTxt('somaMetaModal', totais.meta);
+    setTxt('equipeTotalCapa', totais.capa);
+    setTxt('equipeTotalMeta', totais.meta);
+    setTxt('equipeTotalReal', totais.real);
+    setTxt('equipeTotalReno', totais.reno);
+    setTxt('equipeTotalA6', totais.a5);
+
+    setTxt('realGeral', totais.real);
+    setTxt('metaGeralLabel', totais.meta);
+    setTxt('renoGeral', totais.reno);
+    setTxt('a5Geral', totais.a5);
+    setTxt('metaRenoLabel2', metaReno);
+    setTxt('metaA5Label2', metaA5);
+    setTxt('modalRenoMeta', metaReno);
+    setTxt('modalRenoReal', totais.reno);
+    setTxt('modalA6Meta', metaA5);
+    setTxt('modalA6Real', totais.a5);
+
+    if(typeof window.calcPct === 'function'){
+      setTxt('pctGeral', window.calcPct(totais.real, totais.meta) + '%');
+      setTxt('marketGeral', window.calcPct(totais.real, totais.capa) + '%');
+    }
+    if(typeof window.calcDiaria === 'function'){
+      const dias = typeof window.getDiasUteisRestantes === 'function' ? window.getDiasUteisRestantes() : 1;
+      setTxt('diariaEquipe', window.calcDiaria(totais.meta, totais.real, dias));
+    }
+
+    return totais;
+  }
+
+  function garantirBotaoZerarV4(){
+    const addBtn = [...document.querySelectorAll('#editModal button')].find(b => (b.textContent || '').includes('Adicionar Promotor'));
+    if(!addBtn) return;
+    let btn = document.getElementById('btnZerarEquipeV4');
+    if(!btn){
+      btn = document.createElement('button');
+      btn.id = 'btnZerarEquipeV4';
+      btn.type = 'button';
+      btn.textContent = '🧹 ZERAR DADOS';
+      btn.style.margin = '0 0 12px';
+      btn.style.padding = '10px';
+      btn.style.cursor = 'pointer';
+      btn.style.width = '100%';
+      btn.style.border = '1px solid #fecaca';
+      btn.style.borderRadius = '8px';
+      btn.style.background = '#fef2f2';
+      btn.style.color = '#b91c1c';
+      btn.style.fontWeight = '800';
+      btn.style.fontFamily = 'inherit';
+      btn.onclick = window.zerarDadosEquipe;
+      addBtn.insertAdjacentElement('beforebegin', btn);
+    }
+  }
+
+  window.zerarDadosEquipe = function(){
+    if(!confirm('Deseja zerar somente META, REAL, RENO e A6 PRO de toda a equipe deste mês?')) return;
+    const base = getBasePromotores();
+    base.forEach((_, i) => {
+      setVal('m_'+i, 0);
+      setVal('r_'+i, 0);
+      setVal('re_'+i, 0);
+      setVal('a_'+i, 0);
+    });
+    setVal('metaRenoInput', 0);
+    setVal('metaA5Input', 0);
+    syncTotaisGitHubSafe();
+  };
+
+  const originalOpenModalV4 = window.openModal;
+  window.openModal = function(){
+    if(typeof originalOpenModalV4 === 'function') originalOpenModalV4();
+    requestAnimationFrame(() => {
+      garantirBotaoZerarV4();
+      syncTotaisGitHubSafe();
+    });
+    setTimeout(() => {
+      garantirBotaoZerarV4();
+      syncTotaisGitHubSafe();
+    }, 120);
+  };
+
+  const originalRenderFormV4 = window.renderForm;
+  window.renderForm = function(){
+    if(typeof originalRenderFormV4 === 'function') originalRenderFormV4();
+    garantirBotaoZerarV4();
+    syncTotaisGitHubSafe();
+  };
+
+  const originalAtualizarLinhaEquipeV4 = window.atualizarLinhaEquipe;
+  window.atualizarLinhaEquipe = function(i){
+    if(typeof originalAtualizarLinhaEquipeV4 === 'function') originalAtualizarLinhaEquipeV4(i);
+    syncTotaisGitHubSafe();
+  };
+
+  const originalSaveAllV4 = window.saveAll;
+  window.saveAll = async function(){
+    const base = getPromotoresDoModalOuEstado();
+    if(window.fenixData){
+      window.fenixData.metaReno = toInt(document.getElementById('metaRenoInput')?.value ?? window.fenixData.metaReno ?? 0);
+      window.fenixData.metaA5 = toInt(document.getElementById('metaA5Input')?.value ?? window.fenixData.metaA5 ?? 0);
+      window.fenixData.promotores = base.map(p => ({
+        filial: p.filial,
+        rede: p.rede,
+        nome: p.nome,
+        capa: p.capa,
+        meta: p.meta,
+        real: p.real,
+        reno: p.reno,
+        a5: p.a5,
+        ferias: p.ferias,
+        metaPct: p.metaPct
+      }));
+    }
+    syncTotaisGitHubSafe();
+    if(typeof originalSaveAllV4 === 'function') return await originalSaveAllV4();
+  };
+
+  window.atualizarTotaisRodapeEquipe = syncTotaisGitHubSafe;
+  window.syncTotaisGitHubSafe = syncTotaisGitHubSafe;
+
+  document.addEventListener('input', function(e){
+    if(!e.target) return;
+    if(e.target.id === 'metaRenoInput' || e.target.id === 'metaA5Input' || e.target.closest('#formLista')){
+      syncTotaisGitHubSafe();
+    }
+  }, true);
+
+  document.addEventListener('change', function(e){
+    if(!e.target) return;
+    if(e.target.id === 'metaRenoInput' || e.target.id === 'metaA5Input' || e.target.closest('#formLista')){
+      syncTotaisGitHubSafe();
+    }
+  }, true);
+
+  window.addEventListener('load', function(){
+    garantirBotaoZerarV4();
+    syncTotaisGitHubSafe();
+    setTimeout(syncTotaisGitHubSafe, 200);
+  });
 })();
 </script>
 
