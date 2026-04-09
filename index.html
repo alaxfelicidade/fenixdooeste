@@ -8,6 +8,8 @@
 
 
 
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -3328,6 +3330,189 @@ window.addEventListener("DOMContentLoaded",()=>{
   });
 
   setTimeout(syncAutoSomasEquipe, 50);
+})();
+</script>
+
+
+<script>
+// PATCH FINAL — soma automática da coluna META no card superior e barra final do modal
+(function(){
+  function n(v){ return parseInt(v,10) || 0; }
+
+  function modalAberto(){
+    const m = document.getElementById('editModal');
+    return !!m && m.style.display === 'block';
+  }
+
+  function garantirIdsTotaisRodape(){
+    const formLista = document.getElementById('formLista');
+    if(!formLista) return;
+    const row = formLista.querySelector('.equipe-total-row:last-child');
+    if(!row) return;
+    const cells = row.querySelectorAll(':scope > div');
+    if(cells.length >= 8){
+      if(!document.getElementById('equipeTotalCapa')) cells[3].id = 'equipeTotalCapa';
+      if(!document.getElementById('equipeTotalMeta')) cells[4].id = 'equipeTotalMeta';
+      if(!document.getElementById('equipeTotalReal')) cells[5].id = 'equipeTotalReal';
+      if(!document.getElementById('equipeTotalReno')) cells[6].id = 'equipeTotalReno';
+      if(!document.getElementById('equipeTotalA6')) cells[7].id = 'equipeTotalA6';
+    }
+  }
+
+  function snapshotDoModal(){
+    const base = Array.isArray(window.fenixData?.promotores) ? window.fenixData.promotores : [];
+    return base.map((p,i)=>{
+      const fbtn = document.getElementById('fbtn_'+i);
+      return {
+        filial: document.getElementById('fil_'+i)?.value ?? p?.filial ?? '',
+        rede: document.getElementById('rede_'+i)?.value ?? p?.rede ?? 'MAGALU',
+        nome: document.getElementById('n_'+i)?.value ?? p?.nome ?? '',
+        capa: n(document.getElementById('c_'+i)?.value ?? p?.capa),
+        meta: n(document.getElementById('m_'+i)?.value ?? p?.meta),
+        real: n(document.getElementById('r_'+i)?.value ?? p?.real),
+        reno: n(document.getElementById('re_'+i)?.value ?? p?.reno),
+        a5: n(document.getElementById('a_'+i)?.value ?? p?.a5),
+        ferias: fbtn ? fbtn.classList.contains('on') : !!(p?.ferias)
+      };
+    });
+  }
+
+  function snapshotAtual(){
+    if(modalAberto()){
+      return {
+        promotores: snapshotDoModal(),
+        metaReno: n(document.getElementById('metaRenoInput')?.value ?? window.fenixData?.metaReno),
+        metaA5: n(document.getElementById('metaA5Input')?.value ?? window.fenixData?.metaA5)
+      };
+    }
+    return {
+      promotores: (Array.isArray(window.fenixData?.promotores) ? window.fenixData.promotores : []).map(p => ({
+        filial: p?.filial || '',
+        rede: p?.rede || 'MAGALU',
+        nome: p?.nome || '',
+        capa: n(p?.capa),
+        meta: n(p?.meta),
+        real: n(p?.real),
+        reno: n(p?.reno),
+        a5: n(p?.a5),
+        ferias: !!p?.ferias
+      })),
+      metaReno: n(window.fenixData?.metaReno),
+      metaA5: n(window.fenixData?.metaA5)
+    };
+  }
+
+  function somas(snapshot){
+    const ativos = (snapshot.promotores || []).filter(p => !p.ferias);
+    return {
+      capa: ativos.reduce((a,p)=>a+n(p.capa),0),
+      meta: ativos.reduce((a,p)=>a+n(p.meta),0),
+      real: ativos.reduce((a,p)=>a+n(p.real),0),
+      reno: ativos.reduce((a,p)=>a+n(p.reno),0),
+      a5: ativos.reduce((a,p)=>a+n(p.a5),0),
+      metaReno: n(snapshot.metaReno),
+      metaA5: n(snapshot.metaA5)
+    };
+  }
+
+  function setText(id, value){
+    const el = document.getElementById(id);
+    if(el) el.innerText = value;
+  }
+
+  function syncMetaCardsETotais(){
+    garantirIdsTotaisRodape();
+    const s = somas(snapshotAtual());
+    const dias = typeof window.getDiasUteisRestantes === 'function' ? window.getDiasUteisRestantes() : 1;
+
+    setText('somaMetaModal', s.meta);
+    setText('metaGeralLabel', s.meta);
+    setText('realGeral', s.real);
+    setText('renoGeral', s.reno);
+    setText('a5Geral', s.a5);
+    setText('metaRenoLabel2', s.metaReno);
+    setText('metaA5Label2', s.metaA5);
+    setText('modalRenoMeta', s.metaReno);
+    setText('modalRenoReal', s.reno);
+    setText('modalA6Meta', s.metaA5);
+    setText('modalA6Real', s.a5);
+    setText('equipeTotalCapa', s.capa);
+    setText('equipeTotalMeta', s.meta);
+    setText('equipeTotalReal', s.real);
+    setText('equipeTotalReno', s.reno);
+    setText('equipeTotalA6', s.a5);
+
+    if(typeof window.calcPct === 'function'){
+      setText('pctGeral', window.calcPct(s.real, s.meta) + '%');
+      setText('marketGeral', window.calcPct(s.real, s.capa) + '%');
+    }
+    if(typeof window.calcDiaria === 'function'){
+      setText('diariaEquipe', window.calcDiaria(s.meta, s.real, dias));
+    }
+    if(typeof window.atualizarAlerta === 'function'){
+      window.atualizarAlerta(s.real, s.meta, dias);
+    }
+  }
+
+  const prevRenderForm = window.renderForm;
+  window.renderForm = function(){
+    if(typeof prevRenderForm === 'function') prevRenderForm();
+    setTimeout(syncMetaCardsETotais, 0);
+  };
+
+  const prevOpenModal = window.openModal;
+  window.openModal = function(){
+    if(typeof prevOpenModal === 'function') prevOpenModal();
+    setTimeout(syncMetaCardsETotais, 0);
+    setTimeout(syncMetaCardsETotais, 120);
+  };
+
+  const prevToggleFeriasModal = window.toggleFeriasModal;
+  window.toggleFeriasModal = function(i){
+    if(typeof prevToggleFeriasModal === 'function') prevToggleFeriasModal(i);
+    setTimeout(syncMetaCardsETotais, 0);
+  };
+
+  const prevAddRow = window.addRow;
+  window.addRow = function(){
+    if(typeof prevAddRow === 'function') prevAddRow();
+    setTimeout(syncMetaCardsETotais, 0);
+  };
+
+  const prevRemoveRow = window.removeRow;
+  window.removeRow = function(i){
+    if(typeof prevRemoveRow === 'function') prevRemoveRow(i);
+    setTimeout(syncMetaCardsETotais, 0);
+  };
+
+  window.atualizarEspelhosModal = syncMetaCardsETotais;
+  window.atualizarSomaMeta = syncMetaCardsETotais;
+  window.atualizarTotaisRodapeEquipe = syncMetaCardsETotais;
+  window.syncMetaCardsETotais = syncMetaCardsETotais;
+
+  document.addEventListener('input', function(e){
+    const el = e.target;
+    if(!el) return;
+    if(el.closest('#formLista') || el.id === 'metaRenoInput' || el.id === 'metaA5Input'){
+      syncMetaCardsETotais();
+    }
+  });
+
+  document.addEventListener('change', function(e){
+    const el = e.target;
+    if(!el) return;
+    if(el.closest('#formLista') || el.id === 'metaRenoInput' || el.id === 'metaA5Input'){
+      syncMetaCardsETotais();
+    }
+  });
+
+  const prevRender = window.render;
+  window.render = function(){
+    if(typeof prevRender === 'function') prevRender();
+    setTimeout(syncMetaCardsETotais, 0);
+  };
+
+  setTimeout(syncMetaCardsETotais, 50);
 })();
 </script>
 
