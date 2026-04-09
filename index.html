@@ -7,6 +7,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -3168,212 +3169,165 @@ window.addEventListener("DOMContentLoaded",()=>{
 
 
 <script>
+// ===== PATCH AUTO-SOMA MODAL EQUIPE / CARDS TOPO =====
 (function(){
-  const toNum = v => parseInt(v,10) || 0;
+  function n(v){ return parseInt(v,10) || 0; }
 
-  function garantirBarraTotais(){
-    const formLista = document.getElementById('formLista');
-    if(!formLista) return;
-    let barra = document.getElementById('barraTotaisEquipe');
-    if(!barra){
-      barra = document.createElement('div');
-      barra.id = 'barraTotaisEquipe';
-      barra.style.cssText = 'display:grid;grid-template-columns:88px 120px minmax(180px,2fr) 70px 70px 70px 70px minmax(120px,1fr) 78px;gap:4px;padding:8px 8px;margin-top:8px;background:#0f172a;color:white;border-radius:8px;font-weight:800;font-size:10px;text-align:center;align-items:center;';
-      barra.innerHTML = `
-        <div style="text-align:left;">TOTAL</div>
-        <div></div>
-        <div></div>
-        <div id="totalCapaEquipe">0</div>
-        <div id="totalMetaEquipe">0</div>
-        <div id="totalRealEquipe">0</div>
-        <div id="totalRenoEquipe">0</div>
-        <div id="totalA6Equipe">0</div>
-        <div></div>`;
-      formLista.insertAdjacentElement('afterend', barra);
-    }
+  function modalAberto(){
+    const modal = document.getElementById('editModal');
+    return !!modal && modal.style.display === 'block';
   }
 
-  function snapshotModal(){
-    const modalOpen = document.getElementById('editModal')?.style.display === 'block';
-    const base = (window.fenixData && Array.isArray(window.fenixData.promotores)) ? window.fenixData.promotores : [];
+  function snapshotEquipeAtual(){
+    const base = Array.isArray(fenixData?.promotores) ? fenixData.promotores : [];
     const promotores = base.map((p,i)=>{
+      if(!modalAberto()){
+        return {
+          filial: p?.filial || '',
+          rede: p?.rede || 'MAGALU',
+          nome: p?.nome || '',
+          capa: n(p?.capa),
+          meta: n(p?.meta),
+          real: n(p?.real),
+          reno: n(p?.reno),
+          a5: n(p?.a5),
+          ferias: !!p?.ferias
+        };
+      }
       const fbtn = document.getElementById('fbtn_'+i);
       return {
-        filial: modalOpen ? (document.getElementById('fil_'+i)?.value ?? p.filial ?? '') : (p.filial ?? ''),
-        rede: modalOpen ? (document.getElementById('rede_'+i)?.value ?? p.rede ?? 'MAGALU') : (p.rede ?? 'MAGALU'),
-        nome: modalOpen ? (document.getElementById('n_'+i)?.value ?? p.nome ?? '') : (p.nome ?? ''),
-        capa: modalOpen ? toNum(document.getElementById('c_'+i)?.value) : toNum(p.capa),
-        meta: modalOpen ? toNum(document.getElementById('m_'+i)?.value) : toNum(p.meta),
-        real: modalOpen ? toNum(document.getElementById('r_'+i)?.value) : toNum(p.real),
-        reno: modalOpen ? toNum(document.getElementById('re_'+i)?.value) : toNum(p.reno),
-        a5: modalOpen ? toNum(document.getElementById('a_'+i)?.value) : toNum(p.a5),
-        ferias: modalOpen ? (fbtn ? fbtn.classList.contains('on') : !!p.ferias) : !!p.ferias
+        filial: document.getElementById('fil_'+i)?.value ?? (p?.filial || ''),
+        rede: document.getElementById('rede_'+i)?.value ?? (p?.rede || 'MAGALU'),
+        nome: document.getElementById('n_'+i)?.value ?? (p?.nome || ''),
+        capa: n(document.getElementById('c_'+i)?.value ?? p?.capa),
+        meta: n(document.getElementById('m_'+i)?.value ?? p?.meta),
+        real: n(document.getElementById('r_'+i)?.value ?? p?.real),
+        reno: n(document.getElementById('re_'+i)?.value ?? p?.reno),
+        a5: n(document.getElementById('a_'+i)?.value ?? p?.a5),
+        ferias: fbtn ? fbtn.classList.contains('on') : !!p?.ferias
       };
     });
+
     return {
-      promotores,
-      metaReno: modalOpen ? toNum(document.getElementById('metaRenoInput')?.value) : toNum(window.fenixData?.metaReno),
-      metaA5: modalOpen ? toNum(document.getElementById('metaA5Input')?.value) : toNum(window.fenixData?.metaA5)
+      metaReno: n(document.getElementById('metaRenoInput')?.value ?? fenixData?.metaReno),
+      metaA5: n(document.getElementById('metaA5Input')?.value ?? fenixData?.metaA5),
+      promotores
     };
   }
 
   function indicadores(snapshot){
-    const ativos = snapshot.promotores.filter(p=>!p.ferias);
+    const ativos = (snapshot?.promotores || []).filter(p=>!p.ferias);
     return {
-      capa: ativos.reduce((a,p)=>a + toNum(p.capa), 0),
-      meta: ativos.reduce((a,p)=>a + toNum(p.meta), 0),
-      real: ativos.reduce((a,p)=>a + toNum(p.real), 0),
-      reno: ativos.reduce((a,p)=>a + toNum(p.reno), 0),
-      a6: ativos.reduce((a,p)=>a + toNum(p.a5), 0)
+      capa: ativos.reduce((a,p)=>a+n(p.capa),0),
+      meta: ativos.reduce((a,p)=>a+n(p.meta),0),
+      real: ativos.reduce((a,p)=>a+n(p.real),0),
+      reno: ativos.reduce((a,p)=>a+n(p.reno),0),
+      a5: ativos.reduce((a,p)=>a+n(p.a5),0)
     };
   }
 
-  function atualizarBarraETopos(){
-    garantirBarraTotais();
-    const snap = snapshotModal();
-    const ind = indicadores(snap);
-    const dias = (typeof getDiasUteisRestantes === 'function') ? getDiasUteisRestantes() : 1;
-    const set = (id,val)=>{ const el=document.getElementById(id); if(el) el.innerText = val; };
+  function setTxt(id, value){
+    const el = document.getElementById(id);
+    if(el) el.innerText = value;
+  }
 
-    set('totalCapaEquipe', ind.capa);
-    set('totalMetaEquipe', ind.meta);
-    set('totalRealEquipe', ind.real);
-    set('totalRenoEquipe', ind.reno);
-    set('totalA6Equipe', ind.a6);
+  function syncAutoSomasEquipe(){
+    const snapshot = snapshotEquipeAtual();
+    const t = indicadores(snapshot);
+    const dias = typeof getDiasUteisRestantes === 'function' ? getDiasUteisRestantes() : 1;
 
-    set('somaMetaModal', ind.meta);
-    set('modalRenoMeta', snap.metaReno);
-    set('modalRenoReal', ind.reno);
-    set('modalA6Meta', snap.metaA5);
-    set('modalA6Real', ind.a6);
+    // cards do topo
+    setTxt('realGeral', t.real);
+    setTxt('renoGeral', t.reno);
+    setTxt('a5Geral', t.a5);
+    setTxt('metaGeralLabel', t.meta);
+    setTxt('metaRenoLabel2', snapshot.metaReno);
+    setTxt('metaA5Label2', snapshot.metaA5);
+    setTxt('pctGeral', (typeof calcPct === 'function' ? calcPct(t.real, t.meta) : 0) + '%');
+    setTxt('marketGeral', (typeof calcPct === 'function' ? calcPct(t.real, t.capa) : 0) + '%');
+    setTxt('diariaEquipe', typeof calcDiaria === 'function' ? calcDiaria(t.meta, t.real, dias) : 0);
 
-    set('realGeral', ind.real);
-    set('renoGeral', ind.reno);
-    set('a5Geral', ind.a6);
-    set('metaGeralLabel', ind.meta);
-    set('metaRenoLabel2', snap.metaReno);
-    set('metaA5Label2', snap.metaA5);
+    // cards internos do modal
+    setTxt('somaMetaModal', t.meta);
+    setTxt('modalRenoMeta', snapshot.metaReno);
+    setTxt('modalRenoReal', t.reno);
+    setTxt('modalA6Meta', snapshot.metaA5);
+    setTxt('modalA6Real', t.a5);
 
-    const pct = document.getElementById('pctGeral');
-    if(pct) pct.innerText = (ind.meta > 0 ? Math.round((ind.real/ind.meta)*100) : 0) + '%';
+    // barra final do modal equipe
+    setTxt('equipeTotalCapa', t.capa);
+    setTxt('equipeTotalMeta', t.meta);
+    setTxt('equipeTotalReal', t.real);
+    setTxt('equipeTotalReno', t.reno);
+    setTxt('equipeTotalA6', t.a5);
 
-    const market = document.getElementById('marketGeral');
-    if(market) market.innerText = (ind.capa > 0 ? Math.round((ind.real/ind.capa)*100) : 0) + '%';
-
-    const diaria = document.getElementById('diariaEquipe');
-    if(diaria){
-      const faltam = Math.max(ind.meta - ind.real, 0);
-      diaria.innerText = dias > 0 ? Math.ceil(faltam / dias) : faltam;
+    if(typeof atualizarAlerta === 'function'){
+      atualizarAlerta(t.real, t.meta, dias);
+    }
+    if(document.getElementById('tvOverlay')?.classList.contains('active') && typeof renderTv === 'function'){
+      renderTv();
     }
   }
 
-  window.atualizarEspelhosModal = function(){ atualizarBarraETopos(); };
-  window.atualizarSomaMeta = function(){ atualizarBarraETopos(); };
+  window.syncAutoSomasEquipe = syncAutoSomasEquipe;
+  window.atualizarEspelhosModal = syncAutoSomasEquipe;
+  window.atualizarSomaMeta = syncAutoSomasEquipe;
+  window.atualizarTotaisRodapeEquipe = syncAutoSomasEquipe;
 
+  const prevRender = window.render;
+  window.render = function(){
+    if(typeof prevRender === 'function') prevRender();
+    syncAutoSomasEquipe();
+  };
+
+  const prevRenderForm = window.renderForm;
   window.renderForm = function(){
-    let html = '';
-    (window.fenixData.promotores || []).forEach((p,i)=>{
-      const fc = p.ferias ? 'on' : 'off';
-      const ft = p.ferias ? '🏖️ Ativo' : '🏖️ Férias';
-      const redeOptions = (window.REDES_OPTIONS || ['MAGALU','CASAS BAHIA','PONTO','FASTSHOP']).map(rede => `<option value="${rede}" ${String(p.rede||'MAGALU')===rede?'selected':''}>${rede}</option>`).join('');
-      html += `<div class="edit-row" id="erow_${i}" style="${p.ferias?'opacity:0.65;background:#f0fdf4;border-radius:8px;padding:4px;':''}">
-          <input type="text" value="${p.filial||''}" id="fil_${i}" class="filial-input" inputmode="numeric" placeholder="237">
-          <select id="rede_${i}" class="rede-select">${redeOptions}</select>
-          <input type="text" value="${String(p.nome||'').replace(/"/g,'&quot;')}" id="n_${i}" class="nome-input">
-          <input type="number" value="${toNum(p.capa)}" id="c_${i}" min="0" oninput="atualizarEspelhosModal()">
-          <input type="number" value="${toNum(p.meta)}" id="m_${i}" min="0" oninput="atualizarSomaMeta()">
-          <input type="number" value="${toNum(p.real)}" id="r_${i}" min="0" oninput="atualizarEspelhosModal()">
-          <input type="number" value="${toNum(p.reno)}" id="re_${i}" min="0" oninput="atualizarEspelhosModal()">
-          <input type="number" value="${toNum(p.a5)}" id="a_${i}" min="0" oninput="atualizarEspelhosModal()">
-          <div style="display:flex;gap:2px;align-items:center;justify-content:space-between;">
-              <button type="button" class="btn-ferias-modal ${fc}" id="fbtn_${i}" onclick="toggleFeriasModal(${i})" style="padding:7px 5px;font-size:9px;flex:1;">${ft}</button>
-              <button type="button" class="btn-del" onclick="removeRow(${i})" style="font-size:16px;padding:0 2px;">×</button>
-          </div>
-      </div>`;
-    });
-    document.getElementById('formLista').innerHTML = html;
-    garantirBarraTotais();
-    atualizarBarraETopos();
+    if(typeof prevRenderForm === 'function') prevRenderForm();
+    syncAutoSomasEquipe();
   };
 
-  window.toggleFeriasModal = function(i){
-    const btn = document.getElementById('fbtn_'+i), row = document.getElementById('erow_'+i);
-    if(!btn || !row) return;
-    const isOn = btn.classList.contains('on');
-    if(isOn){
-      btn.classList.replace('on','off');
-      btn.textContent='🏖️ Férias';
-      row.style.cssText='';
-    }else{
-      btn.classList.replace('off','on');
-      btn.textContent='🏖️ Ativo';
-      row.style.cssText='opacity:0.65;background:#f0fdf4;border-radius:8px;padding:4px;';
-    }
-    atualizarBarraETopos();
-  };
-
-  window.addRow = function(){
-    window.fenixData.promotores.push({filial:'',rede:'MAGALU',nome:'',capa:0,meta:0,real:0,reno:0,a5:0,ferias:false});
-    renderForm();
-  };
-
-  window.removeRow = function(i){
-    window.fenixData.promotores.splice(i,1);
-    renderForm();
-  };
-
+  const prevOpenModal = window.openModal;
   window.openModal = function(){
-    document.getElementById('editModal').style.display='block';
-    document.getElementById('modalMesLabel').innerText = window.meses[window.mesSelecionado] + ' ' + new Date().getFullYear();
-    document.getElementById('metaRenoInput').value = window.fenixData.metaReno || 69;
-    document.getElementById('metaA5Input').value = window.fenixData.metaA5 || 69;
-    const ilr=document.getElementById('inputLabelReno'); if(ilr) ilr.value=window.cardLabels.reno||'RENO 14F';
-    const ila=document.getElementById('inputLabelA6Pro'); if(ila) ila.value=window.cardLabels.a6pro||'META A6 PRO';
-    const er=document.getElementById('editRenoNome'); if(er) er.style.display='none';
-    const ea=document.getElementById('editA6ProNome'); if(ea) ea.style.display='none';
-    const br=document.getElementById('btnEditReno'); if(br) br.style.color='#94a3b8';
-    const ba=document.getElementById('btnEditA6Pro'); if(ba) ba.style.color='#94a3b8';
-    renderForm();
-    setTimeout(atualizarBarraETopos, 50);
+    if(typeof prevOpenModal === 'function') prevOpenModal();
+    setTimeout(syncAutoSomasEquipe, 0);
+    setTimeout(syncAutoSomasEquipe, 80);
   };
 
-  window.saveAll = function(){
-    window.fenixData.metaReno = toNum(document.getElementById('metaRenoInput').value) || 69;
-    window.fenixData.metaA5 = toNum(document.getElementById('metaA5Input').value) || 69;
-    window.fenixData.promotores = window.fenixData.promotores.map((p,i)=>{
-      const fbtn = document.getElementById('fbtn_'+i);
-      return {
-        filial: document.getElementById('fil_'+i).value,
-        rede: document.getElementById('rede_'+i).value,
-        nome: document.getElementById('n_'+i).value,
-        capa: toNum(document.getElementById('c_'+i).value),
-        meta: toNum(document.getElementById('m_'+i).value),
-        real: toNum(document.getElementById('r_'+i).value),
-        reno: toNum(document.getElementById('re_'+i).value),
-        a5: toNum(document.getElementById('a_'+i).value),
-        ferias: fbtn ? fbtn.classList.contains('on') : !!p.ferias
-      };
-    });
-    window.fenixData.metaGeral = window.fenixData.promotores.filter(p=>!p.ferias).reduce((a,p)=>a + toNum(p.meta), 0);
-    const ilr=document.getElementById('inputLabelReno');
-    const ila=document.getElementById('inputLabelA6Pro');
-    if(ilr && ilr.value.trim()) window.cardLabels.reno = ilr.value.trim();
-    if(ila && ila.value.trim()) window.cardLabels.a6pro = ila.value.trim();
-    localStorage.setItem('fenixCardLabels', JSON.stringify(window.cardLabels));
-    if(window._fbSet) window._fbSet('fenix2026/cardLabels', window.cardLabels);
-    saveMesData(window.mesSelecionado, window.fenixData);
-    closeModal();
-    if(typeof render === 'function') render();
+  const prevToggleFeriasModal = window.toggleFeriasModal;
+  window.toggleFeriasModal = function(i){
+    if(typeof prevToggleFeriasModal === 'function') prevToggleFeriasModal(i);
+    syncAutoSomasEquipe();
+  };
+
+  const prevAddRow = window.addRow;
+  window.addRow = function(){
+    if(typeof prevAddRow === 'function') prevAddRow();
+    setTimeout(syncAutoSomasEquipe, 0);
+  };
+
+  const prevRemoveRow = window.removeRow;
+  window.removeRow = function(i){
+    if(typeof prevRemoveRow === 'function') prevRemoveRow(i);
+    setTimeout(syncAutoSomasEquipe, 0);
   };
 
   document.addEventListener('input', function(e){
     const el = e.target;
     if(!el) return;
-    if(document.getElementById('editModal')?.style.display !== 'block') return;
     if(el.closest('#formLista') || el.id === 'metaRenoInput' || el.id === 'metaA5Input'){
-      atualizarBarraETopos();
+      syncAutoSomasEquipe();
     }
   });
+
+  document.addEventListener('change', function(e){
+    const el = e.target;
+    if(!el) return;
+    if(el.closest('#formLista') || el.id === 'metaRenoInput' || el.id === 'metaA5Input'){
+      syncAutoSomasEquipe();
+    }
+  });
+
+  setTimeout(syncAutoSomasEquipe, 50);
 })();
 </script>
 
