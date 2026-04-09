@@ -4,6 +4,8 @@
 
 
 
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -2774,6 +2776,370 @@ window.addEventListener("DOMContentLoaded",()=>{
       renderForm();
     },0);
   };
+})();
+</script>
+
+
+<style>
+/* PATCH FINAL — sincronismo cards/modal + TV */
+#tvOverlay.active{display:flex !important;}
+#tvOverlay{display:none;}
+</style>
+<script>
+// ===== PATCH FINAL CHATGPT =====
+(function(){
+  function toInt(v){ return parseInt(v,10) || 0; }
+  function clonePromotor(p){
+    return {
+      filial: p?.filial || '',
+      rede: p?.rede || 'MAGALU',
+      nome: p?.nome || '',
+      capa: toInt(p?.capa),
+      meta: toInt(p?.meta),
+      real: toInt(p?.real),
+      reno: toInt(p?.reno),
+      a5: toInt(p?.a5),
+      ferias: !!p?.ferias
+    };
+  }
+
+  window.getSnapshotFenix = function(){
+    const modal = document.getElementById('editModal');
+    const modalAberto = !!modal && modal.style.display === 'block';
+    const base = Array.isArray(fenixData?.promotores) ? fenixData.promotores : [];
+    const promotores = base.map((p,i)=>{
+      if(!modalAberto) return clonePromotor(p);
+      const fbtn = document.getElementById('fbtn_'+i);
+      return clonePromotor({
+        filial: document.getElementById('fil_'+i)?.value ?? p.filial,
+        rede: document.getElementById('rede_'+i)?.value ?? p.rede,
+        nome: document.getElementById('n_'+i)?.value ?? p.nome,
+        capa: document.getElementById('c_'+i)?.value ?? p.capa,
+        meta: document.getElementById('m_'+i)?.value ?? p.meta,
+        real: document.getElementById('r_'+i)?.value ?? p.real,
+        reno: document.getElementById('re_'+i)?.value ?? p.reno,
+        a5: document.getElementById('a_'+i)?.value ?? p.a5,
+        ferias: fbtn ? fbtn.classList.contains('on') : !!p.ferias
+      });
+    });
+
+    return {
+      promotores,
+      metaReno: modalAberto ? toInt(document.getElementById('metaRenoInput')?.value) : toInt(fenixData?.metaReno),
+      metaA5: modalAberto ? toInt(document.getElementById('metaA5Input')?.value) : toInt(fenixData?.metaA5)
+    };
+  };
+
+  function getIndicadores(snapshot){
+    const ativos = snapshot.promotores.filter(p=>!p.ferias);
+    return {
+      ativos,
+      rT: ativos.reduce((a,p)=>a+toInt(p.real),0),
+      rnT: ativos.reduce((a,p)=>a+toInt(p.reno),0),
+      a5T: ativos.reduce((a,p)=>a+toInt(p.a5),0),
+      cT: ativos.reduce((a,p)=>a+toInt(p.capa),0),
+      somaM: ativos.reduce((a,p)=>a+toInt(p.meta),0)
+    };
+  }
+
+  function atualizarCardsTopoPorSnapshot(snapshot){
+    const dias = getDiasUteisRestantes();
+    const ind = getIndicadores(snapshot);
+    const realGeral = document.getElementById('realGeral');
+    const renoGeral = document.getElementById('renoGeral');
+    const a5Geral = document.getElementById('a5Geral');
+    const marketGeral = document.getElementById('marketGeral');
+    const pctGeral = document.getElementById('pctGeral');
+    const diariaEquipe = document.getElementById('diariaEquipe');
+    const metaGeralLabel = document.getElementById('metaGeralLabel');
+    const metaRenoLabel2 = document.getElementById('metaRenoLabel2');
+    const metaA5Label2 = document.getElementById('metaA5Label2');
+
+    if(realGeral) realGeral.innerText = ind.rT;
+    if(renoGeral) renoGeral.innerText = ind.rnT;
+    if(a5Geral) a5Geral.innerText = ind.a5T;
+    if(marketGeral) marketGeral.innerText = calcPct(ind.rT, ind.cT) + '%';
+    if(pctGeral) pctGeral.innerText = calcPct(ind.rT, ind.somaM) + '%';
+    if(diariaEquipe) diariaEquipe.innerText = calcDiaria(ind.somaM, ind.rT, dias);
+    if(metaGeralLabel) metaGeralLabel.innerText = ind.somaM;
+    if(metaRenoLabel2) metaRenoLabel2.innerText = snapshot.metaReno;
+    if(metaA5Label2) metaA5Label2.innerText = snapshot.metaA5;
+
+    atualizarAlerta(ind.rT, ind.somaM, dias);
+    return ind;
+  }
+
+  window.atualizarEspelhosModal = function(){
+    const snapshot = window.getSnapshotFenix();
+    const ind = getIndicadores(snapshot);
+    const mr = document.getElementById('modalRenoMeta');
+    const rr = document.getElementById('modalRenoReal');
+    const ma = document.getElementById('modalA6Meta');
+    const ra = document.getElementById('modalA6Real');
+    const soma = document.getElementById('somaMetaModal');
+
+    if(mr) mr.innerText = snapshot.metaReno;
+    if(rr) rr.innerText = ind.rnT;
+    if(ma) ma.innerText = snapshot.metaA5;
+    if(ra) ra.innerText = ind.a5T;
+    if(soma) soma.innerText = ind.somaM;
+
+    atualizarCardsTopoPorSnapshot(snapshot);
+    if(document.getElementById('tvOverlay')?.classList.contains('active')) renderTv();
+  };
+
+  window.atualizarSomaMeta = function(){
+    window.atualizarEspelhosModal();
+  };
+
+  window.render = function(){
+    const dias = getDiasUteisRestantes();
+    const snapshot = window.getSnapshotFenix();
+    const ind = atualizarCardsTopoPorSnapshot(snapshot);
+
+    atualizarHeader();
+    renderCardLabels();
+
+    const sorted=[...snapshot.promotores].sort((a,b)=>scoreRanking(b,dias)-scoreRanking(a,dias));
+    const rankClass=['rank-1','rank-2','rank-3'],rankEmoji=['🥇','🥈','🥉'];
+    let medalIdx=0,html='';
+    const lReno=cardLabels.reno||'RENO';
+    const lA6=cardLabels.a6pro||'A6 PRO';
+
+    sorted.forEach((p,idx)=>{
+      const semMeta=!p.meta||p.meta===0,emFerias=p.ferias;
+      const pct=calcPct(p.real,p.meta);
+      const dRest=emFerias?'—':calcDiaria(p.meta,p.real,dias);
+      const corBarra=emFerias?'#10b981':semMeta?'#e2e8f0':pct>=100?'var(--success-dark)':pct>=70?'var(--primary)':pct>=50?'var(--warning)':'var(--danger)';
+      let diariaClass='';
+      if(!emFerias&&!semMeta){diariaClass=dRest===0?'diaria-ok':dRest<=2?'diaria-ok':dRest<=4?'diaria-warn':'diaria-bad';}
+      let badgeClass,badgeConteudo;
+      if(emFerias){badgeClass='rank-n';badgeConteudo='🏖️';}
+      else if(semMeta){badgeClass='rank-n';badgeConteudo=`${idx+1}º`;}
+      else{badgeClass=medalIdx<3?rankClass[medalIdx]:'rank-n';badgeConteudo=medalIdx<3?rankEmoji[medalIdx]:`${idx+1}º`;medalIdx++;}
+      const feriasBadge=emFerias?`<span class="ferias-badge">🏖️ Férias</span>`:'';
+      const diariaDisplay=emFerias?`<span style="color:#94a3b8;">—</span>`:semMeta?`<span style="color:#94a3b8;">—</span>`:dRest===0?`<span class="diaria-pill diaria-ok">✅ 0</span>`:`<span class="diaria-pill ${diariaClass}">${dRest}/dia</span>`;
+      html+=`<div class="promotor-card ${emFerias?'ferias':''}" style="border-left-color:${corBarra}">
+          <div class="rank-badge ${badgeClass}">${badgeConteudo}</div>
+          <div>
+              <div class="p-name-wrap" id="pwrap_${idx}">
+                  <span class="p-name" id="pname_${idx}" onclick="editNomeInline(${idx})" title="Clique para editar">${p.nome}</span>
+                  ${feriasBadge}
+                  <button class="btn-ferias-toggle ${emFerias?'ativo':''}" onclick="toggleFeriasCard(${idx})" title="${emFerias?'Remover férias':'Marcar férias'}">🏖️</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:5px;margin-top:3px;">
+                  <div style="background:#f1f5f9;color:#64748b;font-size:10px;font-weight:800;padding:2px 8px;border-radius:4px;display:inline-block;">CAPA ${p.capa}</div>
+              </div>
+          </div>
+          <div>
+              <div class="progress-bg"><div class="progress-fill" style="width:${emFerias?100:Math.min(pct,100)}%;background:${corBarra}"></div></div>
+              <div class="pct-label" style="color:${corBarra}">${emFerias?'🏖️ EM FÉRIAS':pct+'% DA META'}</div>
+          </div>
+          <div class="meta-group">
+              <div class="m-item"><span>Meta</span><b>${emFerias?'—':p.meta}</b></div>
+              <div class="m-item"><span>Real</span><b style="color:${pct>=100?'var(--success-dark)':'inherit'}">${p.real}</b></div>
+              <div class="m-item"><span>${lReno}</span><b style="color:var(--reno)">${p.reno||0}</b></div>
+              <div class="m-item diaria-item"><span>Diária</span><b>${diariaDisplay}</b></div>
+          </div>
+      </div>`;
+    });
+
+    const lista = document.getElementById('listaPromotores');
+    if(lista) lista.innerHTML=html;
+    verificarMetas(snapshot.promotores);
+    sincHistComReal();
+    if(document.getElementById('tvOverlay')?.classList.contains('active')) renderTv();
+  };
+
+  window.renderTv = function(){
+    const overlay = document.getElementById('tvOverlay');
+    const body = document.getElementById('tvBody');
+    if(!overlay || !body) return;
+
+    const snapshot = window.getSnapshotFenix();
+    const dias = getDiasUteisRestantes();
+    const ind = getIndicadores(snapshot);
+    const pctEq = calcPct(ind.rT, ind.somaM);
+
+    const tvReal = document.getElementById('tvReal');
+    const tvMeta = document.getElementById('tvMeta');
+    const tvPct = document.getElementById('tvPct');
+    const tvDiaria = document.getElementById('tvDiaria');
+    const tvDiasRest = document.getElementById('tvDiasRest');
+    if(tvReal) tvReal.textContent = ind.rT;
+    if(tvMeta) tvMeta.textContent = ind.somaM;
+    if(tvPct){
+      tvPct.textContent = pctEq + '%';
+      tvPct.style.color = pctEq>=100?'#10b981':pctEq>=70?'#6366f1':pctEq>=50?'#f59e0b':'#ef4444';
+    }
+    if(tvDiaria) tvDiaria.textContent = calcDiaria(ind.somaM, ind.rT, dias);
+    if(tvDiasRest) tvDiasRest.textContent = dias;
+
+    const sorted=[...snapshot.promotores].filter(p=>!p.ferias && p.meta>0).sort((a,b)=>scoreRanking(b,dias)-scoreRanking(a,dias));
+    const rankEmoji=['🥇','🥈','🥉'];
+    body.innerHTML='';
+
+    if(!sorted.length){
+      body.innerHTML = '<div style="background:white;border-radius:16px;padding:28px;text-align:center;font-size:18px;font-weight:800;color:#0f172a;">Sem dados da equipe para exibir na TV.</div>';
+    } else {
+      sorted.slice(0,9).forEach((p,i)=>{
+        const pct=calcPct(p.real,p.meta);
+        const dr=calcDiaria(p.meta,p.real,dias);
+        const cor=pct>=100?'#10b981':pct>=70?'#6366f1':pct>=50?'#f59e0b':'#ef4444';
+        const resultClass=pct>=100?'tv-ótimo':pct>=70?'tv-bom':pct>=50?'tv-alerta':'tv-risco';
+        const posClass=i<3?'tv-pos-'+i:(i%2===0?'tv-par':'tv-impar');
+        const diariaClass=dr===0?'diaria-ok':dr<=3?'diaria-warn':'diaria-bad';
+        const barGrad=pct>=100?'linear-gradient(90deg,#10b981,#34d399)':pct>=70?'linear-gradient(90deg,#6366f1,#818cf8)':pct>=50?'linear-gradient(90deg,#f59e0b,#fbbf24)':'linear-gradient(90deg,#ef4444,#f87171)';
+        const card=document.createElement('div');
+        card.className=`tv-card ${posClass} ${resultClass}`;
+        card.style.animationDelay=(i*0.07)+'s';
+        card.innerHTML=`<div class="tv-rank">${i<3?rankEmoji[i]:`<span style="font-size:18px;color:#94a3b8;font-weight:900;">${i+1}º</span>`}</div>
+          <div><div class="tv-name">${p.nome}</div><div class="tv-capa">CAPA ${p.capa}</div></div>
+          <div class="tv-bar-wrap"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:10px;font-weight:800;color:#64748b;">Progresso</span><span style="font-size:10px;font-weight:900;color:${cor};">${p.real} / ${p.meta}</span></div><div class="tv-bar-bg"><div class="tv-bar-fill" style="width:${Math.min(pct,100)}%;background:${barGrad}"></div></div><div class="tv-pct" style="color:${cor};">${pct}% da meta${pct>=100?' 🏆':''}</div></div>
+          <div class="tv-num"><div class="tv-num-val" style="color:${cor};font-size:24px;">${pct}%</div><div class="tv-num-lbl">Atingimento</div></div>
+          <div class="tv-num"><div class="tv-num-val" style="color:#f97316;">${p.reno||0}</div><div class="tv-num-lbl">Reno</div></div>
+          <div class="tv-num"><span class="tv-diaria-pill ${diariaClass}">${dr===0?'✅ Meta!':dr+'/dia'}</span><div class="tv-num-lbl" style="margin-top:5px;">Diária</div></div>`;
+        body.appendChild(card);
+      });
+    }
+
+    const ticker = document.getElementById('tvTicker');
+    if(ticker){
+      ticker.textContent=`🦅 FÊNIX DO OESTE   ·   ${meses[mesSelecionado]}   ·   Equipe: ${ind.rT}/${ind.somaM} (${pctEq}%)   ·   🔥 ${cardLabels.reno||'Reno'}: ${ind.rnT}/${snapshot.metaReno||0}   ·   💎 ${cardLabels.a6pro||'A6 Pro'}: ${ind.a5T}/${snapshot.metaA5||0}   ·   ${sorted.slice(0,3).map((p,i)=>`${rankEmoji[i]} ${primeiroNome(p.nome)}: ${calcPct(p.real,p.meta)}%`).join('   ·   ')}   ·   ⚡ Diária: ${calcDiaria(ind.somaM,ind.rT,dias)} vendas/dia   ·   📅 ${dias} dias úteis restantes   ·   `;
+    }
+  };
+
+  window.openTv = function(){
+    const overlay = document.getElementById('tvOverlay');
+    const tvMes = document.getElementById('tvMes');
+    if(tvMes) tvMes.textContent = meses[mesSelecionado]+' '+new Date().getFullYear();
+    if(overlay){
+      overlay.style.display='flex';
+      overlay.classList.add('active');
+      overlay.offsetHeight;
+    }
+    renderTv();
+    document.addEventListener('keydown',tvKeyHandler);
+    if(window.tvInterval) clearInterval(window.tvInterval);
+    window.tvInterval = setInterval(renderTv, 30000);
+  };
+
+  window.closeTv = function(){
+    const overlay = document.getElementById('tvOverlay');
+    if(overlay){
+      overlay.classList.remove('active');
+      overlay.style.display='none';
+    }
+    document.removeEventListener('keydown',tvKeyHandler);
+    if(window.tvInterval){ clearInterval(window.tvInterval); window.tvInterval=null; }
+  };
+
+  window.openPainel = function(){
+    const dias=getDiasUteisRestantes();
+    const snapshot = window.getSnapshotFenix();
+    const ind = getIndicadores(snapshot);
+    const painelMes = document.getElementById('painelMes');
+    if(painelMes) painelMes.innerText=meses[mesSelecionado]+' '+new Date().getFullYear();
+    const sorted=[...snapshot.promotores].sort((a,b)=>scoreRanking(b,dias)-scoreRanking(a,dias));
+    const lReno=cardLabels.reno||'RENO';
+    const lA6=cardLabels.a6pro||'A6 PRO';
+    const rk=['🥇','🥈','🥉'];
+    let mi=0,rows='';
+    sorted.forEach((p,idx)=>{
+      const ef=p.ferias,sm=!p.meta||p.meta===0,pct=calcPct(p.real,p.meta),dr=ef?'—':calcDiaria(p.meta,p.real,dias);
+      let rkHtml='';
+      if(ef) rkHtml='<span class="pct-cell pct-ferias">FÉRIAS</span>';
+      else if(sm) rkHtml=`${idx+1}º`;
+      else if(mi<3){rkHtml=rk[mi];mi++;}
+      else rkHtml=`${idx+1}º`;
+      const pctClass=ef?'pct-ferias':pct>=100?'pct-verde':pct>=70?'pct-amarelo':'pct-vermelho';
+      rows += `<tr class="${ef?'row-ferias':''}"><td>${rkHtml} ${p.nome}</td><td>${p.filial||'—'}</td><td>${p.rede||'MAGALU'}</td><td>${p.capa||0}</td><td>${ef?'—':p.meta||0}</td><td>${p.real||0}</td><td>${p.reno||0}</td><td>${p.a5||0}</td><td><span class="pct-cell ${pctClass}">${ef?'FÉRIAS':pct+'%'}</span></td><td>${ef?'—':dr}</td></tr>`;
+    });
+    const tabela = `<table class="painel-table"><thead><tr><th>Promotor</th><th>Filial</th><th>Rede</th><th>Capa</th><th>Meta</th><th>Real</th><th>${lReno}</th><th>${lA6}</th><th>Ating.</th><th>Diária</th></tr></thead><tbody>${rows}<tr class="painel-totais"><td>Total Equipe</td><td>—</td><td>—</td><td>${ind.cT}</td><td>${ind.somaM}</td><td>${ind.rT}</td><td>${ind.rnT}</td><td>${ind.a5T}</td><td>${calcPct(ind.rT,ind.somaM)}%</td><td>${calcDiaria(ind.somaM,ind.rT,dias)}</td></tr></tbody></table>`;
+    const painelTabela = document.getElementById('painelTabela');
+    if(painelTabela) painelTabela.innerHTML=tabela;
+    document.getElementById('painelModal').style.display='block';
+  };
+
+  window.saveMesData = async function(mesIdx,data){
+    const payload=normalizeMesData({...data,_updatedAt:Date.now()});
+    if(!window._fbSet || !window._firebaseReady){
+      console.error('Firebase indisponível para salvar na nuvem.');
+      showSync('❌ Firebase indisponível','amarelo');
+      return false;
+    }
+    try{
+      await window._fbSet('fenix2026/mes_'+mesIdx,payload);
+      const check = window._fbGet ? await window._fbGet('fenix2026/mes_'+mesIdx) : null;
+      if(check && Number(check._updatedAt||0) === Number(payload._updatedAt||0)){
+        localStorage.setItem(STORAGE_PREFIX+mesIdx,JSON.stringify(payload));
+        showSync('✅ Salvo na nuvem','verde');
+        return true;
+      }
+      throw new Error('Falha na verificação pós-gravação');
+    }catch(err){
+      console.error('Erro ao salvar no Firebase:', err);
+      showSync('❌ Erro ao salvar na nuvem','amarelo');
+      return false;
+    }
+  };
+
+  window.saveAll = async function(){
+    const snapshot = window.getSnapshotFenix();
+    fenixData.promotores = snapshot.promotores;
+    fenixData.metaReno = snapshot.metaReno;
+    fenixData.metaA5 = snapshot.metaA5;
+    fenixData.metaGeral = snapshot.promotores.filter(p=>!p.ferias).reduce((a,p)=>a+toInt(p.meta),0);
+
+    const ilr=document.getElementById('inputLabelReno');
+    const ila=document.getElementById('inputLabelA6Pro');
+    if(ilr&&ilr.value.trim()) cardLabels.reno=ilr.value.trim();
+    if(ila&&ila.value.trim()) cardLabels.a6pro=ila.value.trim();
+
+    if(window._fbSet && window._firebaseReady){
+      try{ await window._fbSet('fenix2026/cardLabels',cardLabels); }catch(e){ console.error('Erro ao salvar labels', e); }
+    }
+    localStorage.setItem('fenixCardLabels',JSON.stringify(cardLabels));
+
+    const ok = await window.saveMesData(mesSelecionado, fenixData);
+    renderCardLabels();
+    render();
+    if(ok) closeModal();
+    metasJaCelebradas=new Set(JSON.parse(localStorage.getItem('fenixCelebradas2026')||'[]'));
+  };
+
+  window.selecionarMes = async function(idx){
+    mesSelecionado = idx;
+    document.querySelectorAll('.month-tab').forEach((b,i)=>b.classList.toggle('active',i===idx));
+    atualizarHeader();
+    let local = loadMesData(idx);
+    fenixData = local;
+    if(window._fbGet && window._firebaseReady){
+      try{
+        const cloudRaw = await window._fbGet('fenix2026/mes_'+idx);
+        if(cloudRaw){
+          const cloud = normalizeMesData(cloudRaw);
+          fenixData = Number(cloud._updatedAt||0) >= Number(local._updatedAt||0) ? cloud : local;
+          localStorage.setItem(STORAGE_PREFIX+idx, JSON.stringify(fenixData));
+        }
+      }catch(e){
+        console.error('Erro ao buscar mês na nuvem:', e);
+      }
+    }
+    render();
+  };
+
+  document.addEventListener('input', function(e){
+    const el = e.target;
+    if(!el) return;
+    if(el.closest('#formLista') || el.id==='metaRenoInput' || el.id==='metaA5Input'){
+      if(document.getElementById('editModal')?.style.display==='block'){
+        window.atualizarEspelhosModal();
+      }
+    }
+  });
+
+  setTimeout(()=>{ try{ render(); }catch(e){ console.error(e); } }, 120);
 })();
 </script>
 
