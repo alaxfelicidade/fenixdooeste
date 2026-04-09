@@ -10,6 +10,8 @@
 
 
 
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -3171,222 +3173,43 @@ window.addEventListener("DOMContentLoaded",()=>{
 
 
 <script>
-// ===== PATCH AUTO-SOMA MODAL EQUIPE / CARDS TOPO =====
+// CONSOLIDAÇÃO FINAL — sincronismo estável de cards, modal e totais
 (function(){
-  function n(v){ return parseInt(v,10) || 0; }
+  function n(v){
+    const x = parseInt(v, 10);
+    return Number.isFinite(x) ? x : 0;
+  }
+
+  function exporEstadoGlobal(){
+    try{
+      Object.defineProperty(window, 'fenixData', {
+        configurable: true,
+        get(){ return fenixData; },
+        set(v){ fenixData = v; }
+      });
+    }catch(e){ window.fenixData = fenixData; }
+
+    try{
+      Object.defineProperty(window, 'mesSelecionado', {
+        configurable: true,
+        get(){ return mesSelecionado; },
+        set(v){ mesSelecionado = v; }
+      });
+    }catch(e){ window.mesSelecionado = mesSelecionado; }
+  }
+
+  exporEstadoGlobal();
 
   function modalAberto(){
     const modal = document.getElementById('editModal');
     return !!modal && modal.style.display === 'block';
   }
 
-  function snapshotEquipeAtual(){
+  function getPromotoresSnapshot(){
     const base = Array.isArray(fenixData?.promotores) ? fenixData.promotores : [];
-    const promotores = base.map((p,i)=>{
-      if(!modalAberto()){
-        return {
-          filial: p?.filial || '',
-          rede: p?.rede || 'MAGALU',
-          nome: p?.nome || '',
-          capa: n(p?.capa),
-          meta: n(p?.meta),
-          real: n(p?.real),
-          reno: n(p?.reno),
-          a5: n(p?.a5),
-          ferias: !!p?.ferias
-        };
-      }
-      const fbtn = document.getElementById('fbtn_'+i);
-      return {
-        filial: document.getElementById('fil_'+i)?.value ?? (p?.filial || ''),
-        rede: document.getElementById('rede_'+i)?.value ?? (p?.rede || 'MAGALU'),
-        nome: document.getElementById('n_'+i)?.value ?? (p?.nome || ''),
-        capa: n(document.getElementById('c_'+i)?.value ?? p?.capa),
-        meta: n(document.getElementById('m_'+i)?.value ?? p?.meta),
-        real: n(document.getElementById('r_'+i)?.value ?? p?.real),
-        reno: n(document.getElementById('re_'+i)?.value ?? p?.reno),
-        a5: n(document.getElementById('a_'+i)?.value ?? p?.a5),
-        ferias: fbtn ? fbtn.classList.contains('on') : !!p?.ferias
-      };
-    });
 
-    return {
-      metaReno: n(document.getElementById('metaRenoInput')?.value ?? fenixData?.metaReno),
-      metaA5: n(document.getElementById('metaA5Input')?.value ?? fenixData?.metaA5),
-      promotores
-    };
-  }
-
-  function indicadores(snapshot){
-    const ativos = (snapshot?.promotores || []).filter(p=>!p.ferias);
-    return {
-      capa: ativos.reduce((a,p)=>a+n(p.capa),0),
-      meta: ativos.reduce((a,p)=>a+n(p.meta),0),
-      real: ativos.reduce((a,p)=>a+n(p.real),0),
-      reno: ativos.reduce((a,p)=>a+n(p.reno),0),
-      a5: ativos.reduce((a,p)=>a+n(p.a5),0)
-    };
-  }
-
-  function setTxt(id, value){
-    const el = document.getElementById(id);
-    if(el) el.innerText = value;
-  }
-
-  function syncAutoSomasEquipe(){
-    const snapshot = snapshotEquipeAtual();
-    const t = indicadores(snapshot);
-    const dias = typeof getDiasUteisRestantes === 'function' ? getDiasUteisRestantes() : 1;
-
-    // cards do topo
-    setTxt('realGeral', t.real);
-    setTxt('renoGeral', t.reno);
-    setTxt('a5Geral', t.a5);
-    setTxt('metaGeralLabel', t.meta);
-    setTxt('metaRenoLabel2', snapshot.metaReno);
-    setTxt('metaA5Label2', snapshot.metaA5);
-    setTxt('pctGeral', (typeof calcPct === 'function' ? calcPct(t.real, t.meta) : 0) + '%');
-    setTxt('marketGeral', (typeof calcPct === 'function' ? calcPct(t.real, t.capa) : 0) + '%');
-    setTxt('diariaEquipe', typeof calcDiaria === 'function' ? calcDiaria(t.meta, t.real, dias) : 0);
-
-    // cards internos do modal
-    setTxt('somaMetaModal', t.meta);
-    setTxt('modalRenoMeta', snapshot.metaReno);
-    setTxt('modalRenoReal', t.reno);
-    setTxt('modalA6Meta', snapshot.metaA5);
-    setTxt('modalA6Real', t.a5);
-
-    // barra final do modal equipe
-    setTxt('equipeTotalCapa', t.capa);
-    setTxt('equipeTotalMeta', t.meta);
-    setTxt('equipeTotalReal', t.real);
-    setTxt('equipeTotalReno', t.reno);
-    setTxt('equipeTotalA6', t.a5);
-
-    if(typeof atualizarAlerta === 'function'){
-      atualizarAlerta(t.real, t.meta, dias);
-    }
-    if(document.getElementById('tvOverlay')?.classList.contains('active') && typeof renderTv === 'function'){
-      renderTv();
-    }
-  }
-
-  window.syncAutoSomasEquipe = syncAutoSomasEquipe;
-  window.atualizarEspelhosModal = syncAutoSomasEquipe;
-  window.atualizarSomaMeta = syncAutoSomasEquipe;
-  window.atualizarTotaisRodapeEquipe = syncAutoSomasEquipe;
-
-  const prevRender = window.render;
-  window.render = function(){
-    if(typeof prevRender === 'function') prevRender();
-    syncAutoSomasEquipe();
-  };
-
-  const prevRenderForm = window.renderForm;
-  window.renderForm = function(){
-    if(typeof prevRenderForm === 'function') prevRenderForm();
-    syncAutoSomasEquipe();
-  };
-
-  const prevOpenModal = window.openModal;
-  window.openModal = function(){
-    if(typeof prevOpenModal === 'function') prevOpenModal();
-    setTimeout(syncAutoSomasEquipe, 0);
-    setTimeout(syncAutoSomasEquipe, 80);
-  };
-
-  const prevToggleFeriasModal = window.toggleFeriasModal;
-  window.toggleFeriasModal = function(i){
-    if(typeof prevToggleFeriasModal === 'function') prevToggleFeriasModal(i);
-    syncAutoSomasEquipe();
-  };
-
-  const prevAddRow = window.addRow;
-  window.addRow = function(){
-    if(typeof prevAddRow === 'function') prevAddRow();
-    setTimeout(syncAutoSomasEquipe, 0);
-  };
-
-  const prevRemoveRow = window.removeRow;
-  window.removeRow = function(i){
-    if(typeof prevRemoveRow === 'function') prevRemoveRow(i);
-    setTimeout(syncAutoSomasEquipe, 0);
-  };
-
-  document.addEventListener('input', function(e){
-    const el = e.target;
-    if(!el) return;
-    if(el.closest('#formLista') || el.id === 'metaRenoInput' || el.id === 'metaA5Input'){
-      syncAutoSomasEquipe();
-    }
-  });
-
-  document.addEventListener('change', function(e){
-    const el = e.target;
-    if(!el) return;
-    if(el.closest('#formLista') || el.id === 'metaRenoInput' || el.id === 'metaA5Input'){
-      syncAutoSomasEquipe();
-    }
-  });
-
-  setTimeout(syncAutoSomasEquipe, 50);
-})();
-</script>
-
-
-<script>
-// PATCH FINAL — soma automática da coluna META no card superior e barra final do modal
-(function(){
-  function n(v){ return parseInt(v,10) || 0; }
-
-  function modalAberto(){
-    const m = document.getElementById('editModal');
-    return !!m && m.style.display === 'block';
-  }
-
-  function garantirIdsTotaisRodape(){
-    const formLista = document.getElementById('formLista');
-    if(!formLista) return;
-    const row = formLista.querySelector('.equipe-total-row:last-child');
-    if(!row) return;
-    const cells = row.querySelectorAll(':scope > div');
-    if(cells.length >= 8){
-      if(!document.getElementById('equipeTotalCapa')) cells[3].id = 'equipeTotalCapa';
-      if(!document.getElementById('equipeTotalMeta')) cells[4].id = 'equipeTotalMeta';
-      if(!document.getElementById('equipeTotalReal')) cells[5].id = 'equipeTotalReal';
-      if(!document.getElementById('equipeTotalReno')) cells[6].id = 'equipeTotalReno';
-      if(!document.getElementById('equipeTotalA6')) cells[7].id = 'equipeTotalA6';
-    }
-  }
-
-  function snapshotDoModal(){
-    const base = Array.isArray(window.fenixData?.promotores) ? window.fenixData.promotores : [];
-    return base.map((p,i)=>{
-      const fbtn = document.getElementById('fbtn_'+i);
-      return {
-        filial: document.getElementById('fil_'+i)?.value ?? p?.filial ?? '',
-        rede: document.getElementById('rede_'+i)?.value ?? p?.rede ?? 'MAGALU',
-        nome: document.getElementById('n_'+i)?.value ?? p?.nome ?? '',
-        capa: n(document.getElementById('c_'+i)?.value ?? p?.capa),
-        meta: n(document.getElementById('m_'+i)?.value ?? p?.meta),
-        real: n(document.getElementById('r_'+i)?.value ?? p?.real),
-        reno: n(document.getElementById('re_'+i)?.value ?? p?.reno),
-        a5: n(document.getElementById('a_'+i)?.value ?? p?.a5),
-        ferias: fbtn ? fbtn.classList.contains('on') : !!(p?.ferias)
-      };
-    });
-  }
-
-  function snapshotAtual(){
-    if(modalAberto()){
-      return {
-        promotores: snapshotDoModal(),
-        metaReno: n(document.getElementById('metaRenoInput')?.value ?? window.fenixData?.metaReno),
-        metaA5: n(document.getElementById('metaA5Input')?.value ?? window.fenixData?.metaA5)
-      };
-    }
-    return {
-      promotores: (Array.isArray(window.fenixData?.promotores) ? window.fenixData.promotores : []).map(p => ({
+    if(!modalAberto()){
+      return base.map(p => ({
         filial: p?.filial || '',
         rede: p?.rede || 'MAGALU',
         nome: p?.nome || '',
@@ -3396,20 +3219,41 @@ window.addEventListener("DOMContentLoaded",()=>{
         reno: n(p?.reno),
         a5: n(p?.a5),
         ferias: !!p?.ferias
-      })),
-      metaReno: n(window.fenixData?.metaReno),
-      metaA5: n(window.fenixData?.metaA5)
+      }));
+    }
+
+    return base.map((p, i) => {
+      const feriasBtn = document.getElementById('fbtn_' + i);
+      return {
+        filial: document.getElementById('fil_' + i)?.value ?? (p?.filial || ''),
+        rede: document.getElementById('rede_' + i)?.value ?? (p?.rede || 'MAGALU'),
+        nome: document.getElementById('n_' + i)?.value ?? (p?.nome || ''),
+        capa: n(document.getElementById('c_' + i)?.value ?? p?.capa),
+        meta: n(document.getElementById('m_' + i)?.value ?? p?.meta),
+        real: n(document.getElementById('r_' + i)?.value ?? p?.real),
+        reno: n(document.getElementById('re_' + i)?.value ?? p?.reno),
+        a5: n(document.getElementById('a_' + i)?.value ?? p?.a5),
+        ferias: feriasBtn ? feriasBtn.classList.contains('on') : !!p?.ferias
+      };
+    });
+  }
+
+  function getSnapshot(){
+    return {
+      promotores: getPromotoresSnapshot(),
+      metaReno: n(document.getElementById('metaRenoInput')?.value ?? fenixData?.metaReno),
+      metaA5: n(document.getElementById('metaA5Input')?.value ?? fenixData?.metaA5)
     };
   }
 
-  function somas(snapshot){
+  function getTotais(snapshot){
     const ativos = (snapshot.promotores || []).filter(p => !p.ferias);
     return {
-      capa: ativos.reduce((a,p)=>a+n(p.capa),0),
-      meta: ativos.reduce((a,p)=>a+n(p.meta),0),
-      real: ativos.reduce((a,p)=>a+n(p.real),0),
-      reno: ativos.reduce((a,p)=>a+n(p.reno),0),
-      a5: ativos.reduce((a,p)=>a+n(p.a5),0),
+      capa: ativos.reduce((a,p) => a + n(p.capa), 0),
+      meta: ativos.reduce((a,p) => a + n(p.meta), 0),
+      real: ativos.reduce((a,p) => a + n(p.real), 0),
+      reno: ativos.reduce((a,p) => a + n(p.reno), 0),
+      a5: ativos.reduce((a,p) => a + n(p.a5), 0),
       metaReno: n(snapshot.metaReno),
       metaA5: n(snapshot.metaA5)
     };
@@ -3420,81 +3264,128 @@ window.addEventListener("DOMContentLoaded",()=>{
     if(el) el.innerText = value;
   }
 
-  function syncMetaCardsETotais(){
-    garantirIdsTotaisRodape();
-    const s = somas(snapshotAtual());
-    const dias = typeof window.getDiasUteisRestantes === 'function' ? window.getDiasUteisRestantes() : 1;
+  function garantirIdsRodape(){
+    const formLista = document.getElementById('formLista');
+    if(!formLista) return;
+    const totalRow = formLista.querySelector('.equipe-total-row:last-child');
+    if(!totalRow) return;
 
-    setText('somaMetaModal', s.meta);
-    setText('metaGeralLabel', s.meta);
-    setText('realGeral', s.real);
-    setText('renoGeral', s.reno);
-    setText('a5Geral', s.a5);
-    setText('metaRenoLabel2', s.metaReno);
-    setText('metaA5Label2', s.metaA5);
-    setText('modalRenoMeta', s.metaReno);
-    setText('modalRenoReal', s.reno);
-    setText('modalA6Meta', s.metaA5);
-    setText('modalA6Real', s.a5);
-    setText('equipeTotalCapa', s.capa);
-    setText('equipeTotalMeta', s.meta);
-    setText('equipeTotalReal', s.real);
-    setText('equipeTotalReno', s.reno);
-    setText('equipeTotalA6', s.a5);
+    const cells = totalRow.querySelectorAll(':scope > div');
+    if(cells.length < 8) return;
 
-    if(typeof window.calcPct === 'function'){
-      setText('pctGeral', window.calcPct(s.real, s.meta) + '%');
-      setText('marketGeral', window.calcPct(s.real, s.capa) + '%');
+    if(!document.getElementById('equipeTotalCapa')) cells[3].id = 'equipeTotalCapa';
+    if(!document.getElementById('equipeTotalMeta')) cells[4].id = 'equipeTotalMeta';
+    if(!document.getElementById('equipeTotalReal')) cells[5].id = 'equipeTotalReal';
+    if(!document.getElementById('equipeTotalReno')) cells[6].id = 'equipeTotalReno';
+    if(!document.getElementById('equipeTotalA6')) cells[7].id = 'equipeTotalA6';
+  }
+
+  function syncConsolidado(){
+    exporEstadoGlobal();
+    garantirIdsRodape();
+
+    const snapshot = getSnapshot();
+    const t = getTotais(snapshot);
+    const dias = typeof getDiasUteisRestantes === 'function' ? getDiasUteisRestantes() : 1;
+
+    setText('realGeral', t.real);
+    setText('metaGeralLabel', t.meta);
+    setText('renoGeral', t.reno);
+    setText('a5Geral', t.a5);
+    setText('metaRenoLabel2', t.metaReno);
+    setText('metaA5Label2', t.metaA5);
+    setText('somaMetaModal', t.meta);
+    setText('modalRenoMeta', t.metaReno);
+    setText('modalRenoReal', t.reno);
+    setText('modalA6Meta', t.metaA5);
+    setText('modalA6Real', t.a5);
+    setText('equipeTotalCapa', t.capa);
+    setText('equipeTotalMeta', t.meta);
+    setText('equipeTotalReal', t.real);
+    setText('equipeTotalReno', t.reno);
+    setText('equipeTotalA6', t.a5);
+
+    if(typeof calcPct === 'function'){
+      setText('pctGeral', calcPct(t.real, t.meta) + '%');
+      setText('marketGeral', calcPct(t.real, t.capa) + '%');
     }
-    if(typeof window.calcDiaria === 'function'){
-      setText('diariaEquipe', window.calcDiaria(s.meta, s.real, dias));
+
+    if(typeof calcDiaria === 'function'){
+      setText('diariaEquipe', calcDiaria(t.meta, t.real, dias));
     }
-    if(typeof window.atualizarAlerta === 'function'){
-      window.atualizarAlerta(s.real, s.meta, dias);
+
+    if(typeof atualizarAlerta === 'function'){
+      atualizarAlerta(t.real, t.meta, dias);
+    }
+
+    if(document.getElementById('tvOverlay')?.classList.contains('active') && typeof renderTv === 'function'){
+      renderTv();
     }
   }
 
-  const prevRenderForm = window.renderForm;
+  window.syncConsolidado = syncConsolidado;
+  window.atualizarEspelhosModal = syncConsolidado;
+  window.atualizarSomaMeta = syncConsolidado;
+  window.atualizarTotaisRodapeEquipe = syncConsolidado;
+
+  const originalSelecionarMes = window.selecionarMes;
+  window.selecionarMes = function(idx){
+    if(typeof originalSelecionarMes === 'function') originalSelecionarMes(idx);
+    exporEstadoGlobal();
+    setTimeout(syncConsolidado, 0);
+  };
+
+  const originalRender = window.render;
+  window.render = function(){
+    if(typeof originalRender === 'function') originalRender();
+    exporEstadoGlobal();
+    setTimeout(syncConsolidado, 0);
+  };
+
+  const originalRenderForm = window.renderForm;
   window.renderForm = function(){
-    if(typeof prevRenderForm === 'function') prevRenderForm();
-    setTimeout(syncMetaCardsETotais, 0);
+    if(typeof originalRenderForm === 'function') originalRenderForm();
+    setTimeout(syncConsolidado, 0);
   };
 
-  const prevOpenModal = window.openModal;
+  const originalOpenModal = window.openModal;
   window.openModal = function(){
-    if(typeof prevOpenModal === 'function') prevOpenModal();
-    setTimeout(syncMetaCardsETotais, 0);
-    setTimeout(syncMetaCardsETotais, 120);
+    if(typeof originalOpenModal === 'function') originalOpenModal();
+    setTimeout(syncConsolidado, 0);
+    setTimeout(syncConsolidado, 120);
   };
 
-  const prevToggleFeriasModal = window.toggleFeriasModal;
-  window.toggleFeriasModal = function(i){
-    if(typeof prevToggleFeriasModal === 'function') prevToggleFeriasModal(i);
-    setTimeout(syncMetaCardsETotais, 0);
-  };
-
-  const prevAddRow = window.addRow;
+  const originalAddRow = window.addRow;
   window.addRow = function(){
-    if(typeof prevAddRow === 'function') prevAddRow();
-    setTimeout(syncMetaCardsETotais, 0);
+    if(typeof originalAddRow === 'function') originalAddRow();
+    setTimeout(syncConsolidado, 0);
   };
 
-  const prevRemoveRow = window.removeRow;
+  const originalRemoveRow = window.removeRow;
   window.removeRow = function(i){
-    if(typeof prevRemoveRow === 'function') prevRemoveRow(i);
-    setTimeout(syncMetaCardsETotais, 0);
+    if(typeof originalRemoveRow === 'function') originalRemoveRow(i);
+    setTimeout(syncConsolidado, 0);
   };
 
-  window.atualizarEspelhosModal = syncMetaCardsETotais;
-  window.atualizarSomaMeta = syncMetaCardsETotais;
-  window.atualizarTotaisRodapeEquipe = syncMetaCardsETotais;
-  window.syncMetaCardsETotais = syncMetaCardsETotais;
+  const originalToggleFeriasModal = window.toggleFeriasModal;
+  window.toggleFeriasModal = function(i){
+    if(typeof originalToggleFeriasModal === 'function') originalToggleFeriasModal(i);
+    setTimeout(syncConsolidado, 0);
+  };
+
+  const originalSaveAll = window.saveAll;
+  window.saveAll = function(){
+    if(typeof originalSaveAll === 'function') originalSaveAll();
+    exporEstadoGlobal();
+    setTimeout(syncConsolidado, 0);
+    setTimeout(syncConsolidado, 120);
+  };
 
   document.addEventListener('input', function(e){
     const el = e.target;
     if(!el) return;
     if(el.closest('#formLista') || el.id === 'metaRenoInput' || el.id === 'metaA5Input'){
-      syncMetaCardsETotais();
+      syncConsolidado();
     }
   });
 
@@ -3502,17 +3393,11 @@ window.addEventListener("DOMContentLoaded",()=>{
     const el = e.target;
     if(!el) return;
     if(el.closest('#formLista') || el.id === 'metaRenoInput' || el.id === 'metaA5Input'){
-      syncMetaCardsETotais();
+      syncConsolidado();
     }
   });
 
-  const prevRender = window.render;
-  window.render = function(){
-    if(typeof prevRender === 'function') prevRender();
-    setTimeout(syncMetaCardsETotais, 0);
-  };
-
-  setTimeout(syncMetaCardsETotais, 50);
+  setTimeout(syncConsolidado, 80);
 })();
 </script>
 
