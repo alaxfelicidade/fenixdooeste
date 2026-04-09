@@ -2690,9 +2690,30 @@ window.addEventListener("DOMContentLoaded",()=>{
     atualizarEspelhosModal();
   };
 
+  window.atualizarTotaisRodapeEquipe = function(){
+    const snapshot = window.getSnapshotFenix();
+    const ativos = snapshot.promotores.filter(p=>!p.ferias);
+    const totalCapa = ativos.reduce((a,p)=>a + toInt(p.capa),0);
+    const totalMeta = ativos.reduce((a,p)=>a + toInt(p.meta),0);
+    const totalReal = ativos.reduce((a,p)=>a + toInt(p.real),0);
+    const totalReno = ativos.reduce((a,p)=>a + toInt(p.reno),0);
+    const totalA6 = ativos.reduce((a,p)=>a + toInt(p.a5),0);
+
+    const elCapa = document.getElementById('equipeTotalCapa');
+    const elMeta = document.getElementById('equipeTotalMeta');
+    const elReal = document.getElementById('equipeTotalReal');
+    const elReno = document.getElementById('equipeTotalReno');
+    const elA6 = document.getElementById('equipeTotalA6');
+
+    if(elCapa) elCapa.innerText = totalCapa.toLocaleString('pt-BR');
+    if(elMeta) elMeta.innerText = totalMeta.toLocaleString('pt-BR');
+    if(elReal) elReal.innerText = totalReal.toLocaleString('pt-BR');
+    if(elReno) elReno.innerText = totalReno.toLocaleString('pt-BR');
+    if(elA6) elA6.innerText = totalA6.toLocaleString('pt-BR');
+  }
+
   window.renderForm = function(){
     let html = '';
-    let tc=0, tm=0, tr=0, tre=0, ta=0;
     fenixData.promotores.forEach((p,i)=>{
       const fc = p.ferias ? 'on' : 'off';
       const ft = p.ferias ? '🏖️ Ativo' : '🏖️ Férias';
@@ -2700,7 +2721,6 @@ window.addEventListener("DOMContentLoaded",()=>{
       const capa = safeNum(p.capa);
       const pct = safeNum(p.metaPct || 20);
       const meta = safeNum(p.meta || calcMetaByPct(capa, pct));
-      tc += capa; tm += meta; tr += safeNum(p.real); tre += safeNum(p.reno); ta += safeNum(p.a5);
       html += `<div class="edit-row" id="erow_${i}" style="${p.ferias?'opacity:0.68;background:#f0fdf4;border-radius:8px;padding:4px;':''}">
         <input type="text" value="${p.filial||''}" id="fil_${i}" class="filial-input" inputmode="numeric" placeholder="237">
         <select id="rede_${i}" class="rede-select">${redeOptions}</select>
@@ -2711,7 +2731,7 @@ window.addEventListener("DOMContentLoaded",()=>{
           <div class="meta-pct-hint" id="pct_hint_${i}">${capa} × ${pct}%</div>
         </div>
         <input type="number" value="${meta}" id="m_${i}" min="0" oninput="atualizarSomaMeta()">
-        <input type="number" value="${safeNum(p.real)}" id="r_${i}" min="0">
+        <input type="number" value="${safeNum(p.real)}" id="r_${i}" min="0" oninput="atualizarEspelhosModal()">
         <input type="number" value="${safeNum(p.reno)}" id="re_${i}" min="0" oninput="atualizarEspelhosModal()">
         <input type="number" value="${safeNum(p.a5)}" id="a_${i}" min="0" oninput="atualizarEspelhosModal()">
         <button type="button" class="btn-ferias-modal ${fc}" id="fbtn_${i}" onclick="toggleFeriasModal(${i})">${ft}</button>
@@ -2720,17 +2740,18 @@ window.addEventListener("DOMContentLoaded",()=>{
     });
     html += `<div class="equipe-total-row">
       <div>—</div><div>—</div><div>TOTAIS</div>
-      <div id="equipeTotalCapa">${tc.toLocaleString('pt-BR')}</div>
+      <div id="equipeTotalCapa">0</div>
       <div>—</div>
-      <div id="equipeTotalMeta">${tm.toLocaleString('pt-BR')}</div>
-      <div>${tr.toLocaleString('pt-BR')}</div>
-      <div>${tre.toLocaleString('pt-BR')}</div>
-      <div>${ta.toLocaleString('pt-BR')}</div>
+      <div id="equipeTotalMeta">0</div>
+      <div id="equipeTotalReal">0</div>
+      <div id="equipeTotalReno">0</div>
+      <div id="equipeTotalA6">0</div>
       <div>—</div><div>—</div>
     </div>`;
     document.getElementById('formLista').innerHTML = html;
     patchEquipeHeaderPercent();
     atualizarSomaMeta();
+    window.atualizarTotaisRodapeEquipe();
   };
 
   window.addRow = function(){
@@ -2884,6 +2905,7 @@ window.addEventListener("DOMContentLoaded",()=>{
     if(ra) ra.innerText = ind.a5T;
     if(soma) soma.innerText = ind.somaM;
 
+    window.atualizarTotaisRodapeEquipe && window.atualizarTotaisRodapeEquipe();
     atualizarCardsTopoPorSnapshot(snapshot);
     if(document.getElementById('tvOverlay')?.classList.contains('active')) renderTv();
   };
