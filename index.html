@@ -401,6 +401,15 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
 .cel-sub{font-size:14px;color:#64748b;font-weight:600;}
 .confetti{position:absolute;width:10px;height:10px;border-radius:2px;animation:confettifall 2s ease-in forwards;}
 @keyframes confettifall{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(400px) rotate(720deg);opacity:0;}}
+
+/* ── CORES POR REDE NO MODAL EQUIPE ── */
+.rede-select{font-weight:900;transition:all 0.18s ease;}
+.rede-select.rede-magalu{color:#38bdf8;background:#f0f9ff;border-color:#bae6fd;}
+.rede-select.rede-casas-bahia{color:#1d4ed8;background:#eff6ff;border-color:#93c5fd;}
+.rede-select.rede-ponto{color:#f97316;background:#fff7ed;border-color:#fdba74;}
+.rede-select.rede-fastshop{color:#111827;background:#f8fafc;border-color:#cbd5e1;}
+.rede-select option{font-weight:800;color:#111827;background:#ffffff;}
+
 </style>
 </head>
 <body>
@@ -1216,7 +1225,7 @@ function renderForm(){
         const redeOptions=REDES_OPTIONS.map(rede=>`<option value="${rede}" ${String(p.rede||'MAGALU')===rede?'selected':''}>${rede}</option>`).join('');
         html+=`<div class="edit-row" id="erow_${i}" style="${p.ferias?'opacity:0.65;background:#f0fdf4;border-radius:8px;padding:4px;':''}">
             <input type="text" value="${p.filial||''}" id="fil_${i}" class="filial-input" inputmode="numeric" placeholder="237">
-            <select id="rede_${i}" class="rede-select">${redeOptions}</select>
+            <select id="rede_${i}" class="rede-select" onchange="updateRedeColor(${i})">${redeOptions}</select>
             <input type="text" value="${p.nome}" id="n_${i}" class="nome-input">
             <input type="number" value="${p.capa}" id="c_${i}" min="0">
             <input type="number" value="${p.meta}" id="m_${i}" min="0" oninput="atualizarSomaMeta()">
@@ -2359,6 +2368,15 @@ window.addEventListener("DOMContentLoaded",()=>{
   .tv-body{padding:10px 14px;overflow:auto;}
   .tv-card{min-width:900px;}
 }
+
+/* ── CORES POR REDE NO MODAL EQUIPE ── */
+.rede-select{font-weight:900;transition:all 0.18s ease;}
+.rede-select.rede-magalu{color:#38bdf8;background:#f0f9ff;border-color:#bae6fd;}
+.rede-select.rede-casas-bahia{color:#1d4ed8;background:#eff6ff;border-color:#93c5fd;}
+.rede-select.rede-ponto{color:#f97316;background:#fff7ed;border-color:#fdba74;}
+.rede-select.rede-fastshop{color:#111827;background:#f8fafc;border-color:#cbd5e1;}
+.rede-select option{font-weight:800;color:#111827;background:#ffffff;}
+
 </style>
 <script>
 (function(){
@@ -2417,6 +2435,22 @@ window.addEventListener("DOMContentLoaded",()=>{
     },0);
   };
 
+
+  window.updateRedeColor = function(i){
+    const el = document.getElementById(`rede_${i}`);
+    if(!el) return;
+    el.classList.remove('rede-magalu','rede-casas-bahia','rede-ponto','rede-fastshop');
+    const rede = String(el.value || '').toUpperCase();
+    if(rede === 'MAGALU') el.classList.add('rede-magalu');
+    else if(rede === 'CASAS BAHIA') el.classList.add('rede-casas-bahia');
+    else if(rede === 'PONTO') el.classList.add('rede-ponto');
+    else if(rede === 'FASTSHOP') el.classList.add('rede-fastshop');
+  };
+
+  window.aplicarCoresRede = function(){
+    fenixData.promotores.forEach((_,i)=>window.updateRedeColor(i));
+  };
+
   window.renderForm = function(){
     let html='';
     let tc=0, tm=0, tr=0, tre=0, ta=0;
@@ -2426,7 +2460,7 @@ window.addEventListener("DOMContentLoaded",()=>{
       tc += safe(p.capa); tm += safe(p.meta); tr += safe(p.real); tre += safe(p.reno); ta += safe(p.a5);
       html += `<div class="edit-row" id="erow_${i}" style="${p.ferias?'opacity:0.68;background:#f0fdf4;border-radius:8px;padding:4px;':''}">
         <input type="text" value="${p.filial||''}" id="fil_${i}" class="filial-input" inputmode="numeric" placeholder="237">
-        <select id="rede_${i}" class="rede-select">${redeOptions}</select>
+        <select id="rede_${i}" class="rede-select" onchange="updateRedeColor(${i})">${redeOptions}</select>
         <input type="text" value="${(p.nome||'').replace(/"/g,'&quot;')}" id="n_${i}" class="nome-input" title="${(p.nome||'').replace(/"/g,'&quot;')}">
         <input type="number" value="${safe(p.capa)}" id="c_${i}" min="0">
         <input type="number" value="${safe(p.meta)}" id="m_${i}" min="0" oninput="atualizarSomaMeta()">
@@ -2643,6 +2677,15 @@ window.addEventListener("DOMContentLoaded",()=>{
 .meta-pct-input{text-align:center!important;font-weight:800!important;color:#4338ca;background:#eef2ff;border-color:#c7d2fe!important;}
 .meta-pct-input:focus{outline:none;border-color:#6366f1!important;background:#f5f3ff;}
 .meta-pct-hint{font-size:9px;font-weight:800;color:#6366f1;text-align:center;white-space:nowrap;}
+
+/* ── CORES POR REDE NO MODAL EQUIPE ── */
+.rede-select{font-weight:900;transition:all 0.18s ease;}
+.rede-select.rede-magalu{color:#38bdf8;background:#f0f9ff;border-color:#bae6fd;}
+.rede-select.rede-casas-bahia{color:#1d4ed8;background:#eff6ff;border-color:#93c5fd;}
+.rede-select.rede-ponto{color:#f97316;background:#fff7ed;border-color:#fdba74;}
+.rede-select.rede-fastshop{color:#111827;background:#f8fafc;border-color:#cbd5e1;}
+.rede-select option{font-weight:800;color:#111827;background:#ffffff;}
+
 </style>
 <script id="meta-pct-patch">
 (function(){
@@ -2722,6 +2765,22 @@ window.addEventListener("DOMContentLoaded",()=>{
     if(elA6) elA6.innerText = totalA6.toLocaleString('pt-BR');
   }
 
+
+  window.updateRedeColor = function(i){
+    const el = document.getElementById(`rede_${i}`);
+    if(!el) return;
+    el.classList.remove('rede-magalu','rede-casas-bahia','rede-ponto','rede-fastshop');
+    const rede = String(el.value || '').toUpperCase();
+    if(rede === 'MAGALU') el.classList.add('rede-magalu');
+    else if(rede === 'CASAS BAHIA') el.classList.add('rede-casas-bahia');
+    else if(rede === 'PONTO') el.classList.add('rede-ponto');
+    else if(rede === 'FASTSHOP') el.classList.add('rede-fastshop');
+  };
+
+  window.aplicarCoresRede = function(){
+    fenixData.promotores.forEach((_,i)=>window.updateRedeColor(i));
+  };
+
   window.renderForm = function(){
     let html = '';
     fenixData.promotores.forEach((p,i)=>{
@@ -2733,7 +2792,7 @@ window.addEventListener("DOMContentLoaded",()=>{
       const meta = safeNum(p.meta || calcMetaByPct(capa, pct));
       html += `<div class="edit-row" id="erow_${i}" style="${p.ferias?'opacity:0.68;background:#f0fdf4;border-radius:8px;padding:4px;':''}">
         <input type="text" value="${p.filial||''}" id="fil_${i}" class="filial-input" inputmode="numeric" placeholder="237">
-        <select id="rede_${i}" class="rede-select">${redeOptions}</select>
+        <select id="rede_${i}" class="rede-select" onchange="updateRedeColor(${i})">${redeOptions}</select>
         <input type="text" value="${(p.nome||'').replace(/"/g,'&quot;')}" id="n_${i}" class="nome-input" title="${(p.nome||'').replace(/"/g,'&quot;')}">
         <input type="number" value="${capa}" id="c_${i}" min="0" oninput="atualizarLinhaEquipe(${i})">
         <div>
@@ -2759,6 +2818,7 @@ window.addEventListener("DOMContentLoaded",()=>{
       <div>—</div><div>—</div>
     </div>`;
     document.getElementById('formLista').innerHTML = html;
+    aplicarCoresRede();
     patchEquipeHeaderPercent();
     atualizarSomaMeta();
     window.atualizarTotaisRodapeEquipe();
@@ -2815,6 +2875,15 @@ window.addEventListener("DOMContentLoaded",()=>{
 /* PATCH FINAL — sincronismo cards/modal + TV */
 #tvOverlay.active{display:flex !important;}
 #tvOverlay{display:none;}
+
+/* ── CORES POR REDE NO MODAL EQUIPE ── */
+.rede-select{font-weight:900;transition:all 0.18s ease;}
+.rede-select.rede-magalu{color:#38bdf8;background:#f0f9ff;border-color:#bae6fd;}
+.rede-select.rede-casas-bahia{color:#1d4ed8;background:#eff6ff;border-color:#93c5fd;}
+.rede-select.rede-ponto{color:#f97316;background:#fff7ed;border-color:#fdba74;}
+.rede-select.rede-fastshop{color:#111827;background:#f8fafc;border-color:#cbd5e1;}
+.rede-select option{font-weight:800;color:#111827;background:#ffffff;}
+
 </style>
 <script>
 // ===== PATCH FINAL CHATGPT =====
@@ -3347,6 +3416,22 @@ window.addEventListener("DOMContentLoaded",()=>{
   };
 
   const originalRenderForm = window.renderForm;
+
+  window.updateRedeColor = function(i){
+    const el = document.getElementById(`rede_${i}`);
+    if(!el) return;
+    el.classList.remove('rede-magalu','rede-casas-bahia','rede-ponto','rede-fastshop');
+    const rede = String(el.value || '').toUpperCase();
+    if(rede === 'MAGALU') el.classList.add('rede-magalu');
+    else if(rede === 'CASAS BAHIA') el.classList.add('rede-casas-bahia');
+    else if(rede === 'PONTO') el.classList.add('rede-ponto');
+    else if(rede === 'FASTSHOP') el.classList.add('rede-fastshop');
+  };
+
+  window.aplicarCoresRede = function(){
+    fenixData.promotores.forEach((_,i)=>window.updateRedeColor(i));
+  };
+
   window.renderForm = function(){
     if(typeof originalRenderForm === 'function') originalRenderForm();
     setTimeout(syncConsolidado, 0);
@@ -3515,6 +3600,22 @@ window.addEventListener("DOMContentLoaded",()=>{
   window.atualizarEspelhosModal = syncTotaisEquipeFinal;
 
   const originalRenderForm2 = window.renderForm;
+
+  window.updateRedeColor = function(i){
+    const el = document.getElementById(`rede_${i}`);
+    if(!el) return;
+    el.classList.remove('rede-magalu','rede-casas-bahia','rede-ponto','rede-fastshop');
+    const rede = String(el.value || '').toUpperCase();
+    if(rede === 'MAGALU') el.classList.add('rede-magalu');
+    else if(rede === 'CASAS BAHIA') el.classList.add('rede-casas-bahia');
+    else if(rede === 'PONTO') el.classList.add('rede-ponto');
+    else if(rede === 'FASTSHOP') el.classList.add('rede-fastshop');
+  };
+
+  window.aplicarCoresRede = function(){
+    fenixData.promotores.forEach((_,i)=>window.updateRedeColor(i));
+  };
+
   window.renderForm = function(){
     if(typeof originalRenderForm2 === 'function') originalRenderForm2();
     setTimeout(syncTotaisEquipeFinal, 0);
