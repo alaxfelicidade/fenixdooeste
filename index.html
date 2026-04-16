@@ -12,8 +12,6 @@
 
 
 
-
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -2698,7 +2696,8 @@ window.addEventListener("DOMContentLoaded",()=>{
     if(!hdr) return;
     hdr.classList.add('equipe-header-row');
     hdr.style = '';
-    const labels = ['FILIAL','REDE','NOME','CAPA','MARKTSHARE','META','REAL','RENO', (window.cardLabels?.a6pro || 'A6 PRO'),'FÉRIAS',''];
+    function patchEquipeHeaderPercent(){
+const labels = ['FILIAL','REDE','NOME','CAPA','MKTS','META','REAL','RENO', (window.cardLabels?.a6pro || 'A6 PRO'),'FÉRIAS',''];
     while(hdr.children.length < labels.length){
       const d = document.createElement('div');
       hdr.appendChild(d);
