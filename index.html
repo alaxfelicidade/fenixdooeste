@@ -12,6 +12,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -3857,6 +3858,238 @@ const labels = ['FILIAL','REDE','NOME','CAPA','MKTS','META','REAL','RENO', (wind
     localStorage.setItem(STORAGE_PREFIX + mesSelecionado, JSON.stringify(fenixData));
     localStorage.removeItem('fenixData2026_Final');
   }catch(_){}
+})();
+</script>
+
+
+<style id="mkts-restore-style">
+/* ajuste pontual do modal equipe, sem mexer no restante */
+#editModal .edit-row{
+  grid-template-columns:62px 92px minmax(230px,2.35fr) 62px 56px 62px 62px 58px 58px 86px 24px !important;
+}
+#editModal .equipe-header-row,
+#editModal .equipe-total-row{
+  display:grid;
+  grid-template-columns:62px 92px minmax(230px,2.35fr) 62px 56px 62px 62px 58px 58px 86px 24px !important;
+  gap:4px;
+  align-items:center;
+}
+#editModal .equipe-header-row{
+  padding:7px 8px;
+  font-weight:700;
+  font-size:9.5px;
+  color:#64748b;
+  text-align:center;
+  background:#f8fafc;
+  border-radius:6px;
+}
+#editModal .equipe-total-row{
+  margin-top:8px;
+  padding:8px;
+  font-size:11px;
+  font-weight:800;
+  background:#111827;
+  color:#fff;
+  border-radius:8px;
+  text-align:center;
+}
+#editModal .equipe-total-row > div:nth-child(3){
+  text-align:left;
+}
+#editModal .meta-pct-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:2px;
+}
+#editModal .meta-pct-input{
+  width:100%;
+  text-align:center;
+}
+#editModal .meta-pct-hint{
+  font-size:10px;
+  line-height:1.1;
+  color:#4f46e5;
+  font-weight:800;
+  text-align:center;
+  white-space:nowrap;
+}
+</style>
+
+<script id="mkts-restore-script">
+(function(){
+  function n(v){
+    const x = parseFloat(v);
+    return isNaN(x) ? 0 : x;
+  }
+  function i(v){
+    const x = parseInt(v, 10);
+    return isNaN(x) ? 0 : x;
+  }
+  function calcMetaByPct(capa, pct){
+    return Math.round((n(capa) * n(pct)) / 100);
+  }
+  function fmtBR(v){
+    return i(v).toLocaleString('pt-BR');
+  }
+
+  window.patchEquipeHeaderPercent = function(){
+    const hdr = document.querySelector('#editModal .equipe-header-row');
+    if(!hdr) return;
+    hdr.innerHTML = ''
+      + '<div style="text-align:left;">FILIAL</div>'
+      + '<div style="text-align:left;">REDE</div>'
+      + '<div style="text-align:left;">NOME</div>'
+      + '<div>CAPA</div>'
+      + '<div>MKTS</div>'
+      + '<div>META</div>'
+      + '<div>REAL</div>'
+      + '<div>RENO</div>'
+      + '<div style="color:var(--a5pro);" id="colHeaderA6Pro">A6 PRO</div>'
+      + '<div>FÉRIAS</div>'
+      + '<div></div>';
+  };
+
+  window.atualizarLinhaEquipe = function(idx){
+    const capaEl = document.getElementById('c_'+idx);
+    const pctEl = document.getElementById('pct_'+idx);
+    const metaEl = document.getElementById('m_'+idx);
+    const hintEl = document.getElementById('pct_hint_'+idx);
+    if(!capaEl || !pctEl || !metaEl) return;
+    const capa = n(capaEl.value);
+    const pct = n(pctEl.value);
+    metaEl.value = calcMetaByPct(capa, pct);
+    if(hintEl) hintEl.textContent = `${fmtBR(capa)} x ${pct}%`;
+    if(typeof window.atualizarSomaMetaOriginal === 'function') window.atualizarSomaMetaOriginal();
+    else if(typeof window.atualizarSomaMeta === 'function') window.atualizarSomaMeta();
+  };
+
+  window.renderForm = function(){
+    let rows = '';
+    let totalCapa = 0, totalMeta = 0, totalReal = 0, totalReno = 0, totalA6 = 0;
+
+    (window.fenixData?.promotores || []).forEach((p, idx) => {
+      const filial = p.filial || '';
+      const redeAtual = String(p.rede || 'MAGALU');
+      const nome = (p.nome || '').replace(/"/g, '&quot;');
+      const capa = i(p.capa);
+      const pct = (p.metaPct !== undefined && p.metaPct !== null && p.metaPct !== '') ? n(p.metaPct) : 20;
+      const meta = (p.meta !== undefined && p.meta !== null && p.meta !== '') ? i(p.meta) : calcMetaByPct(capa, pct);
+      const real = i(p.real);
+      const reno = i(p.reno);
+      const a6 = i(p.a5);
+      const fc = p.ferias ? 'on' : 'off';
+      const ft = p.ferias ? '🏖️ Ativo' : '🏖️ Férias';
+      const rowStyle = p.ferias ? 'opacity:0.68;background:#f0fdf4;border-radius:8px;padding:4px;' : '';
+      const redeOptions = (window.REDES_OPTIONS || ['MAGALU','CASAS BAHIA','PONTO','FASTSHOP'])
+        .map(rede => `<option value="${rede}" ${redeAtual===rede?'selected':''}>${rede}</option>`)
+        .join('');
+
+      totalCapa += capa;
+      totalMeta += meta;
+      totalReal += real;
+      totalReno += reno;
+      totalA6 += a6;
+
+      rows += `
+      <div class="edit-row" id="erow_${idx}" style="${rowStyle}">
+        <input type="text" value="${filial}" id="fil_${idx}" class="filial-input" inputmode="numeric" placeholder="237">
+        <select id="rede_${idx}" class="rede-select" onchange="updateRedeColor(${idx})">${redeOptions}</select>
+        <input type="text" value="${nome}" id="n_${idx}" class="nome-input" title="${nome}">
+        <input type="number" value="${capa}" id="c_${idx}" min="0" oninput="atualizarLinhaEquipe(${idx})">
+        <div class="meta-pct-wrap">
+          <input type="number" value="${pct}" id="pct_${idx}" min="0" step="0.1" class="meta-pct-input" oninput="atualizarLinhaEquipe(${idx})">
+          <div class="meta-pct-hint" id="pct_hint_${idx}">${fmtBR(capa)} x ${pct}%</div>
+        </div>
+        <input type="number" value="${meta}" id="m_${idx}" min="0" oninput="atualizarSomaMeta()">
+        <input type="number" value="${real}" id="r_${idx}" min="0" oninput="atualizarEspelhosModal()">
+        <input type="number" value="${reno}" id="re_${idx}" min="0" oninput="atualizarEspelhosModal()">
+        <input type="number" value="${a6}" id="a_${idx}" min="0" oninput="atualizarEspelhosModal()">
+        <button type="button" class="btn-ferias-modal ${fc}" id="fbtn_${idx}" onclick="toggleFeriasModal(${idx})">${ft}</button>
+        <button type="button" class="btn-del" onclick="removeRow(${idx})">×</button>
+      </div>`;
+    });
+
+    rows += `
+    <div class="equipe-total-row">
+      <div>—</div>
+      <div>—</div>
+      <div>TOTAIS</div>
+      <div id="equipeTotalCapa">${fmtBR(totalCapa)}</div>
+      <div>—</div>
+      <div id="equipeTotalMeta">${fmtBR(totalMeta)}</div>
+      <div id="equipeTotalReal">${fmtBR(totalReal)}</div>
+      <div id="equipeTotalReno">${fmtBR(totalReno)}</div>
+      <div id="equipeTotalA6">${fmtBR(totalA6)}</div>
+      <div>—</div>
+      <div>—</div>
+    </div>`;
+
+    const box = document.getElementById('formLista');
+    if(box) box.innerHTML = rows;
+    if(typeof window.aplicarCoresRede === 'function') window.aplicarCoresRede();
+    if(typeof window.patchEquipeHeaderPercent === 'function') window.patchEquipeHeaderPercent();
+    if(typeof window.atualizarSomaMeta === 'function') window.atualizarSomaMeta();
+    if(typeof window.atualizarEspelhosModal === 'function') window.atualizarEspelhosModal();
+  };
+
+  window.addRow = function(){
+    if(!window.fenixData) return;
+    if(!Array.isArray(window.fenixData.promotores)) window.fenixData.promotores = [];
+    window.fenixData.promotores.push({
+      filial:'',
+      rede:'MAGALU',
+      nome:'',
+      capa:0,
+      metaPct:20,
+      meta:0,
+      real:0,
+      reno:0,
+      a5:0,
+      ferias:false
+    });
+    window.renderForm();
+  };
+
+  window.saveAll = function(){
+    if(!window.fenixData || !Array.isArray(window.fenixData.promotores)) return;
+
+    window.fenixData.promotores = window.fenixData.promotores.map((p, idx) => {
+      const fbtn = document.getElementById(`fbtn_${idx}`);
+      const capa = i(document.getElementById(`c_${idx}`)?.value);
+      const pct = n(document.getElementById(`pct_${idx}`)?.value || 20);
+      const meta = i(document.getElementById(`m_${idx}`)?.value || calcMetaByPct(capa, pct));
+      return {
+        filial: document.getElementById(`fil_${idx}`)?.value || '',
+        rede: document.getElementById(`rede_${idx}`)?.value || 'MAGALU',
+        nome: document.getElementById(`n_${idx}`)?.value || '',
+        capa: capa,
+        metaPct: pct,
+        meta: meta,
+        real: i(document.getElementById(`r_${idx}`)?.value),
+        reno: i(document.getElementById(`re_${idx}`)?.value),
+        a5: i(document.getElementById(`a_${idx}`)?.value),
+        ferias: fbtn ? fbtn.classList.contains('on') : !!p.ferias
+      };
+    });
+
+    window.fenixData.metaGeral = window.fenixData.promotores
+      .filter(p => !p.ferias)
+      .reduce((acc, p) => acc + i(p.meta), 0);
+
+    if(typeof window.saveMesData === 'function' && typeof window.mesSelecionado !== 'undefined'){
+      window.saveMesData(window.mesSelecionado, window.fenixData);
+    }
+    if(window._fbSet && typeof window.mesSelecionado !== 'undefined'){
+      try { window._fbSet('fenix2026/meses/' + window.mesSelecionado, window.fenixData); } catch(e) {}
+    }
+    if(typeof window.closeModal === 'function') window.closeModal();
+    if(typeof window.render === 'function') window.render();
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){
+    if(typeof window.patchEquipeHeaderPercent === 'function') window.patchEquipeHeaderPercent();
+  });
 })();
 </script>
 
