@@ -13,6 +13,9 @@
 
 
 
+
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -4091,6 +4094,433 @@ const labels = ['FILIAL','REDE','NOME','CAPA','MKTS','META','REAL','RENO', (wind
     if(typeof window.patchEquipeHeaderPercent === 'function') window.patchEquipeHeaderPercent();
   });
 })();
+</script>
+
+
+
+<script>
+// Bridge de globais para o patch Supervisor
+(function(){
+  try{
+    Object.defineProperty(window,'regrasComissao',{configurable:true,get:()=>regrasComissao,set:(v)=>{regrasComissao=v;}});
+    Object.defineProperty(window,'regrasPromotor',{configurable:true,get:()=>regrasPromotor,set:(v)=>{regrasPromotor=v;}});
+    Object.defineProperty(window,'cardLabels',{configurable:true,get:()=>cardLabels,set:(v)=>{cardLabels=v;}});
+    Object.defineProperty(window,'pdQtds',{configurable:true,get:()=>pdQtds,set:(v)=>{pdQtds=v;}});
+    Object.defineProperty(window,'pdPromAtual',{configurable:true,get:()=>pdPromAtual,set:(v)=>{pdPromAtual=v;}});
+    Object.defineProperty(window,'pdModo',{configurable:true,get:()=>pdModo,set:(v)=>{pdModo=v;}});
+    Object.defineProperty(window,'mesSelecionado',{configurable:true,get:()=>mesSelecionado,set:(v)=>{mesSelecionado=v;}});
+    Object.defineProperty(window,'meses',{configurable:true,get:()=>meses});
+    Object.defineProperty(window,'fenixData',{configurable:true,get:()=>fenixData,set:(v)=>{fenixData=v;}});
+  }catch(e){console.error('Erro bridge globals supervisor', e);}
+})();
+</script>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+//  PATCH — COMISSÃO SUPERVISOR: NÍVEL ÚNICO PELA MÉDIA DA EQUIPE
+//  Cole este bloco inteiro ANTES do </body> no seu HTML
+//  Substitui buildComissaoSupervisor e abrirDetalhePromotor (modo supervisor)
+//  sem alterar layout nem a aba Promotores
+// ══════════════════════════════════════════════════════════════════
+(function () {
+  "use strict";
+
+  /* ─── helpers ─────────────────────────────────────────────────── */
+  const toInt = (v) => { const n = parseInt(v, 10); return isNaN(n) ? 0 : n; };
+  const fmtBRL = (v) =>
+    "R$ " +
+    Number(v || 0)
+      .toFixed(2)
+      .replace(".", ",")
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+  /* ─── calcula o NÍVEL ÚNICO do supervisor ──────────────────────
+     Regra PDF:
+       varejo   : média ≥ 30 → N2, senão N1
+       operadora: média ≥ 20 → N2, senão N1
+     A média é calculada sobre os promotores ATIVOS (sem férias) com meta > 0.
+     Usamos regrasComissao.varejo_nivel2 / op_nivel2 como limites configuráveis.
+  ─────────────────────────────────────────────────────────────────*/
+  function calcNivelUnicoSupervisor(regras) {
+    const ativos = (window.fenixData?.promotores || []).filter(
+      (p) => !p.ferias && toInt(p.meta) > 0
+    );
+    if (!ativos.length) return { nivel: 1, media: 0, totalVendas: 0, qtd: 0 };
+
+    const totalVendas = ativos.reduce((acc, p) => acc + toInt(p.real), 0);
+    const media = totalVendas / ativos.length;
+
+    // Verifica se há promotores de operadora (maioria decide o tipo)
+    const operadoras = ativos.filter((p) =>
+      ["VIVO", "CLARO", "TIM", "OI", "ALGAR", "NEXTEL"].some((x) =>
+        String(p.rede || "")
+          .toUpperCase()
+          .includes(x)
+      )
+    );
+    const isOperadora = operadoras.length > ativos.length / 2;
+    const limite = isOperadora
+      ? toInt(regras.op_nivel2 || 20)
+      : toInt(regras.varejo_nivel2 || 30);
+    const nivel = media >= limite ? 2 : 1;
+
+    return {
+      nivel,
+      media: Math.round(media * 10) / 10,
+      totalVendas,
+      qtd: ativos.length,
+      limite,
+      isOperadora,
+    };
+  }
+
+  /* ─── detalhamento por promotor usando tabela do SUPERVISOR ────
+     Usa as quantidades já digitadas em pdQtds (mesmas do modal promotor)
+     mas aplica os VALORES da tabela de supervisor (regrasComissao)
+     com o NÍVEL ÚNICO calculado pela média.
+  ─────────────────────────────────────────────────────────────────*/
+  function getSupervisorDetalheNivelUnico(p, regras, nivelUnico) {
+    const qs = window.pdQtds?.[p.nome] || {};
+    const tab = nivelUnico === 2 ? regras.n2 : regras.n1;
+
+    // Itens conforme PDF do supervisor
+    const items = [
+      { key: "a6x",    label: "A6x",                                         qtd: toInt(qs.a6x),                                       preco: tab.a6x    },
+      { key: "a40",    label: "A40 / A5",                                     qtd: toInt(qs.a40) + toInt(qs.a5),                        preco: tab.a40    },
+      { key: "a58",    label: "A58",                                          qtd: toInt(qs.a58),                                       preco: tab.a58    },
+      { key: "a60",    label: "A60 / A79 / A5(5G) / A6x(5G)",                qtd: toInt(qs.a60) + toInt(qs.a5g),                       preco: tab.a60    },
+      { key: "reno11f",label: "Reno11F",                                      qtd: toInt(qs.reno11f),                                   preco: tab.reno11f},
+      { key: "a5pro",  label: "A5 Pro",                                       qtd: toInt(qs.a5pro),                                     preco: tab.a5pro  },
+      { key: "reno14", label: (window.cardLabels?.reno || "Reno") + " (Reno13/13F/14/14F)", qtd: toInt(qs.reno14) + toInt(qs.reno14base), preco: tab.reno14, auto: true },
+      { key: "a6pro",  label: (window.cardLabels?.a6pro || "A6 Pro") + " (fixo)", qtd: toInt(qs.a6pro || p.a5),                        preco: regras.n1.a6pro, auto: true, fixo: true },
+      { key: "findx9", label: "Find X9 Pro (fixo)",                           qtd: toInt(qs.findx9),                                   preco: regras.n1.findx9, fixo: true },
+      { key: "extra",  label: qs.extra_nome || "Promo relâmpago",             qtd: toInt(qs.extra_qtd),                                preco: parseFloat(qs.extra_val) || 0, custom: true },
+    ];
+
+    // Auto-sincroniza reno14 e a6pro com dados do promotor
+    items.find((i) => i.key === "reno14").qtd = toInt(p.reno || 0) + toInt(qs.reno14base || 0);
+    items.find((i) => i.key === "a6pro").qtd  = toInt(p.a5  || 0);
+
+    let totalBase = 0, totalQtd = 0, details = [];
+    items.forEach((it) => {
+      it.com = it.qtd * it.preco;
+      totalBase += it.com;
+      totalQtd  += it.qtd;
+      if (it.qtd > 0) details.push(`${it.label}: ${it.qtd}×${fmtBRL(it.preco)}`);
+    });
+
+    return {
+      items,
+      totalBase,
+      totalQtd,
+      details: details.join(" | ") || "Sem dados manuais",
+      vendReno: items.find((i) => i.key === "reno14").qtd,
+      vendA6Pro: items.find((i) => i.key === "a6pro").qtd,
+      realTotal: toInt(p.real),
+    };
+  }
+
+  /* ─── buildComissaoSupervisor com nível único ───────────────── */
+  window.buildComissaoSupervisor = function () {
+    const r = window.regrasComissao;
+    const ativos = (window.fenixData?.promotores || []).filter(
+      (p) => !p.ferias && toInt(p.meta) > 0
+    );
+    const mes = (window.meses || [])[window.mesSelecionado] || "";
+    const lReno = window.cardLabels?.reno  || "Reno";
+    const lA6   = window.cardLabels?.a6pro || "A6 Pro";
+
+    if (!ativos.length) {
+      document.getElementById("comissaoConteudo").innerHTML =
+        `<div style="text-align:center;padding:48px 20px;color:#94a3b8;">
+          <div style="font-size:32px;margin-bottom:12px;">📭</div>
+          <div style="font-weight:800;font-size:14px;">Nenhum promotor com meta definida em ${mes}</div>
+        </div>`;
+      return;
+    }
+
+    /* ── Nível único ── */
+    const nivelInfo = calcNivelUnicoSupervisor(r);
+    const { nivel, media, limite, totalVendas, qtd, isOperadora } = nivelInfo;
+    const tab = nivel === 2 ? r.n2 : r.n1;
+
+    /* ── Banner de nível ── */
+    const nivelBanner =
+      nivel === 2
+        ? `<div style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);border:2px solid #86efac;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+            <span style="font-size:28px;">⭐</span>
+            <div>
+              <div style="font-size:13px;font-weight:900;color:#166534;">NÍVEL 2 ATIVO — Supervisor recebe tabela máxima!</div>
+              <div style="font-size:11px;color:#166534;font-weight:700;margin-top:2px;">
+                Média da equipe: <b>${media}</b> vendas/promotor ≥ ${limite} (${isOperadora ? "operadora" : "varejo"}) → <b>Nível 2</b>
+              </div>
+            </div>
+           </div>`
+        : `<div style="background:linear-gradient(135deg,#fef9c3,#fef3c7);border:2px solid #fcd34d;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+            <span style="font-size:28px;">📊</span>
+            <div>
+              <div style="font-size:13px;font-weight:900;color:#92400e;">NÍVEL 1 — Meta para Nível 2: média ≥ ${limite} vendas</div>
+              <div style="font-size:11px;color:#92400e;font-weight:700;margin-top:2px;">
+                Média atual: <b>${media}</b> vendas/promotor | Faltam <b>${Math.ceil(limite - media)}</b> unidades na média para subir de nível
+              </div>
+            </div>
+           </div>`;
+
+    /* ── Linhas da tabela ── */
+    let totalBase = 0, totalReno = 0, totalA6 = 0;
+    const rows = ativos
+      .map((p) => {
+        const det = getSupervisorDetalheNivelUnico(p, r, nivel);
+        totalBase += det.totalBase;
+        totalReno += det.vendReno;
+        totalA6   += det.vendA6Pro;
+
+        // Exibe sempre o nível único (mesmo badge para todos)
+        const nivelBg  = nivel === 2 ? "#dcfce7" : "#fef9c3";
+        const nivelCor = nivel === 2 ? "#166534" : "#92400e";
+        const tipoTxt  = isOperadora ? "Operadora" : "Varejo";
+        const nomeCurto = typeof window.primeiroNome === "function"
+          ? window.primeiroNome(p.nome)
+          : p.nome.split(" ")[0];
+
+        return `<tr style="cursor:pointer;" onclick="abrirDetalhePromotorSupervisor('${nomeCurto}')" title="Clique para detalhar">
+          <td>${nomeCurto} <span style="font-size:10px;color:#94a3b8;">✏️</span></td>
+          <td><span style="background:${nivelBg};color:${nivelCor};font-weight:800;font-size:10px;padding:2px 8px;border-radius:20px;">N${nivel}</span></td>
+          <td style="text-align:center;">${tipoTxt}</td>
+          <td style="text-align:center;">${det.realTotal}</td>
+          <td style="text-align:center;">${det.vendReno}</td>
+          <td style="text-align:center;">${det.vendA6Pro}</td>
+          <td style="font-size:9px;color:#64748b;text-align:left;max-width:260px;">${det.details}</td>
+          <td style="text-align:center;font-weight:900;color:#166534;">${fmtBRL(det.totalBase)}</td>
+        </tr>`;
+      })
+      .join("");
+
+    const mediaStr = media.toFixed(1).replace(".", ",");
+
+    /* ── Cards de resumo ── */
+    const cardsHtml = `
+      <div class="sup-cards" style="margin-bottom:16px;">
+        <div class="sup-card" style="border-top:4px solid ${nivel===2?"#10b981":"#f59e0b"};">
+          <div class="s-label">📊 Nível do Supervisor</div>
+          <div class="s-val" style="color:${nivel===2?"#10b981":"#f59e0b"};">N${nivel}</div>
+          <div class="s-sub">Único p/ toda equipe</div>
+        </div>
+        <div class="sup-card" style="border-top:4px solid #6366f1;">
+          <div class="s-label">💰 Total Supervisor</div>
+          <div class="s-val" style="color:#6366f1;">${fmtBRL(totalBase)}</div>
+          <div class="s-sub">Base total do mês</div>
+        </div>
+        <div class="sup-card" style="border-top:4px solid #10b981;">
+          <div class="s-label">📊 Média da equipe</div>
+          <div class="s-val" style="color:#10b981;">${mediaStr}</div>
+          <div class="s-sub">vendas/promotor ativo</div>
+        </div>
+        <div class="sup-card" style="border-top:4px solid #f59e0b;">
+          <div class="s-label">🔥 ${lReno}</div>
+          <div class="s-val" style="color:#f59e0b;">${totalReno}</div>
+          <div class="s-sub">Total detalhado</div>
+        </div>
+        <div class="sup-card" style="border-top:4px solid #059669;">
+          <div class="s-label">💎 ${lA6}</div>
+          <div class="s-val" style="color:#059669;">${totalA6}</div>
+          <div class="s-sub">Total detalhado</div>
+        </div>
+      </div>`;
+
+    document.getElementById("comissaoConteudo").innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-size:15px;font-weight:900;color:#0f172a;">💰 Comissão Supervisor — ${mes}</div>
+          <div style="font-size:11px;color:#64748b;font-weight:600;margin-top:2px;">Clique no promotor ✏️ para detalhar. <b>Nível único</b> calculado pela média da equipe.</div>
+        </div>
+        <button class="btn-edit-regras" onclick="openRegrasPopover()">✏️ Regras</button>
+      </div>
+
+      ${nivelBanner}
+
+      <div class="comissao-info" style="margin-bottom:12px;">
+        📋 <b>PDF Abril:</b> O supervisor recebe um <b>único nível</b> baseado na média de vendas de todos os promotores ativos.
+        Varejo: N2 a partir de <b>${r.varejo_nivel2 || 30}</b> unidades de média | Operadora: N2 a partir de <b>${r.op_nivel2 || 20}</b>.
+        <b>A6 Pro</b> e <b>Find X9 Pro</b> são fixos (sem influência de nível).
+      </div>
+
+      ${cardsHtml}
+
+      <div style="overflow-x:auto;">
+        <table class="tabela-sup-detalhe">
+          <thead><tr>
+            <th style="text-align:left;">Promotor ✏️</th>
+            <th>Nível</th>
+            <th>Tipo</th>
+            <th>Real</th>
+            <th>${lReno}</th>
+            <th>${lA6}</th>
+            <th style="text-align:left;">Detalhamento</th>
+            <th>Base Total</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr style="background:#0f172a;color:white;font-weight:900;">
+              <td style="padding:9px 10px;text-align:left;" colspan="7">TOTAL SUPERVISOR (N${nivel} aplicado em toda equipe)</td>
+              <td style="padding:9px 10px;text-align:center;font-size:14px;">${fmtBRL(totalBase)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div style="font-size:10px;color:#94a3b8;margin-top:10px;">
+        * Nível único pela média: ${totalVendas} vendas ÷ ${qtd} promotores = <b>${mediaStr} média</b>.
+        Limite ${isOperadora?"operadora":"varejo"} para N2: ${limite} unidades.
+      </div>`;
+  };
+
+  /* ─── abrirDetalhePromotor no modo supervisor usa nível único ── */
+  window.abrirDetalhePromotorSupervisor = function (nomeCurto) {
+    // Reutiliza a função original de abrir o modal, mas força modo supervisor
+    // e injeta o nível único antes de renderizar
+    const p = (window.fenixData?.promotores || []).find(
+      (x) =>
+        (typeof window.primeiroNome === "function"
+          ? window.primeiroNome(x.nome)
+          : x.nome.split(" ")[0]) === nomeCurto
+    );
+    if (!p) return;
+
+    window.pdPromAtual = p;
+    window.pdModo = "supervisor";
+
+    // Inicializa qtds se necessário
+    if (!window.pdQtds) window.pdQtds = {};
+    if (!window.pdQtds[p.nome]) window.pdQtds[p.nome] = {};
+    window.pdQtds[p.nome]["reno14"]     = toInt(p.reno || 0);
+    window.pdQtds[p.nome]["a6pro"]      = toInt(p.a5  || 0);
+    window.pdQtds[p.nome]["extra_nome"] = window.pdQtds[p.nome]["extra_nome"] || "Promo relâmpago";
+    window.pdQtds[p.nome]["extra_qtd"]  = toInt(window.pdQtds[p.nome]["extra_qtd"]);
+    window.pdQtds[p.nome]["extra_val"]  = parseFloat(window.pdQtds[p.nome]["extra_val"]) || 0;
+
+    // Cabeçalho do modal
+    const pct = typeof window.calcPct === "function" ? window.calcPct(p.real, p.meta) : 0;
+    const nivelInfo = calcNivelUnicoSupervisor(window.regrasComissao);
+
+    document.getElementById("promDetailNome").textContent = p.nome;
+    document.getElementById("promDetailSub").textContent =
+      `${(window.meses||[])[window.mesSelecionado]||""} | ${p.real} vendas (${pct}% da meta de ${p.meta}) • Supervisor N${nivelInfo.nivel} (média equipe: ${nivelInfo.media})`;
+
+    // Sobrescreve pdRecalc temporariamente para usar nível único
+    _pdRecalcSupervisorNivelUnico(p, nivelInfo.nivel);
+
+    document.getElementById("promDetailOverlay").classList.add("open");
+  };
+
+  /* ─── pdRecalc interno para modo supervisor com nível único ──── */
+  function _pdRecalcSupervisorNivelUnico(p, nivelUnico) {
+    const r = window.regrasComissao;
+    const qs = window.pdQtds?.[p.nome] || {};
+    const tab = nivelUnico === 2 ? r.n2 : r.n1;
+    const lReno = window.cardLabels?.reno  || "Reno";
+    const lA6   = window.cardLabels?.a6pro || "A6 Pro";
+
+    const rowsCfg = [
+      { key: "a6x",     label: "A6x",                                         qtd: toInt(qs.a6x),   preco: tab.a6x,     auto: false },
+      { key: "a40",     label: "A40 / A5",                                     qtd: toInt(qs.a40) + toInt(qs.a5), preco: tab.a40, auto: false },
+      { key: "a58",     label: "A58",                                          qtd: toInt(qs.a58),   preco: tab.a58,     auto: false },
+      { key: "a60",     label: "A60 / A79 / A5(5G) / A6x(5G)",                qtd: toInt(qs.a60) + toInt(qs.a5g), preco: tab.a60, auto: false },
+      { key: "reno11f", label: "Reno11F",                                      qtd: toInt(qs.reno11f), preco: tab.reno11f, auto: false },
+      { key: "a5pro",   label: "A5 Pro",                                       qtd: toInt(qs.a5pro), preco: tab.a5pro,   auto: false },
+      { key: "reno14",  label: lReno + " (Reno13/13F/14/14F)",                 qtd: toInt(p.reno || 0) + toInt(qs.reno14base || 0), preco: tab.reno14, auto: true },
+      { key: "a6pro",   label: lA6 + " (fixo — sem influência de nível)",      qtd: toInt(p.a5 || 0), preco: r.n1.a6pro, auto: true, fixo: true },
+      { key: "findx9",  label: "Find X9 Pro (fixo — sem influência de nível)", qtd: toInt(qs.findx9), preco: r.n1.findx9, fixo: true },
+      { key: "extra",   label: qs.extra_nome || "Promo relâmpago",             qtd: toInt(qs.extra_qtd), preco: parseFloat(qs.extra_val) || 0, custom: true },
+    ];
+
+    let totalBase = 0, totalQtd = 0;
+    rowsCfg.forEach((it) => { it.com = it.qtd * it.preco; totalBase += it.com; totalQtd += it.qtd; });
+
+    const prodRows = rowsCfg.map((prod) => {
+      const destaque = prod.com > 0;
+      let inputEl = "";
+      if (prod.custom) {
+        inputEl = `<div style="display:flex;gap:6px;justify-content:center;align-items:center;">
+          <input type="number" min="0" value="${prod.qtd}" style="width:56px;border:1.5px solid ${destaque?"#10b981":"#e2e8f0"};border-radius:6px;padding:4px 6px;font-size:13px;font-weight:800;text-align:center;font-family:inherit;" oninput="pdSetQtd('extra_qtd',this.value)" onchange="pdSetQtd('extra_qtd',this.value)">
+          <input type="text" inputmode="decimal" value="${(parseFloat(qs.extra_val)||0).toFixed(2).replace(".",",")}" style="width:74px;border:1.5px solid ${destaque?"#10b981":"#e2e8f0"};border-radius:6px;padding:4px 6px;font-size:13px;font-weight:800;text-align:center;font-family:inherit;" onfocus="this.select()" oninput="pdSetValExtra(this.value,false)" onblur="this.value=formatarValorRelampago(this.value);pdSetValExtra(this.value,true)">
+        </div>`;
+      } else if (prod.auto || prod.fixo) {
+        const badge = prod.fixo
+          ? `<span style="background:#e0f2fe;color:#0369a1;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:4px;">fixo</span>`
+          : `<span style="background:#e0f2fe;color:#0369a1;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:4px;">automático</span>`;
+        inputEl = `<span style="font-weight:900;color:#6366f1;">${prod.qtd} ${badge}</span>`;
+      } else {
+        inputEl = `<input type="number" min="0" value="${prod.qtd}" style="width:56px;border:1.5px solid ${destaque?"#10b981":"#e2e8f0"};border-radius:6px;padding:4px 6px;font-size:13px;font-weight:800;text-align:center;font-family:inherit;" oninput="pdSetQtdSup('${prod.key}',this.value)" onchange="pdSetQtdSup('${prod.key}',this.value)">`;
+      }
+      const nomeHtml = prod.custom
+        ? `<span>${qs.extra_nome || "Promo relâmpago"}</span> <button onclick="pdEditExtraNome()" style="background:none;border:none;cursor:pointer;color:#f97316;font-size:12px;padding:0 2px;">✏️</button>`
+        : prod.label;
+      return `<tr class="${destaque ? "prod-row-highlight" : ""}">
+        <td>${nomeHtml}</td>
+        <td style="text-align:center;">${inputEl}</td>
+        <td style="text-align:center;">${fmtBRL(prod.preco)}</td>
+        <td style="text-align:right;${destaque?"color:#059669;font-weight:900;":"color:#94a3b8;"}">${fmtBRL(prod.com)}</td>
+      </tr>`;
+    }).join("");
+
+    const nivelInfo = calcNivelUnicoSupervisor(r);
+    const faltaMedia = Math.max(0, Math.ceil(nivelInfo.limite - nivelInfo.media));
+
+    document.getElementById("pdNivel").textContent      = "Nível " + nivelUnico;
+    document.getElementById("pdNivelNum").textContent   = nivelUnico;
+    document.getElementById("pdBase").textContent       = fmtBRL(totalBase);
+    document.getElementById("pdTotal").textContent      = fmtBRL(totalBase);
+    document.getElementById("pdNivelNota").innerHTML    = nivelUnico === 2
+      ? `<b>Supervisor — Nível 2 ativo</b> — média da equipe (${nivelInfo.media}) ≥ ${nivelInfo.limite} (${nivelInfo.isOperadora?"operadora":"varejo"})`
+      : `<b>Supervisor — Nível 1</b> — média da equipe: ${nivelInfo.media} | faltam ${faltaMedia} unidades na média para N2`;
+    document.getElementById("pdLinhas").innerHTML       = prodRows;
+    document.getElementById("pdRodape").innerHTML       = `<tr>
+      <td style="padding:9px 10px;text-align:left;font-weight:900;">BASE TOTAL</td>
+      <td style="padding:9px 10px;text-align:center;font-weight:900;font-size:15px;">${totalQtd}</td>
+      <td></td>
+      <td style="padding:9px 10px;text-align:right;font-weight:900;font-size:15px;">${fmtBRL(totalBase)}</td>
+    </tr>`;
+    document.getElementById("pdIncentivoWrap").innerHTML = `
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px 16px;">
+        <div style="font-size:11px;font-weight:900;color:#1e40af;">ℹ️ Regras PDF Supervisor — Abril</div>
+        <div style="font-size:10px;color:#1e40af;margin-top:4px;">
+          O <b>nível é único</b> para o supervisor e calculado pela <b>média de toda a equipe</b>.
+          A6 Pro e Find X9 Pro são <b>fixos</b> — não mudam com o nível.
+          Tabela aplicada: <b>N${nivelUnico}</b>.
+        </div>
+      </div>`;
+
+    // Salva handler para re-render ao digitar
+    window._supervisorNivelAtivo = nivelUnico;
+    window._supervisorPromAtual  = p;
+  }
+
+  /* ─── pdSetQtd para modo supervisor (re-renderiza com nível único) */
+  window.pdSetQtdSup = function (key, val) {
+    const p = window.pdPromAtual;
+    if (!p) return;
+    if (!window.pdQtds[p.nome]) window.pdQtds[p.nome] = {};
+    window.pdQtds[p.nome][key] = parseInt(val) || 0;
+    if (typeof window.syncPdQtds === "function") window.syncPdQtds();
+    const nivelInfo = calcNivelUnicoSupervisor(window.regrasComissao);
+    _pdRecalcSupervisorNivelUnico(p, nivelInfo.nivel);
+    window.buildComissaoSupervisor();
+  };
+
+  /* ─── Sobrescreve pdRecalc original para manter modo supervisor correto */
+  const _pdRecalcOriginal = window.pdRecalc;
+  window.pdRecalc = function () {
+    if (window.pdModo === "supervisor" && window.pdPromAtual) {
+      const nivelInfo = calcNivelUnicoSupervisor(window.regrasComissao);
+      _pdRecalcSupervisorNivelUnico(window.pdPromAtual, nivelInfo.nivel);
+      return;
+    }
+    if (typeof _pdRecalcOriginal === "function") _pdRecalcOriginal();
+  };
+
+  console.log("✅ Patch supervisor nível único carregado.");
+})();
+
 </script>
 
 </body>
