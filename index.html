@@ -32,6 +32,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey:"AIzaSyBCFPX0gknfN0CgIoC_4dWiJDg6Rnz0LqI",authDomain:"fenixdooeste.firebaseapp.com",
@@ -43,6 +44,15 @@
         try{
             const app = initializeApp(firebaseConfig);
             const db  = getDatabase(app);
+
+            try{
+                const auth = getAuth(app);
+                await signInAnonymously(auth);
+                window._firebaseAuth = true;
+            }catch(authErr){
+                console.warn('Auth anônimo não habilitado ou não necessário:', authErr);
+                window._firebaseAuth = false;
+            }
 
             window._fbSet = async (path,data) => {
                 try{
@@ -4651,22 +4661,42 @@ window.addEventListener("DOMContentLoaded",()=>{
     }
   };
   window.bootstrapCloudData = async function(){
-    if(!window._fbGet) return;
+    if(!window._fbGet){ notify('⚠️ Firebase indisponível','amarelo'); return; }
+    const idx = typeof mesSelecionado === 'number' ? mesSelecionado : new Date().getMonth();
     try{
       notify('☁️ Carregando dados online...','amarelo');
-      const idx=typeof mesSelecionado==='number'?mesSelecionado:new Date().getMonth();
-      const [mesCloud,bannerCloud,labelsCloud,regrasSupCloud,regrasProCloud,pdQtdsCloud,histCloud]=await Promise.all([
-        window._fbGet(PATH+idx),window._fbGet('fenix2026/banner'),window._fbGet('fenix2026/cardLabels'),window._fbGet('fenix2026/regrasComissao'),window._fbGet('fenix2026/regrasPromotor'),window._fbGet('fenix2026/pdQtds2026'),window._fbGet('fenix2026/hist_mes_'+idx)
-      ]);
-      if(mesCloud) setData(mesCloud);
-      if(bannerCloud){try{bannerData=bannerCloud;localStorage.setItem('fenixBanner2026',JSON.stringify(bannerCloud));if(typeof renderBanner==='function')renderBanner();}catch(_){}}
-      if(labelsCloud){try{cardLabels=Object.assign({},cardLabels||{},labelsCloud);localStorage.setItem('fenixCardLabels',JSON.stringify(cardLabels));if(typeof renderCardLabels==='function')renderCardLabels();}catch(_){}}
-      if(regrasSupCloud){try{regrasComissao=Object.assign({},regrasComissao||{},regrasSupCloud);localStorage.setItem('fenixRegrasComissao',JSON.stringify(regrasComissao));}catch(_){}}
-      if(regrasProCloud){try{regrasPromotor=Object.assign({},regrasPromotor||{},regrasProCloud);localStorage.setItem('fenixRegrasPromotor',JSON.stringify(regrasPromotor));}catch(_){}}
-      if(pdQtdsCloud){try{pdQtds=pdQtdsCloud;localStorage.setItem('fenixPdQtds2026',JSON.stringify(pdQtdsCloud));}catch(_){}}
-      if(histCloud&&typeof getHistKey==='function'){try{localStorage.setItem(getHistKey(),JSON.stringify(histCloud));}catch(_){}}
-      notify('✅ Dados online carregados','verde');
-    }catch(e){ console.error('Falha ao carregar online:',e); notify('⚠️ Falha ao carregar online','amarelo'); }
+      const jobs = {
+        mesCloud: window._fbGet(PATH + idx),
+        bannerCloud: window._fbGet('fenix2026/banner'),
+        labelsCloud: window._fbGet('fenix2026/cardLabels'),
+        regrasSupCloud: window._fbGet('fenix2026/regrasComissao'),
+        regrasProCloud: window._fbGet('fenix2026/regrasPromotor'),
+        pdQtdsCloud: window._fbGet('fenix2026/pdQtds2026'),
+        histCloud: window._fbGet('fenix2026/hist_mes_' + idx)
+      };
+      const names = Object.keys(jobs);
+      const settled = await Promise.allSettled(Object.values(jobs));
+      const data = {};
+      settled.forEach((r,i)=>{
+        if(r.status === 'fulfilled') data[names[i]] = r.value;
+        else console.warn('Firebase parcial: falha ao ler', names[i], r.reason);
+      });
+      let carregouMes = false;
+      if(data.mesCloud){ setData(data.mesCloud); carregouMes = true; }
+      if(data.bannerCloud){try{bannerData=data.bannerCloud;localStorage.setItem('fenixBanner2026',JSON.stringify(data.bannerCloud));if(typeof renderBanner==='function')renderBanner();}catch(_){}}
+      if(data.labelsCloud){try{cardLabels=Object.assign({},cardLabels||{},data.labelsCloud);localStorage.setItem('fenixCardLabels',JSON.stringify(cardLabels));if(typeof renderCardLabels==='function')renderCardLabels();}catch(_){}}
+      if(data.regrasSupCloud){try{regrasComissao=Object.assign({},regrasComissao||{},data.regrasSupCloud);localStorage.setItem('fenixRegrasComissao',JSON.stringify(regrasComissao));}catch(_){}}
+      if(data.regrasProCloud){try{regrasPromotor=Object.assign({},regrasPromotor||{},data.regrasProCloud);localStorage.setItem('fenixRegrasPromotor',JSON.stringify(regrasPromotor));}catch(_){}}
+      if(data.pdQtdsCloud){try{pdQtds=data.pdQtdsCloud;localStorage.setItem('fenixPdQtds2026',JSON.stringify(data.pdQtdsCloud));}catch(_){}}
+      if(data.histCloud&&typeof getHistKey==='function'){try{localStorage.setItem(getHistKey(),JSON.stringify(data.histCloud));}catch(_){}}
+      const failedMain = settled[0].status === 'rejected';
+      if(carregouMes) notify('✅ Dados online carregados','verde');
+      else if(failedMain) notify('⚠️ Sem acesso ao Firebase','amarelo');
+      else notify('⚠️ Nuvem vazia neste mês','amarelo');
+    }catch(e){
+      console.error('Falha geral ao carregar online:', e);
+      notify('⚠️ Falha ao carregar online','amarelo');
+    }
   };
   window.setupFirebaseSync=function(){
     if(!window._fbListen || window.__fenixSyncOnlineAtivo) return;
