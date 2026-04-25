@@ -16,6 +16,8 @@
 
 
 
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -415,6 +417,72 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
 .rede-select option{font-weight:800;color:#111827;background:#ffffff;}
 
 </style>
+
+
+<style id="mobile-layout-safe-fix-20260425">
+/* CORREÇÃO MOBILE SEM ALTERAR DESKTOP */
+@media (max-width: 768px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden;}
+  body{padding-bottom:36px;}
+  header{padding:10px 8px 0!important;position:sticky;top:0;z-index:1000;}
+  .header-top{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(156px,46vw)!important;gap:8px!important;align-items:start!important;padding-bottom:8px!important;}
+  .header-left{grid-column:1;grid-row:1;align-items:flex-start!important;gap:6px!important;padding-top:8px;min-width:0;}
+  header h1{grid-column:1;grid-row:1;padding-left:34px!important;padding-right:0!important;text-align:left!important;font-size:16px!important;line-height:1.15!important;letter-spacing:-0.3px!important;white-space:normal!important;word-break:normal!important;}
+  .header-buttons{grid-column:2;grid-row:1;display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;width:100%!important;min-width:0!important;}
+  .btn-hdr{min-height:38px!important;width:100%!important;justify-content:center!important;padding:8px 6px!important;border-radius:9px!important;font-size:11px!important;line-height:1.05!important;white-space:nowrap!important;}
+  .header-buttons .btn-hdr:nth-child(5),.header-buttons .btn-hdr:nth-child(6),.header-buttons .btn-hdr:nth-child(7){grid-column:1 / -1;}
+  .month-tabs{margin:0 -8px;padding:0 8px!important;gap:10px!important;scroll-snap-type:x mandatory;}
+  .month-tab{font-size:11px!important;padding:10px 14px 9px!important;scroll-snap-align:center;}
+  .container{width:100%;max-width:100%;padding:0 12px!important;}
+  .premium-banner-wrap{margin:14px 0!important;max-width:none!important;}
+  .premium-banner{padding:14px 42px 14px 12px!important;border-radius:14px!important;}
+  .premium-banner h2{font-size:14px!important;line-height:1.25!important;}
+  .premium-banner p{font-size:12px!important;line-height:1.35!important;}
+  .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;margin-bottom:14px!important;}
+  .stat-card,.stat-card-dual{padding:12px 10px!important;border-radius:14px!important;min-width:0;}
+  .stat-card .big-number{font-size:32px!important;line-height:1.05!important;}
+  .stat-card .label,.stat-card-dual .label{font-size:10px!important;line-height:1.2!important;}
+  .dual-row{gap:8px!important;}
+  .dual-item{padding:8px 2px!important;}
+  .dual-item .d-val{font-size:25px!important;}
+  .alerta-risco{margin:14px 0!important;padding:14px 12px!important;border-radius:14px!important;}
+  .alerta-icon{font-size:30px!important;}
+  .alerta-texto h3{font-size:15px!important;line-height:1.15!important;}
+  .alerta-texto p{font-size:12px!important;line-height:1.35!important;}
+  .promotor-card{grid-template-columns:38px 1fr!important;gap:10px!important;padding:12px!important;border-radius:14px!important;}
+  .promotor-card>div:nth-child(3),.promotor-card>div:nth-child(4){grid-column:1/-1!important;}
+  .p-name{font-size:13px!important;}
+  .meta-group{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:5px!important;}
+  .m-item b{font-size:14px!important;}
+  .modal-overlay{padding:10px 8px!important;overflow-y:auto!important;}
+  .modal-content,.painel-content,.comp-content,.wpp-content,.graficos-content,.comissao-content,.hist-content{width:100%!important;max-width:100%!important;margin:0 auto!important;padding:14px 12px!important;border-radius:14px!important;max-height:none!important;overflow-x:hidden!important;}
+  #editModal .modal-content>div[style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr!important;gap:10px!important;}
+  .equipe-header-row{display:none!important;}
+  .edit-row{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;padding:10px!important;margin-bottom:10px!important;background:#f8fafc!important;border:1px solid #e2e8f0!important;border-radius:12px!important;}
+  .edit-row input,.edit-row select,.edit-row button{height:40px!important;font-size:13px!important;}
+  .edit-row .nome-input{grid-column:1 / -1!important;font-weight:800!important;}
+  .edit-row .btn-ferias-modal,.edit-row .btn-del{grid-column:1 / -1!important;width:100%!important;}
+  .painel-header,.comp-header,.graficos-header,.comissao-header{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:10px!important;}
+  .painel-header>div:last-child{display:grid!important;grid-template-columns:1fr!important;width:100%!important;}
+  .painel-table,.comp-table,.tabela-comissao,.tabela-sup-detalhe{min-width:760px!important;}
+  #painelTabela,#compTabela,#comissaoConteudo{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;}
+  .graficos-tabs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;}
+  .graf-tab{width:100%!important;padding:10px 8px!important;}
+  .chart-wrap,.chart-wrap-sm{height:260px!important;}
+  .tv-overlay.active{display:flex!important;}
+  .tv-header{padding:12px!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:10px!important;}
+  .tv-title{font-size:16px!important;line-height:1.2!important;}
+  .tv-stats{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;}
+  .tv-body{padding:10px!important;overflow-y:auto!important;}
+  .tv-card{grid-template-columns:36px 1fr!important;gap:8px!important;padding:10px!important;}
+  .tv-bar-wrap,.tv-num{grid-column:1 / -1!important;}
+  .hist-grid{grid-template-columns:1fr!important;}
+}
+@media (min-width:769px){
+  .header-buttons{flex-wrap:wrap;justify-content:flex-end;}
+}
+</style>
+
 </head>
 <body>
 
@@ -2700,8 +2768,7 @@ window.addEventListener("DOMContentLoaded",()=>{
     if(!hdr) return;
     hdr.classList.add('equipe-header-row');
     hdr.style = '';
-    function patchEquipeHeaderPercent(){
-const labels = ['FILIAL','REDE','NOME','CAPA','MKTS','META','REAL','RENO', (window.cardLabels?.a6pro || 'A6 PRO'),'FÉRIAS',''];
+    const labels = ['FILIAL','REDE','NOME','CAPA','MKTS','META','REAL','RENO', (window.cardLabels?.a6pro || 'A6 PRO'),'FÉRIAS',''];
     while(hdr.children.length < labels.length){
       const d = document.createElement('div');
       hdr.appendChild(d);
@@ -4521,6 +4588,106 @@ const labels = ['FILIAL','REDE','NOME','CAPA','MKTS','META','REAL','RENO', (wind
   console.log("✅ Patch supervisor nível único carregado.");
 })();
 
+</script>
+
+
+
+<script id="firebase-online-safe-fix-20260425">
+(function(){
+  'use strict';
+  const PATH='fenix2026/mes_';
+  const intVal=v=>{const n=parseInt(v,10);return Number.isFinite(n)?n:0;};
+  function notify(msg,tipo){try{ if(typeof showSync==='function') showSync(msg,tipo||'amarelo'); }catch(_){}}
+  function safeNormalize(data){
+    try{ return (typeof normalizeMesData==='function') ? normalizeMesData(data) : (data||{}); }
+    catch(_){ return data||{}; }
+  }
+  function setData(data){
+    const fixed=safeNormalize(data);
+    try{ window.fenixData=fixed; }catch(_){ }
+    try{ fenixData=fixed; }catch(_){ }
+    try{ localStorage.setItem(STORAGE_PREFIX + mesSelecionado, JSON.stringify(fixed)); }catch(_){ }
+    try{ if(typeof renderCardLabels==='function') renderCardLabels(); }catch(_){ }
+    try{ if(typeof renderBanner==='function') renderBanner(); }catch(_){ }
+    try{ if(typeof render==='function') render(); }catch(_){ }
+    try{ if(typeof syncTotaisEquipeFinal==='function') setTimeout(syncTotaisEquipeFinal,0); }catch(_){ }
+  }
+  async function getCloudMonth(idx){
+    if(!window._fbGet) return null;
+    try{ return await window._fbGet(PATH+idx); }catch(e){ console.error('Erro ao buscar mês online:',e); return null; }
+  }
+  window.fenixCarregarMesOnline = async function(idx){
+    const cloud=await getCloudMonth(idx);
+    if(cloud){
+      try{ mesSelecionado=idx; }catch(_){ }
+      setData(cloud);
+      notify('✅ Dados online carregados','verde');
+      return true;
+    }
+    return false;
+  };
+  const oldSelecionar=window.selecionarMes;
+  window.selecionarMes=async function(idx){
+    try{ mesSelecionado=idx; }catch(_){ }
+    document.querySelectorAll('.month-tab').forEach((b,i)=>b.classList.toggle('active',i===idx));
+    try{ if(typeof atualizarHeader==='function') atualizarHeader(); }catch(_){ }
+    const ok=await window.fenixCarregarMesOnline(idx);
+    if(!ok){
+      try{ if(typeof oldSelecionar==='function') oldSelecionar(idx); }catch(e){ console.error(e); }
+    }
+  };
+  window.saveMesData = async function(mesIdx,data){
+    const payload=safeNormalize(Object.assign({}, data||{}, {_updatedAt:Date.now()}));
+    try{ localStorage.setItem(STORAGE_PREFIX+mesIdx,JSON.stringify(payload)); }catch(_){ }
+    if(!window._fbSet){ notify('⚠️ Firebase indisponível','amarelo'); return false; }
+    try{
+      await window._fbSet(PATH+mesIdx,payload);
+      notify('✅ Salvo na nuvem','verde');
+      return true;
+    }catch(e){
+      console.error('Erro ao salvar online:',e);
+      notify('❌ Erro ao salvar online','amarelo');
+      return false;
+    }
+  };
+  window.bootstrapCloudData = async function(){
+    if(!window._fbGet) return;
+    try{
+      notify('☁️ Carregando dados online...','amarelo');
+      const idx=typeof mesSelecionado==='number'?mesSelecionado:new Date().getMonth();
+      const [mesCloud,bannerCloud,labelsCloud,regrasSupCloud,regrasProCloud,pdQtdsCloud,histCloud]=await Promise.all([
+        window._fbGet(PATH+idx),window._fbGet('fenix2026/banner'),window._fbGet('fenix2026/cardLabels'),window._fbGet('fenix2026/regrasComissao'),window._fbGet('fenix2026/regrasPromotor'),window._fbGet('fenix2026/pdQtds2026'),window._fbGet('fenix2026/hist_mes_'+idx)
+      ]);
+      if(mesCloud) setData(mesCloud);
+      if(bannerCloud){try{bannerData=bannerCloud;localStorage.setItem('fenixBanner2026',JSON.stringify(bannerCloud));if(typeof renderBanner==='function')renderBanner();}catch(_){}}
+      if(labelsCloud){try{cardLabels=Object.assign({},cardLabels||{},labelsCloud);localStorage.setItem('fenixCardLabels',JSON.stringify(cardLabels));if(typeof renderCardLabels==='function')renderCardLabels();}catch(_){}}
+      if(regrasSupCloud){try{regrasComissao=Object.assign({},regrasComissao||{},regrasSupCloud);localStorage.setItem('fenixRegrasComissao',JSON.stringify(regrasComissao));}catch(_){}}
+      if(regrasProCloud){try{regrasPromotor=Object.assign({},regrasPromotor||{},regrasProCloud);localStorage.setItem('fenixRegrasPromotor',JSON.stringify(regrasPromotor));}catch(_){}}
+      if(pdQtdsCloud){try{pdQtds=pdQtdsCloud;localStorage.setItem('fenixPdQtds2026',JSON.stringify(pdQtdsCloud));}catch(_){}}
+      if(histCloud&&typeof getHistKey==='function'){try{localStorage.setItem(getHistKey(),JSON.stringify(histCloud));}catch(_){}}
+      notify('✅ Dados online carregados','verde');
+    }catch(e){ console.error('Falha ao carregar online:',e); notify('⚠️ Falha ao carregar online','amarelo'); }
+  };
+  window.setupFirebaseSync=function(){
+    if(!window._fbListen || window.__fenixSyncOnlineAtivo) return;
+    window.__fenixSyncOnlineAtivo=true;
+    for(let m=0;m<12;m++){
+      window._fbListen(PATH+m,function(data){
+        if(!data) return;
+        const fixed=safeNormalize(data);
+        try{localStorage.setItem(STORAGE_PREFIX+m,JSON.stringify(fixed));}catch(_){ }
+        try{ if(m===mesSelecionado) setData(fixed); }catch(_){ }
+      });
+    }
+  };
+  function start(){
+    try{ window.setupFirebaseSync(); }catch(_){ }
+    setTimeout(()=>{try{window.bootstrapCloudData();}catch(_){ }},150);
+  }
+  window.addEventListener('firebaseReady',start);
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(start,300));
+  window.addEventListener('load',()=>setTimeout(start,800));
+})();
 </script>
 
 </body>
