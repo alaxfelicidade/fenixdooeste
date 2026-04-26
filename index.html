@@ -1,26 +1,13 @@
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <meta charset="UTF-8">
+
+    <!-- FAVICON ÁGUIA -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦅</text></svg>">
+
+    <!-- resto do seu código -->
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -34,32 +21,55 @@
         import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+        /* FIREBASE USADO NESTE HTML: REALTIME DATABASE. No console: Build > Realtime Database. */
         const firebaseConfig = {
-            apiKey:"AIzaSyBCFPX0gknfN0CgIoC_4dWiJDg6Rnz0LqI",authDomain:"fenixdooeste.firebaseapp.com",
-            databaseURL:"https://fenixdooeste-default-rtdb.firebaseio.com",projectId:"fenixdooeste",
-            storageBucket:"fenixdooeste.firebasestorage.app",messagingSenderId:"276140570126",
-            appId:"1:276140570126:web:a0af6a3a76ccf70977ae5f",measurementId:"G-WYDR7PTP9N"
+            apiKey: "AIzaSyBCFPX0gknfN0CgIoC_4dWiJDg6Rnz0LqI",
+            authDomain: "fenixdooeste.firebaseapp.com",
+            databaseURL: "https://fenixdooeste-default-rtdb.firebaseio.com",
+            projectId: "fenixdooeste",
+            storageBucket: "fenixdooeste.firebasestorage.app",
+            messagingSenderId: "276140570126",
+            appId: "1:276140570126:web:a0af6a3a76ccf70977ae5f",
+            measurementId: "G-WYDR7PTP9N"
         };
+
+        function setFirebaseStatus(msg, ok){
+            window._firebaseStatusText = msg;
+            const el = document.getElementById('syncStatus');
+            if(el){
+                el.textContent = msg;
+                el.style.color = ok ? '#10b981' : '#f59e0b';
+                el.style.opacity = '1';
+            }
+            console[ok ? 'log' : 'warn']('[Firebase]', msg);
+        }
 
         try{
             const app = initializeApp(firebaseConfig);
             const db  = getDatabase(app);
+            window._firebaseApp = app;
+            window._firebaseDb = db;
+            window._firebaseReady = false;
+            window._firebaseAuth = false;
+            window._firebaseLastError = null;
 
             try{
                 const auth = getAuth(app);
                 await signInAnonymously(auth);
                 window._firebaseAuth = true;
             }catch(authErr){
-                console.warn('Auth anônimo não habilitado ou não necessário:', authErr);
                 window._firebaseAuth = false;
+                console.warn('Auth anônimo não habilitado ou não necessário:', authErr);
             }
 
             window._fbSet = async (path,data) => {
                 try{
-                    await set(ref(db,path),data);
+                    const payload = (data && typeof data === 'object') ? {...data, _cloudSavedAt: Date.now()} : data;
+                    await set(ref(db,path),payload);
                     return true;
                 }catch(err){
-                    console.error('Erro ao salvar no Firebase:', err);
+                    window._firebaseLastError = err;
+                    console.error('Erro ao salvar no Firebase:', path, err);
                     throw err;
                 }
             };
@@ -69,7 +79,8 @@
                     const s = await get(ref(db,path));
                     return s.exists() ? s.val() : null;
                 }catch(err){
-                    console.error('Erro ao ler do Firebase:', err);
+                    window._firebaseLastError = err;
+                    console.error('Erro ao ler do Firebase:', path, err);
                     throw err;
                 }
             };
@@ -77,14 +88,30 @@
             window._fbListen = (path,cb) => onValue(
                 ref(db,path),
                 snap => cb(snap.exists() ? snap.val() : null),
-                err => console.error('Erro no listener Firebase:', path, err)
+                err => {
+                    window._firebaseLastError = err;
+                    console.error('Erro no listener Firebase:', path, err);
+                    setFirebaseStatus('⚠️ Sem acesso ao Realtime Database', false);
+                }
             );
 
-            window._firebaseReady = true;
-            window.dispatchEvent(new Event('firebaseReady'));
+            try{
+                await set(ref(db,'fenix2026/_conexao'), {ok:true, updatedAt:Date.now()});
+                await get(ref(db,'fenix2026/_conexao'));
+                window._firebaseReady = true;
+                setFirebaseStatus('✅ Firebase online', true);
+                window.dispatchEvent(new Event('firebaseReady'));
+            }catch(testErr){
+                window._firebaseReady = false;
+                window._firebaseLastError = testErr;
+                setFirebaseStatus('⚠️ Crie/libere o Realtime Database', false);
+                window.dispatchEvent(new Event('firebaseReady'));
+            }
         }catch(err){
             console.error('Falha ao iniciar Firebase:', err);
             window._firebaseReady = false;
+            window._firebaseLastError = err;
+            setFirebaseStatus('❌ Firebase não iniciou', false);
         }
     </script>
 <style>
@@ -4160,9 +4187,6 @@ window.addEventListener("DOMContentLoaded",()=>{
     if(typeof window.saveMesData === 'function' && typeof window.mesSelecionado !== 'undefined'){
       window.saveMesData(window.mesSelecionado, window.fenixData);
     }
-    if(window._fbSet && typeof window.mesSelecionado !== 'undefined'){
-      try { window._fbSet('fenix2026/meses/' + window.mesSelecionado, window.fenixData); } catch(e) {}
-    }
     if(typeof window.closeModal === 'function') window.closeModal();
     if(typeof window.render === 'function') window.render();
   };
@@ -4195,7 +4219,8 @@ window.addEventListener("DOMContentLoaded",()=>{
 <script>
 // ══════════════════════════════════════════════════════════════════
 //  PATCH — COMISSÃO SUPERVISOR: NÍVEL ÚNICO PELA MÉDIA DA EQUIPE
-//  Cole este bloco inteiro ANTES do </body> no seu HTML
+//  Cole este bloco inteiro ANTES do 
+
 //  Substitui buildComissaoSupervisor e abrirDetalhePromotor (modo supervisor)
 //  sem alterar layout nem a aba Promotores
 // ══════════════════════════════════════════════════════════════════
@@ -4717,6 +4742,142 @@ window.addEventListener("DOMContentLoaded",()=>{
   window.addEventListener('firebaseReady',start);
   document.addEventListener('DOMContentLoaded',()=>setTimeout(start,300));
   window.addEventListener('load',()=>setTimeout(start,800));
+})();
+</script>
+
+
+
+<script id="fenix-final-mobile-cloud-fix-20260426">
+(function(){
+  'use strict';
+  window.fenixDiagnosticoFirebase = async function(){
+    const out = {
+      firebaseReady: !!window._firebaseReady,
+      firebaseAuth: !!window._firebaseAuth,
+      databaseURL: 'https://fenixdooeste-default-rtdb.firebaseio.com',
+      painelUsa: 'Realtime Database',
+      erro: window._firebaseLastError ? (window._firebaseLastError.message || String(window._firebaseLastError)) : null
+    };
+    try{
+      if(window._fbSet){ await window._fbSet('fenix2026/_testeManual', {ok:true, data:new Date().toISOString()}); out.testeEscrita='OK'; }
+      if(window._fbGet){ out.testeLeitura = await window._fbGet('fenix2026/_testeManual'); }
+    }catch(e){ out.testeFirebase='FALHOU'; out.erro = e.message || String(e); }
+    console.table(out);
+    return out;
+  };
+
+  function status(msg,tipo){ try{ if(typeof showSync==='function') showSync(msg,tipo||'amarelo'); }catch(_){} }
+
+  const oldSaveMesData = window.saveMesData;
+  window.saveMesData = async function(mesIdx,data){
+    const payload = (typeof normalizeMesData==='function') ? normalizeMesData({...data,_updatedAt:Date.now()}) : {...(data||{}),_updatedAt:Date.now()};
+    try{ localStorage.setItem('fenixData2026_mes_'+mesIdx, JSON.stringify(payload)); }catch(_){}
+    if(!window._fbSet){ status('⚠️ Firebase indisponível', 'amarelo'); return false; }
+    try{
+      await window._fbSet('fenix2026/mes_'+mesIdx, payload);
+      status('✅ Salvo online em tempo real', 'verde');
+      return true;
+    }catch(e){
+      console.error('Falha ao salvar online:', e);
+      status('❌ Verifique Realtime Database/Regras', 'amarelo');
+      if(typeof oldSaveMesData==='function') return oldSaveMesData(mesIdx,data);
+      return false;
+    }
+  };
+
+  function initCloudListeners(){
+    if(!window._fbListen || window.__fenixFinalRealtimeOn) return;
+    window.__fenixFinalRealtimeOn = true;
+    for(let m=0;m<12;m++){
+      window._fbListen('fenix2026/mes_'+m, function(data){
+        if(!data) return;
+        try{ localStorage.setItem('fenixData2026_mes_'+m, JSON.stringify(data)); }catch(_){}
+        try{
+          if(typeof mesSelecionado==='number' && m===mesSelecionado){
+            fenixData = (typeof normalizeMesData==='function') ? normalizeMesData(data) : data;
+            if(typeof render==='function') render();
+          }
+        }catch(_){}
+      });
+    }
+  }
+
+  window.addEventListener('firebaseReady', function(){ setTimeout(initCloudListeners,100); });
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(initCloudListeners,800); });
+})();
+</script>
+
+
+<script id="fenix-realtime-database-final-20260426">
+(function(){
+  'use strict';
+  const ROOT = 'fenix2026';
+  const MONTH = ROOT + '/mes_';
+  const LS = 'fenixData2026_mes_';
+  let applyingCloud = false;
+  function msg(txt,tipo){ try{ if(typeof showSync==='function') showSync(txt,tipo||'verde'); }catch(_){} }
+  function norm(data){ try{ return (typeof normalizeMesData === 'function') ? normalizeMesData(data || {}) : (data || {}); } catch(_){ return data || {}; } }
+  function monthIndex(){ try{ if(typeof mesSelecionado === 'number') return mesSelecionado; }catch(_){} try{ if(typeof window.mesSelecionado === 'number') return window.mesSelecionado; }catch(_){} return new Date().getMonth(); }
+  function putLocal(idx,data){ try{ localStorage.setItem(LS + idx, JSON.stringify(data)); }catch(_){} }
+  function applyMonthData(idx,data){
+    if(!data) return;
+    applyingCloud = true;
+    const fixed = norm(data);
+    try{ window.fenixData = fixed; }catch(_){}
+    try{ fenixData = fixed; }catch(_){}
+    putLocal(idx,fixed);
+    try{ if(typeof renderCardLabels === 'function') renderCardLabels(); }catch(_){}
+    try{ if(typeof renderBanner === 'function') renderBanner(); }catch(_){}
+    try{ if(typeof render === 'function') render(); }catch(_){}
+    try{ if(typeof syncTotaisEquipeFinal === 'function') setTimeout(syncTotaisEquipeFinal,0); }catch(_){}
+    setTimeout(()=>{ applyingCloud = false; }, 80);
+  }
+  window.fenixDiagnosticoFirebase = async function(){
+    const out = {usa:'Realtime Database', raiz:ROOT, url:'https://fenixdooeste-default-rtdb.firebaseio.com', firebaseReady:!!window._firebaseReady, erro: window._firebaseLastError ? (window._firebaseLastError.message || String(window._firebaseLastError)) : null};
+    try{
+      if(!window._fbSet || !window._fbGet) throw new Error('Funções Firebase não carregaram');
+      await window._fbSet(ROOT + '/_testeManual', {ok:true, atualizadoEm:new Date().toISOString()});
+      out.testeEscrita='OK'; out.testeLeitura = await window._fbGet(ROOT + '/_testeManual');
+    }catch(e){ out.teste='FALHOU'; out.erro=e.message||String(e); }
+    console.table(out); return out;
+  };
+  window.saveMesData = async function(mesIdx,data){
+    const payload = norm(Object.assign({}, data || {}, {_updatedAt: Date.now()}));
+    putLocal(mesIdx,payload);
+    if(!window._fbSet){ msg('⚠️ Firebase indisponível','amarelo'); return false; }
+    try{ await window._fbSet(MONTH + mesIdx, payload); msg('✅ Salvo online em tempo real','verde'); return true; }
+    catch(e){ console.error('Erro ao salvar no Realtime Database:', e); msg('❌ Verifique as regras do Realtime Database','amarelo'); return false; }
+  };
+  window.carregarMesDaNuvem = async function(idx){
+    if(!window._fbGet) return false;
+    try{ const data = await window._fbGet(MONTH + idx); if(data){ applyMonthData(idx,data); msg('✅ Dados online carregados','verde'); return true; } }
+    catch(e){ console.error('Erro ao carregar mês online:', e); msg('⚠️ Falha ao carregar online','amarelo'); }
+    return false;
+  };
+  const oldSelecionarMes = window.selecionarMes;
+  window.selecionarMes = async function(idx){
+    try{ mesSelecionado = idx; }catch(_){} try{ window.mesSelecionado = idx; }catch(_){}
+    try{ document.querySelectorAll('.month-tab').forEach((b,i)=>b.classList.toggle('active',i===idx)); }catch(_){}
+    try{ if(typeof atualizarHeader === 'function') atualizarHeader(); }catch(_){}
+    const ok = await window.carregarMesDaNuvem(idx);
+    if(!ok && typeof oldSelecionarMes === 'function') oldSelecionarMes(idx);
+  };
+  function initRealtime(){
+    if(!window._fbListen || window.__fenixRealtimeFinalAtivo) return;
+    window.__fenixRealtimeFinalAtivo = true;
+    for(let i=0;i<12;i++){
+      window._fbListen(MONTH + i, function(data){ if(!data) return; putLocal(i,norm(data)); if(i === monthIndex()) applyMonthData(i,data); });
+    }
+    window._fbListen(ROOT + '/banner', function(data){ if(!data) return; try{ bannerData=data; localStorage.setItem('fenixBanner2026',JSON.stringify(data)); if(typeof renderBanner==='function') renderBanner(); }catch(_){} });
+    window._fbListen(ROOT + '/cardLabels', function(data){ if(!data) return; try{ cardLabels=Object.assign({},cardLabels||{},data); localStorage.setItem('fenixCardLabels',JSON.stringify(cardLabels)); if(typeof renderCardLabels==='function') renderCardLabels(); if(typeof render==='function') render(); }catch(_){} });
+    window._fbListen(ROOT + '/regrasComissao', function(data){ if(!data) return; try{ regrasComissao=Object.assign({},regrasComissao||{},data); localStorage.setItem('fenixRegrasComissao',JSON.stringify(regrasComissao)); }catch(_){} });
+    window._fbListen(ROOT + '/regrasPromotor', function(data){ if(!data) return; try{ regrasPromotor=Object.assign({},regrasPromotor||{},data); localStorage.setItem('fenixRegrasPromotor',JSON.stringify(regrasPromotor)); }catch(_){} });
+    window._fbListen(ROOT + '/pdQtds2026', function(data){ if(!data) return; try{ pdQtds=data; localStorage.setItem('fenixPdQtds2026',JSON.stringify(data)); }catch(_){} });
+  }
+  function start(){ initRealtime(); setTimeout(()=>window.carregarMesDaNuvem(monthIndex()),250); }
+  window.addEventListener('firebaseReady', start);
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(start,500); });
+  window.addEventListener('load', function(){ setTimeout(start,900); });
 })();
 </script>
 
