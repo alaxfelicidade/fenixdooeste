@@ -6,9 +6,6 @@
 
     <!-- FAVICON ÁGUIA -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦅</text></svg>">
-
-    <!-- resto do seu código -->
-    <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -4626,258 +4623,169 @@ window.addEventListener("DOMContentLoaded",()=>{
 </script>
 
 
-
-<script id="firebase-online-safe-fix-20260425">
-(function(){
-  'use strict';
-  const PATH='fenix2026/mes_';
-  const intVal=v=>{const n=parseInt(v,10);return Number.isFinite(n)?n:0;};
-  function notify(msg,tipo){try{ if(typeof showSync==='function') showSync(msg,tipo||'amarelo'); }catch(_){}}
-  function safeNormalize(data){
-    try{ return (typeof normalizeMesData==='function') ? normalizeMesData(data) : (data||{}); }
-    catch(_){ return data||{}; }
-  }
-  function setData(data){
-    const fixed=safeNormalize(data);
-    try{ window.fenixData=fixed; }catch(_){ }
-    try{ fenixData=fixed; }catch(_){ }
-    try{ localStorage.setItem(STORAGE_PREFIX + mesSelecionado, JSON.stringify(fixed)); }catch(_){ }
-    try{ if(typeof renderCardLabels==='function') renderCardLabels(); }catch(_){ }
-    try{ if(typeof renderBanner==='function') renderBanner(); }catch(_){ }
-    try{ if(typeof render==='function') render(); }catch(_){ }
-    try{ if(typeof syncTotaisEquipeFinal==='function') setTimeout(syncTotaisEquipeFinal,0); }catch(_){ }
-  }
-  async function getCloudMonth(idx){
-    if(!window._fbGet) return null;
-    try{ return await window._fbGet(PATH+idx); }catch(e){ console.error('Erro ao buscar mês online:',e); return null; }
-  }
-  window.fenixCarregarMesOnline = async function(idx){
-    const cloud=await getCloudMonth(idx);
-    if(cloud){
-      try{ mesSelecionado=idx; }catch(_){ }
-      setData(cloud);
-      notify('✅ Dados online carregados','verde');
-      return true;
-    }
-    return false;
-  };
-  const oldSelecionar=window.selecionarMes;
-  window.selecionarMes=async function(idx){
-    try{ mesSelecionado=idx; }catch(_){ }
-    document.querySelectorAll('.month-tab').forEach((b,i)=>b.classList.toggle('active',i===idx));
-    try{ if(typeof atualizarHeader==='function') atualizarHeader(); }catch(_){ }
-    const ok=await window.fenixCarregarMesOnline(idx);
-    if(!ok){
-      try{ if(typeof oldSelecionar==='function') oldSelecionar(idx); }catch(e){ console.error(e); }
-    }
-  };
-  window.saveMesData = async function(mesIdx,data){
-    const payload=safeNormalize(Object.assign({}, data||{}, {_updatedAt:Date.now()}));
-    try{ localStorage.setItem(STORAGE_PREFIX+mesIdx,JSON.stringify(payload)); }catch(_){ }
-    if(!window._fbSet){ notify('⚠️ Firebase indisponível','amarelo'); return false; }
-    try{
-      await window._fbSet(PATH+mesIdx,payload);
-      notify('✅ Salvo na nuvem','verde');
-      return true;
-    }catch(e){
-      console.error('Erro ao salvar online:',e);
-      notify('❌ Erro ao salvar online','amarelo');
-      return false;
-    }
-  };
-  window.bootstrapCloudData = async function(){
-    if(!window._fbGet){ notify('⚠️ Firebase indisponível','amarelo'); return; }
-    const idx = typeof mesSelecionado === 'number' ? mesSelecionado : new Date().getMonth();
-    try{
-      notify('☁️ Carregando dados online...','amarelo');
-      const jobs = {
-        mesCloud: window._fbGet(PATH + idx),
-        bannerCloud: window._fbGet('fenix2026/banner'),
-        labelsCloud: window._fbGet('fenix2026/cardLabels'),
-        regrasSupCloud: window._fbGet('fenix2026/regrasComissao'),
-        regrasProCloud: window._fbGet('fenix2026/regrasPromotor'),
-        pdQtdsCloud: window._fbGet('fenix2026/pdQtds2026'),
-        histCloud: window._fbGet('fenix2026/hist_mes_' + idx)
-      };
-      const names = Object.keys(jobs);
-      const settled = await Promise.allSettled(Object.values(jobs));
-      const data = {};
-      settled.forEach((r,i)=>{
-        if(r.status === 'fulfilled') data[names[i]] = r.value;
-        else console.warn('Firebase parcial: falha ao ler', names[i], r.reason);
-      });
-      let carregouMes = false;
-      if(data.mesCloud){ setData(data.mesCloud); carregouMes = true; }
-      if(data.bannerCloud){try{bannerData=data.bannerCloud;localStorage.setItem('fenixBanner2026',JSON.stringify(data.bannerCloud));if(typeof renderBanner==='function')renderBanner();}catch(_){}}
-      if(data.labelsCloud){try{cardLabels=Object.assign({},cardLabels||{},data.labelsCloud);localStorage.setItem('fenixCardLabels',JSON.stringify(cardLabels));if(typeof renderCardLabels==='function')renderCardLabels();}catch(_){}}
-      if(data.regrasSupCloud){try{regrasComissao=Object.assign({},regrasComissao||{},data.regrasSupCloud);localStorage.setItem('fenixRegrasComissao',JSON.stringify(regrasComissao));}catch(_){}}
-      if(data.regrasProCloud){try{regrasPromotor=Object.assign({},regrasPromotor||{},data.regrasProCloud);localStorage.setItem('fenixRegrasPromotor',JSON.stringify(regrasPromotor));}catch(_){}}
-      if(data.pdQtdsCloud){try{pdQtds=data.pdQtdsCloud;localStorage.setItem('fenixPdQtds2026',JSON.stringify(data.pdQtdsCloud));}catch(_){}}
-      if(data.histCloud&&typeof getHistKey==='function'){try{localStorage.setItem(getHistKey(),JSON.stringify(data.histCloud));}catch(_){}}
-      const failedMain = settled[0].status === 'rejected';
-      if(carregouMes) notify('✅ Dados online carregados','verde');
-      else if(failedMain) notify('⚠️ Sem acesso ao Firebase','amarelo');
-      else notify('⚠️ Nuvem vazia neste mês','amarelo');
-    }catch(e){
-      console.error('Falha geral ao carregar online:', e);
-      notify('⚠️ Falha ao carregar online','amarelo');
-    }
-  };
-  window.setupFirebaseSync=function(){
-    if(!window._fbListen || window.__fenixSyncOnlineAtivo) return;
-    window.__fenixSyncOnlineAtivo=true;
-    for(let m=0;m<12;m++){
-      window._fbListen(PATH+m,function(data){
-        if(!data) return;
-        const fixed=safeNormalize(data);
-        try{localStorage.setItem(STORAGE_PREFIX+m,JSON.stringify(fixed));}catch(_){ }
-        try{ if(m===mesSelecionado) setData(fixed); }catch(_){ }
-      });
-    }
-  };
-  function start(){
-    try{ window.setupFirebaseSync(); }catch(_){ }
-    setTimeout(()=>{try{window.bootstrapCloudData();}catch(_){ }},150);
-  }
-  window.addEventListener('firebaseReady',start);
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(start,300));
-  window.addEventListener('load',()=>setTimeout(start,800));
-})();
-</script>
-
-
-
-<script id="fenix-final-mobile-cloud-fix-20260426">
-(function(){
-  'use strict';
-  window.fenixDiagnosticoFirebase = async function(){
-    const out = {
-      firebaseReady: !!window._firebaseReady,
-      firebaseAuth: !!window._firebaseAuth,
-      databaseURL: 'https://fenixdooeste-default-rtdb.firebaseio.com',
-      painelUsa: 'Realtime Database',
-      erro: window._firebaseLastError ? (window._firebaseLastError.message || String(window._firebaseLastError)) : null
-    };
-    try{
-      if(window._fbSet){ await window._fbSet('fenix2026/_testeManual', {ok:true, data:new Date().toISOString()}); out.testeEscrita='OK'; }
-      if(window._fbGet){ out.testeLeitura = await window._fbGet('fenix2026/_testeManual'); }
-    }catch(e){ out.testeFirebase='FALHOU'; out.erro = e.message || String(e); }
-    console.table(out);
-    return out;
-  };
-
-  function status(msg,tipo){ try{ if(typeof showSync==='function') showSync(msg,tipo||'amarelo'); }catch(_){} }
-
-  const oldSaveMesData = window.saveMesData;
-  window.saveMesData = async function(mesIdx,data){
-    const payload = (typeof normalizeMesData==='function') ? normalizeMesData({...data,_updatedAt:Date.now()}) : {...(data||{}),_updatedAt:Date.now()};
-    try{ localStorage.setItem('fenixData2026_mes_'+mesIdx, JSON.stringify(payload)); }catch(_){}
-    if(!window._fbSet){ status('⚠️ Firebase indisponível', 'amarelo'); return false; }
-    try{
-      await window._fbSet('fenix2026/mes_'+mesIdx, payload);
-      status('✅ Salvo online em tempo real', 'verde');
-      return true;
-    }catch(e){
-      console.error('Falha ao salvar online:', e);
-      status('❌ Verifique Realtime Database/Regras', 'amarelo');
-      if(typeof oldSaveMesData==='function') return oldSaveMesData(mesIdx,data);
-      return false;
-    }
-  };
-
-  function initCloudListeners(){
-    if(!window._fbListen || window.__fenixFinalRealtimeOn) return;
-    window.__fenixFinalRealtimeOn = true;
-    for(let m=0;m<12;m++){
-      window._fbListen('fenix2026/mes_'+m, function(data){
-        if(!data) return;
-        try{ localStorage.setItem('fenixData2026_mes_'+m, JSON.stringify(data)); }catch(_){}
-        try{
-          if(typeof mesSelecionado==='number' && m===mesSelecionado){
-            fenixData = (typeof normalizeMesData==='function') ? normalizeMesData(data) : data;
-            if(typeof render==='function') render();
-          }
-        }catch(_){}
-      });
-    }
-  }
-
-  window.addEventListener('firebaseReady', function(){ setTimeout(initCloudListeners,100); });
-  document.addEventListener('DOMContentLoaded', function(){ setTimeout(initCloudListeners,800); });
-})();
-</script>
-
-
-<script id="fenix-realtime-database-final-20260426">
+<script id="fenix-realtime-database-blindado-20260427">
 (function(){
   'use strict';
   const ROOT = 'fenix2026';
   const MONTH = ROOT + '/mes_';
   const LS = 'fenixData2026_mes_';
   let applyingCloud = false;
-  function msg(txt,tipo){ try{ if(typeof showSync==='function') showSync(txt,tipo||'verde'); }catch(_){} }
-  function norm(data){ try{ return (typeof normalizeMesData === 'function') ? normalizeMesData(data || {}) : (data || {}); } catch(_){ return data || {}; } }
-  function monthIndex(){ try{ if(typeof mesSelecionado === 'number') return mesSelecionado; }catch(_){} try{ if(typeof window.mesSelecionado === 'number') return window.mesSelecionado; }catch(_){} return new Date().getMonth(); }
-  function putLocal(idx,data){ try{ localStorage.setItem(LS + idx, JSON.stringify(data)); }catch(_){} }
-  function applyMonthData(idx,data){
-    if(!data) return;
+
+  function status(txt,tipo){
+    try{
+      if(typeof showSync === 'function') showSync(txt, tipo || 'verde');
+      const el = document.getElementById('syncStatus');
+      if(el){ el.textContent = txt; el.style.color = (tipo === 'verde') ? '#10b981' : '#f59e0b'; el.style.opacity = '1'; }
+    }catch(_){}
+  }
+  function idxAtual(){
+    try{ if(typeof mesSelecionado === 'number') return mesSelecionado; }catch(_){}
+    try{ if(typeof window.mesSelecionado === 'number') return window.mesSelecionado; }catch(_){}
+    return new Date().getMonth();
+  }
+  function normalizar(data){
+    try{ return (typeof normalizeMesData === 'function') ? normalizeMesData(data || {}) : (data || {}); }
+    catch(_){ return data || {}; }
+  }
+  function localGet(idx){
+    try{
+      const raw = localStorage.getItem(LS + idx);
+      if(raw) return normalizar(JSON.parse(raw));
+    }catch(_){}
+    try{ return (typeof loadMesData === 'function') ? normalizar(loadMesData(idx)) : null; }catch(_){}
+    return null;
+  }
+  function localPut(idx,data){ try{ localStorage.setItem(LS + idx, JSON.stringify(normalizar(data))); }catch(_){} }
+  function aplicarMes(idx,data){
+    if(!data) return false;
     applyingCloud = true;
-    const fixed = norm(data);
+    const fixed = normalizar(data);
+    try{ window.mesSelecionado = idx; }catch(_){}
+    try{ mesSelecionado = idx; }catch(_){}
     try{ window.fenixData = fixed; }catch(_){}
     try{ fenixData = fixed; }catch(_){}
-    putLocal(idx,fixed);
+    localPut(idx,fixed);
+    try{ document.querySelectorAll('.month-tab').forEach((b,i)=>b.classList.toggle('active',i===idx)); }catch(_){}
+    try{ if(typeof atualizarHeader === 'function') atualizarHeader(); }catch(_){}
     try{ if(typeof renderCardLabels === 'function') renderCardLabels(); }catch(_){}
     try{ if(typeof renderBanner === 'function') renderBanner(); }catch(_){}
     try{ if(typeof render === 'function') render(); }catch(_){}
     try{ if(typeof syncTotaisEquipeFinal === 'function') setTimeout(syncTotaisEquipeFinal,0); }catch(_){}
-    setTimeout(()=>{ applyingCloud = false; }, 80);
+    setTimeout(()=>{ applyingCloud = false; },120);
+    return true;
   }
+  function waitFirebase(timeoutMs=8000){
+    if(window._fbGet && window._fbSet && window._fbListen) return Promise.resolve(true);
+    return new Promise(resolve=>{
+      const started = Date.now();
+      const check = ()=>{
+        if(window._fbGet && window._fbSet && window._fbListen) return resolve(true);
+        if(Date.now() - started > timeoutMs) return resolve(false);
+        setTimeout(check,120);
+      };
+      window.addEventListener('firebaseReady',()=>resolve(!!(window._fbGet && window._fbSet && window._fbListen)),{once:true});
+      check();
+    });
+  }
+
   window.fenixDiagnosticoFirebase = async function(){
-    const out = {usa:'Realtime Database', raiz:ROOT, url:'https://fenixdooeste-default-rtdb.firebaseio.com', firebaseReady:!!window._firebaseReady, erro: window._firebaseLastError ? (window._firebaseLastError.message || String(window._firebaseLastError)) : null};
+    const out = {usa:'Realtime Database', raiz:ROOT, url:'https://fenixdooeste-default-rtdb.firebaseio.com', firebaseReady:!!window._firebaseReady, auth:!!window._firebaseAuth, erro: window._firebaseLastError ? (window._firebaseLastError.message || String(window._firebaseLastError)) : null};
     try{
-      if(!window._fbSet || !window._fbGet) throw new Error('Funções Firebase não carregaram');
+      const ok = await waitFirebase(3000);
+      if(!ok) throw new Error('Funções Firebase não carregaram');
       await window._fbSet(ROOT + '/_testeManual', {ok:true, atualizadoEm:new Date().toISOString()});
-      out.testeEscrita='OK'; out.testeLeitura = await window._fbGet(ROOT + '/_testeManual');
+      out.testeEscrita = 'OK';
+      out.testeLeitura = await window._fbGet(ROOT + '/_testeManual');
     }catch(e){ out.teste='FALHOU'; out.erro=e.message||String(e); }
-    console.table(out); return out;
+    console.table(out);
+    return out;
   };
+
   window.saveMesData = async function(mesIdx,data){
-    const payload = norm(Object.assign({}, data || {}, {_updatedAt: Date.now()}));
-    putLocal(mesIdx,payload);
-    if(!window._fbSet){ msg('⚠️ Firebase indisponível','amarelo'); return false; }
-    try{ await window._fbSet(MONTH + mesIdx, payload); msg('✅ Salvo online em tempo real','verde'); return true; }
-    catch(e){ console.error('Erro ao salvar no Realtime Database:', e); msg('❌ Verifique as regras do Realtime Database','amarelo'); return false; }
-  };
-  window.carregarMesDaNuvem = async function(idx){
-    if(!window._fbGet) return false;
-    try{ const data = await window._fbGet(MONTH + idx); if(data){ applyMonthData(idx,data); msg('✅ Dados online carregados','verde'); return true; } }
-    catch(e){ console.error('Erro ao carregar mês online:', e); msg('⚠️ Falha ao carregar online','amarelo'); }
-    return false;
-  };
-  const oldSelecionarMes = window.selecionarMes;
-  window.selecionarMes = async function(idx){
-    try{ mesSelecionado = idx; }catch(_){} try{ window.mesSelecionado = idx; }catch(_){}
-    try{ document.querySelectorAll('.month-tab').forEach((b,i)=>b.classList.toggle('active',i===idx)); }catch(_){}
-    try{ if(typeof atualizarHeader === 'function') atualizarHeader(); }catch(_){}
-    const ok = await window.carregarMesDaNuvem(idx);
-    if(!ok && typeof oldSelecionarMes === 'function') oldSelecionarMes(idx);
-  };
-  function initRealtime(){
-    if(!window._fbListen || window.__fenixRealtimeFinalAtivo) return;
-    window.__fenixRealtimeFinalAtivo = true;
-    for(let i=0;i<12;i++){
-      window._fbListen(MONTH + i, function(data){ if(!data) return; putLocal(i,norm(data)); if(i === monthIndex()) applyMonthData(i,data); });
+    const payload = normalizar(Object.assign({}, data || {}, {_updatedAt: Date.now()}));
+    localPut(mesIdx,payload);
+    const ok = await waitFirebase(5000);
+    if(!ok){ status('⚠️ Firebase indisponível','amarelo'); return false; }
+    try{
+      await window._fbSet(MONTH + mesIdx, payload);
+      status('✅ Salvo online em tempo real','verde');
+      return true;
+    }catch(e){
+      window._firebaseLastError = e;
+      console.error('Erro ao salvar no Realtime Database:', e);
+      status('❌ Verifique as regras do Realtime Database','amarelo');
+      return false;
     }
-    window._fbListen(ROOT + '/banner', function(data){ if(!data) return; try{ bannerData=data; localStorage.setItem('fenixBanner2026',JSON.stringify(data)); if(typeof renderBanner==='function') renderBanner(); }catch(_){} });
-    window._fbListen(ROOT + '/cardLabels', function(data){ if(!data) return; try{ cardLabels=Object.assign({},cardLabels||{},data); localStorage.setItem('fenixCardLabels',JSON.stringify(cardLabels)); if(typeof renderCardLabels==='function') renderCardLabels(); if(typeof render==='function') render(); }catch(_){} });
-    window._fbListen(ROOT + '/regrasComissao', function(data){ if(!data) return; try{ regrasComissao=Object.assign({},regrasComissao||{},data); localStorage.setItem('fenixRegrasComissao',JSON.stringify(regrasComissao)); }catch(_){} });
-    window._fbListen(ROOT + '/regrasPromotor', function(data){ if(!data) return; try{ regrasPromotor=Object.assign({},regrasPromotor||{},data); localStorage.setItem('fenixRegrasPromotor',JSON.stringify(regrasPromotor)); }catch(_){} });
-    window._fbListen(ROOT + '/pdQtds2026', function(data){ if(!data) return; try{ pdQtds=data; localStorage.setItem('fenixPdQtds2026',JSON.stringify(data)); }catch(_){} });
+  };
+
+  window.carregarMesDaNuvem = async function(idx){
+    const ok = await waitFirebase(5000);
+    if(!ok){ status('⚠️ Firebase indisponível','amarelo'); return false; }
+    try{
+      const path = MONTH + idx;
+      const cloud = await window._fbGet(path);
+      if(cloud){ aplicarMes(idx,cloud); status('✅ Dados online carregados','verde'); return true; }
+      const local = localGet(idx);
+      if(local){
+        aplicarMes(idx,local);
+        try{ await window._fbSet(path, normalizar(Object.assign({}, local, {_createdInCloudAt: Date.now()}))); status('✅ Mês criado online','verde'); return true; }
+        catch(e){ console.warn('Não foi possível criar mês online:', e); status('⚠️ Salvo local, confira regras','amarelo'); return false; }
+      }
+      status('⚠️ Nuvem vazia neste mês','amarelo');
+      return false;
+    }catch(e){
+      window._firebaseLastError = e;
+      console.error('Erro ao carregar mês online:', e);
+      status('⚠️ Falha ao carregar online','amarelo');
+      return false;
+    }
+  };
+
+  const selecionarMesOriginal = window.selecionarMes;
+  window.selecionarMes = async function(idx){
+    try{ window.mesSelecionado = idx; mesSelecionado = idx; }catch(_){}
+    const carregou = await window.carregarMesDaNuvem(idx);
+    if(!carregou && typeof selecionarMesOriginal === 'function'){
+      try{ selecionarMesOriginal(idx); }catch(e){ console.error('Erro no selecionarMes original:', e); }
+    }
+  };
+
+  window.bootstrapCloudData = async function(){
+    return window.carregarMesDaNuvem(idxAtual());
+  };
+
+  window.setupFirebaseSync = async function(){
+    const ok = await waitFirebase(6000);
+    if(!ok || window.__fenixRealtimeBlindadoAtivo) return;
+    window.__fenixRealtimeBlindadoAtivo = true;
+    for(let i=0;i<12;i++){
+      try{
+        window._fbListen(MONTH + i, function(data){
+          if(!data || applyingCloud) return;
+          localPut(i,data);
+          if(i === idxAtual()) aplicarMes(i,data);
+        });
+      }catch(e){ console.warn('Listener mês falhou:', i, e); }
+    }
+    const listenMap = [
+      ['banner','fenixBanner2026',v=>{ try{ bannerData=v; if(typeof renderBanner==='function') renderBanner(); }catch(_){} }],
+      ['cardLabels','fenixCardLabels',v=>{ try{ cardLabels=Object.assign({},cardLabels||{},v); if(typeof renderCardLabels==='function') renderCardLabels(); if(typeof render==='function') render(); }catch(_){} }],
+      ['regrasComissao','fenixRegrasComissao',v=>{ try{ regrasComissao=Object.assign({},regrasComissao||{},v); }catch(_){} }],
+      ['regrasPromotor','fenixRegrasPromotor',v=>{ try{ regrasPromotor=Object.assign({},regrasPromotor||{},v); }catch(_){} }],
+      ['pdQtds2026','fenixPdQtds2026',v=>{ try{ pdQtds=v; }catch(_){} }]
+    ];
+    listenMap.forEach(([key,ls,fn])=>{
+      try{ window._fbListen(ROOT + '/' + key, function(data){ if(!data) return; try{ localStorage.setItem(ls,JSON.stringify(data)); }catch(_){} fn(data); }); }catch(e){}
+    });
+  };
+
+  async function start(){
+    await window.setupFirebaseSync();
+    setTimeout(()=>window.carregarMesDaNuvem(idxAtual()),250);
   }
-  function start(){ initRealtime(); setTimeout(()=>window.carregarMesDaNuvem(monthIndex()),250); }
-  window.addEventListener('firebaseReady', start);
-  document.addEventListener('DOMContentLoaded', function(){ setTimeout(start,500); });
-  window.addEventListener('load', function(){ setTimeout(start,900); });
+  window.addEventListener('firebaseReady',start);
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(start,450));
+  window.addEventListener('load',()=>setTimeout(start,900));
 })();
 </script>
 
