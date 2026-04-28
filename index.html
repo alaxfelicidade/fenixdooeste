@@ -2606,7 +2606,7 @@ window.addEventListener("DOMContentLoaded",()=>{
     if(tipo==='ranking'){
       const medals=['🥇','🥈','🥉'];
       txt=`🦅 *FÊNIX DO OESTE — RANKING ${mes}*\n📅 ${hoje}\n${'─'.repeat(30)}\n\n`;
-      sorted.slice(0,10).forEach((p,i)=>{
+ sorted.forEach((p,i)=>{
         const pct=calcPct(p.real,p.meta);
         const m=i<3?medals[i]:`${i+1}º`;
         const bar=Math.round(pct/10);
