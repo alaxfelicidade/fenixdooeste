@@ -1446,8 +1446,8 @@ function gerarWpp(tipo){
     const hoje=new Date().toLocaleDateString('pt-BR');let txt='';
     if(tipo==='ranking'){
       const sorted=[...fenixData.promotores]
-  .filter(p=>p.nome && p.meta>0 && !p.ferias)
-  .sort((a,b)=>scoreRanking(b,dias)-scoreRanking(a,dias));
+.filter(p=>p.nome && !p.ferias)  
+          .sort((a,b)=>scoreRanking(b,dias)-scoreRanking(a,dias));
         const medals=['🥇','🥈','🥉'];
         txt=`🦅 *FÊNIX DO OESTE — RANKING ${mes}*\n📅 ${hoje}\n${'─'.repeat(30)}\n\n`;
         sorted.forEach((p,i)=>{const pct=calcPct(p.real,p.meta);const m=i<3?medals[i]:`${i+1}º`;const bar=Math.round(pct/10);const emoji=pct>=100?'🟦':pct>=70?'🟩':pct>=50?'🟨':pct>=30?'🟧':'🟥';const barra=emoji.repeat(Math.min(bar,10))+'⬜'.repeat(Math.max(10-bar,0));txt+=`${m} *${primeiroNome(p.nome)}*\n   ${barra} ${pct}%\n   📱 ${p.real}/${p.meta} vendas\n\n`;});
