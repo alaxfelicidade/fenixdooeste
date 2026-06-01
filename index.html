@@ -17,7 +17,7 @@
   <meta name="apple-mobile-web-app-title" content="Fênix 2026">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="application-name" content="Fênix 2026">
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22F%C3%AAnix%202026%22%2C%22short_name%22%3A%22F%C3%AAnix%22%2C%22description%22%3A%22Dashboard%20de%20vendas%20OPPO%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%230f172a%22%2C%22orientation%22%3A%22portrait%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20100%20100'%3E%3Ctext%20y%3D'.9em'%20font-size%3D'90'%3E%F0%9F%A6%85%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fênix 2026 – Elite Ranking</title>
@@ -824,12 +824,12 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
         </div>
         <div class="stat-card-dual" style="border-bottom-color:#8b5cf6;" id="cardMediaPromotor">
             <div class="label-wrap">
-                <span class="label">MÉDIA/PROMOTOR</span>
+                <span class="label" id="labelMediaPromotor">MÉDIA/PROMOTOR</span>
             </div>
             <div class="dual-row">
                 <div class="dual-item meta-side">
                     <div class="d-label" style="color:#8b5cf6;">META</div>
-                    <div class="d-val" style="color:#8b5cf6;font-size:18px;" id="mediaMetaPromotor">0</div>
+                    <div class="d-val" style="color:#8b5cf6;font-size:18px;" id="mediaMetaPromotor">0,0</div>
                 </div>
                 <div class="dual-item real-side">
                     <div class="d-label" style="color:#059669;">REAL</div>
@@ -967,6 +967,39 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
         <button onclick="addRow()" style="margin:15px 0;padding:10px;cursor:pointer;width:100%;border:1px dashed #cbd5e1;border-radius:8px;background:#f8fafc;font-weight:700;font-family:inherit;">+ Adicionar Promotor</button>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
             <button onclick="zerarMetaEmDiante()" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;padding:12px;border-radius:8px;font-weight:800;cursor:pointer;font-family:inherit;font-size:13px;">🧹 ZERAR META EM DIANTE</button>
+            <!-- Info de média ao vivo no modal -->
+            <div id="modalMediaInfo" style="background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:1.5px solid #10b981;border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+              <!-- Linha título + lápis -->
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                <div style="font-size:10px;font-weight:800;color:#065f46;text-transform:uppercase;letter-spacing:.5px;">📊 Média por Promotor</div>
+                <button onclick="toggleEditMetaModal()" id="btnLapisModal" title="Editar meta média"
+                  style="background:none;border:none;cursor:pointer;font-size:15px;padding:0 2px;line-height:1;">✏️</button>
+              </div>
+              <!-- Linha de valores -->
+              <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+                <div style="text-align:center;">
+                  <div style="font-size:9px;color:#64748b;font-weight:700;">Promotores ativos</div>
+                  <div id="modalQtdAtivos" style="font-size:18px;font-weight:900;color:#0f172a;">—</div>
+                </div>
+                <div style="text-align:center;">
+                  <div style="font-size:9px;color:#8b5cf6;font-weight:700;">Meta média</div>
+                  <div id="modalMediaMeta" style="font-size:18px;font-weight:900;color:#8b5cf6;">—</div>
+                </div>
+                <div style="text-align:center;">
+                  <div style="font-size:9px;color:#059669;font-weight:700;">Real médio</div>
+                  <div id="modalMediaReal" style="font-size:18px;font-weight:900;color:#059669;">—</div>
+                </div>
+              </div>
+              <!-- Linha de edição inline (oculta por padrão) -->
+              <div id="editMetaModalRow" style="display:none;margin-top:10px;align-items:center;gap:8px;flex-wrap:wrap;">
+                <div style="font-size:9px;color:#065f46;font-weight:700;">Nova meta p/ promotor:</div>
+                <input id="inputMetaModalEdit" type="number" min="1" max="999"
+                  style="width:70px;text-align:center;font-size:16px;font-weight:900;color:#8b5cf6;border:2px solid #8b5cf6;border-radius:6px;padding:4px 6px;background:white;font-family:inherit;"
+                  oninput="previewMetaMedia(this.value)">
+                <button onclick="salvarMetaMediaModal()" style="background:#059669;color:white;border:none;padding:6px 12px;border-radius:6px;font-weight:800;cursor:pointer;font-family:inherit;font-size:11px;">✓ Salvar</button>
+                <button onclick="fecharEditMetaModal()" style="background:#e2e8f0;color:#475569;border:none;padding:6px 10px;border-radius:6px;font-weight:700;cursor:pointer;font-family:inherit;font-size:11px;">✗</button>
+              </div>
+            </div>
             <button class="btn-save" onclick="saveAll()" style="margin:0;">SALVAR E ATUALIZAR</button>
         </div>
         <button onclick="closeModal()" style="background:none;border:none;color:#64748b;width:100%;margin-top:10px;cursor:pointer;font-size:12px;font-family:inherit;">Cancelar</button>
@@ -1252,66 +1285,72 @@ const REDES_OPTIONS=['MAGALU','CASAS BAHIA','PONTO','FASTSHOP'];
 const normalizePromotor=p=>({filial:'',rede:'MAGALU',ferias:false,...p});
 
 const defaultPromotores=()=>[
-    {filial:'237',rede:'MAGALU',nome:"Erika Aparecida Maneia De Oliveira",capa:367,meta:55,real:0,reno:0,a5:0,ferias:false},
-    {nome:"Núbia De Cássia Viana",capa:200,meta:40,real:0,reno:0,a5:0,ferias:false},
-    {nome:"Thais Almeida Otoni",capa:321,meta:50,real:0,reno:0,a5:0,ferias:false},
-    {nome:"Dabila Jormane Souza Silva",capa:195,meta:33,real:0,reno:0,a5:0,ferias:false},
-    {nome:"Elias Andrade De Almeida Alves",capa:309,meta:43,real:0,reno:0,a5:0,ferias:false},
-    {nome:"Diego De Souza Alle",capa:323,meta:45,real:0,reno:0,a5:0,ferias:false},
-    {nome:"Dennas Pereira Prates",capa:290,meta:46,real:0,reno:0,a5:0,ferias:false},
-    {nome:"Isaac Magno Soares De Souza",capa:248,meta:45,real:0,reno:0,a5:0,ferias:false},
-    {nome:"Erika Priscila Razzano Da Silva",capa:279,meta:42,real:0,reno:0,a5:0,ferias:false},
-    {nome:"Gabriela Borges De Oliveira",capa:253,meta:40,real:0,reno:0,a5:0,ferias:false},
-    {nome:"Taynara Roberta Ferreira",capa:280,meta:39,real:0,reno:0,a5:0,ferias:false},
-    {nome:"Nicole Victoria De Souza Soares",capa:234,meta:35,real:0,reno:0,a5:0,ferias:false},
-    {nome:"Marcos Vinicius Joseph Dos Santos",capa:380,meta:53,real:0,reno:0,a5:0,ferias:false},
-    {nome:"Thais De Cássia Rezende Silva",capa:200,meta:32,real:0,reno:0,a5:0,ferias:false},
-    {nome:"Beatriz Diniz Gonçalves",capa:193,meta:31,real:0,reno:0,a5:0,ferias:false},
-    {nome:"Álax felicidade",capa:1,meta:0,real:0,reno:0,a5:0,ferias:false}
+    {filial:'1731',rede:'CASAS BAHIA',nome:'Thais Almeida Otoni',capa:321,meta:70,real:0,reno:0,a5:0,ferias:false},
+    {filial:'216', rede:'MAGALU',     nome:'Elias Andrade De Almeida Alves',capa:309,meta:65,real:0,reno:0,a5:0,ferias:false},
+    {filial:'976', rede:'MAGALU',     nome:'Dennas Pereira Prates',capa:290,meta:70,real:0,reno:0,a5:0,ferias:false},
+    {filial:'237', rede:'MAGALU',     nome:'Erika Priscila Razzano Da Silva',capa:340,meta:73,real:0,reno:0,a5:0,ferias:false},
+    {filial:'393', rede:'MAGALU',     nome:'Gabriela Borges De Oliveira',capa:290,meta:65,real:0,reno:0,a5:0,ferias:false},
+    {filial:'1497',rede:'CASAS BAHIA',nome:'Taynara Roberta Ferreira',capa:280,meta:60,real:0,reno:0,a5:0,ferias:false},
+    {filial:'191', rede:'PONTO',      nome:'Thais Cássia Rezende Silva',capa:200,meta:45,real:0,reno:0,a5:0,ferias:false},
+    {filial:'1159',rede:'CASAS BAHIA',nome:'Lucas Henrique Ribeiro Marques',capa:320,meta:35,real:0,reno:0,a5:0,ferias:false},
+    {filial:'191', rede:'PONTO',      nome:'Lauanda Augusta Reis De Paula',capa:220,meta:49,real:0,reno:0,a5:0,ferias:false},
+    {filial:'1418',rede:'CASAS BAHIA',nome:'Tailon Thales Cardoso Martins',capa:230,meta:46,real:0,reno:0,a5:0,ferias:false},
+    {filial:'191', rede:'PONTO',      nome:'Gabriel Fernandes Ferreira',capa:160,meta:35,real:0,reno:0,a5:0,ferias:false},
+    {filial:'237', rede:'MAGALU',     nome:'SEM PROMOTOR',capa:0,meta:25,real:0,reno:0,a5:0,ferias:false},
+    {filial:'1682',rede:'CASAS BAHIA',nome:'Darien Macedo',capa:220,meta:10,real:0,reno:0,a5:0,ferias:false}
 ];
 
 function getDefaultMesData(){
-    return {metaGeral:629,metaReno:69,metaA5:69,promotores:defaultPromotores(),_updatedAt:0};
+    return {metaGeral:648,metaReno:69,metaA5:69,promotores:defaultPromotores(),_updatedAt:0};
 }
-function normalizeMesData(d){
+function normalizeMesData(d, fallbackProms){
     const base={...getDefaultMesData(),...(d||{})};
-    base.promotores=(base.promotores||defaultPromotores()).map(normalizePromotor);
+    // Se os dados têm promotores salvos, usa eles
+    // Se não tem (mês novo), usa fallbackProms se fornecido, senão defaultPromotores
+    const hasRealProms = Array.isArray(d?.promotores) && d.promotores.length > 0;
+    const srcProms = hasRealProms ? d.promotores : (fallbackProms || defaultPromotores());
+    base.promotores = srcProms.map(normalizePromotor);
     return base;
 }
 function loadMesData(mesIdx){
-    // 1. Mês já tem dados salvos → usa direto
+    // 1. Mês já tem dados salvos E foram editados pelo usuário → usa direto
     const saved=localStorage.getItem(STORAGE_PREFIX+mesIdx);
-    if(saved){return normalizeMesData(JSON.parse(saved));}
+    if(saved){
+        try{
+            const parsed=JSON.parse(saved);
+            if(parsed._updatedAt && parsed._updatedAt>0){return normalizeMesData(parsed);}
+        }catch(_){}
+    }
     // 2. Legado (compatibilidade)
     if(mesIdx===new Date().getMonth()){
         const leg=localStorage.getItem('fenixData2026_Final');
-        if(leg){return normalizeMesData(JSON.parse(leg));}
+        if(leg){
+            try{
+                const legData=JSON.parse(leg);
+                if(legData._updatedAt && legData._updatedAt>0){return normalizeMesData(legData);}
+            }catch(_){}
+        }
     }
-    // 3. NOVO: busca mês anterior mais recente com promotores salvos
-    //    Copia estrutura (promotores, filiais, redes, metas) zerando real/reno/a5
+    // 3. Busca mês anterior mais recente com promotores reais salvos
     for(let m=mesIdx-1;m>=0;m--){
         const prev=localStorage.getItem(STORAGE_PREFIX+m);
         if(prev){
             try{
                 const pd=JSON.parse(prev);
-                if(pd.promotores&&pd.promotores.length>0){
-                    const base=normalizeMesData(pd);
-                    // Zera realizados mas mantém estrutura completa
-                    base.promotores=base.promotores.map(p=>({
-                        ...p,
-                        real:0,
-                        reno:0,
-                        a5:0,
-                        ferias:false
+                // Só usa se foi realmente editado (não default)
+                if(pd._updatedAt && pd._updatedAt>0 && pd.promotores && pd.promotores.length>0){
+                    // Passa promotores do mês anterior como fallback, zerando realizados
+                    const prevProms = pd.promotores.map(p=>({
+                        ...p, real:0, reno:0, a5:0, ferias:false
                     }));
-                    base._updatedAt=0;
+                    const base = normalizeMesData({...pd, promotores:prevProms, _updatedAt:0}, prevProms);
                     return base;
                 }
             }catch(_){}
         }
     }
-    // 4. Fallback: dados padrão
-    return normalizeMesData(getDefaultMesData());
+    // 4. Fallback: dados padrão hardcoded
+    return normalizeMesData(null);
 }
 function saveMesData(mesIdx,data){
     const payload=normalizeMesData({...data,_updatedAt:Date.now()});
@@ -1661,15 +1700,30 @@ function gerarWpp(tipo){
         const medals=['🥇','🥈','🥉'];
         txt=`🦅 *FÊNIX DO OESTE — RANKING ${mes}*\n📅 ${hoje}\n${'─'.repeat(30)}\n\n`;
         sorted.forEach((p,i)=>{const pct=calcPct(p.real,p.meta);const m=i<3?medals[i]:`${i+1}º`;const bar=Math.round(pct/10);const emoji=pct>=100?'🟦':pct>=70?'🟩':pct>=50?'🟨':pct>=30?'🟧':'🟥';const barra=emoji.repeat(Math.min(bar,10))+'⬜'.repeat(Math.max(10-bar,0));txt+=`${m} *${primeiroNome(p.nome)}*\n   ${barra} ${pct}%\n   📱 ${p.real}/${p.meta} vendas\n\n`;});
-        txt+=`${'─'.repeat(30)}\n🎯 *Equipe: ${rT}/${somaMetasAtivos} (${pctEq}%)*\n⚡ Diária necessária: *${calcDiaria(somaMetasAtivos,rT,dias)} vendas/dia*`;
+        const _ativosRank=ativos.filter(p=>(p.nome||'').trim().toUpperCase()!=='SEM PROMOTOR');
+        const _qtdRank=_ativosRank.length;
+        const _mediaRealRank=_qtdRank>0?(rT/_qtdRank).toFixed(1).replace('.',','):'0,0';
+        const _metaOverrideRank=fenixData.metaMediaOverride;
+        const _metaMediaRank=_metaOverrideRank&&_metaOverrideRank>0 ? _metaOverrideRank.toFixed(1).replace('.',',') : (_qtdRank>0?(somaMetasAtivos/_qtdRank).toFixed(1).replace('.',','):'0,0');
+        txt+=`${'─'.repeat(30)}\n🎯 *Equipe: ${rT}/${somaMetasAtivos} (${pctEq}%)*\n⚡ Diária necessária: *${calcDiaria(somaMetasAtivos,rT,dias)} vendas/dia*\n📊 Média por promotor: *${_mediaRealRank}* (meta: ${_metaMediaRank})`;
     } else if(tipo==='diaria'){
         txt=`⚡ *METAS DIÁRIAS — ${mes}*\n📅 ${hoje} | ${dias} dias úteis restantes\n${'─'.repeat(30)}\n\n`;
         const sorted=[...ativos].filter(p=>p.meta>0).sort((a,b)=>{const dA=calcDiaria(a.meta,a.real,dias);const dB=calcDiaria(b.meta,b.real,dias);if(dA===0&&dB!==0)return 1;if(dB===0&&dA!==0)return -1;return dB-dA;});
         sorted.forEach(p=>{const dr=calcDiaria(p.meta,p.real,dias);const pct=calcPct(p.real,p.meta);const emoji=dr===0?'✅':dr<=2?'🟡':dr<=4?'🟠':'🔴';txt+=`${emoji} *${primeiroNome(p.nome)}*: ${dr} venda${dr!==1?'s':''}/dia`;if(dr===0)txt+=' (META BATIDA! 🎉)';else txt+=` | ${pct}% atingido`;txt+='\n';});
-        txt+=`\n${'─'.repeat(30)}\n🎯 Equipe precisa de *${calcDiaria(somaMetasAtivos,rT,dias)} vendas/dia* para bater a meta`;
+        const _ativosD=ativos.filter(p=>(p.nome||'').trim().toUpperCase()!=='SEM PROMOTOR');
+        const _qtdD=_ativosD.length;
+        const _mediaRealD=_qtdD>0?(rT/_qtdD).toFixed(1).replace('.',','):'0,0';
+        const _metaOverrideD=fenixData.metaMediaOverride;
+        const _metaMediaD=_metaOverrideD&&_metaOverrideD>0 ? _metaOverrideD.toFixed(1).replace('.',',') : (_qtdD>0?(somaMetasAtivos/_qtdD).toFixed(1).replace('.',','):'0,0');
+        txt+=`\n${'─'.repeat(30)}\n🎯 Equipe precisa de *${calcDiaria(somaMetasAtivos,rT,dias)} vendas/dia* para bater a meta\n📊 Média por promotor: *${_mediaRealD}* (meta: ${_metaMediaD})`;
     } else if(tipo==='resumo'){
         const rnT=ativos.reduce((a,b)=>a+(b.reno||0),0);const a5T=ativos.reduce((a,b)=>a+(b.a5||0),0);const cT=ativos.reduce((a,b)=>a+(b.capa||0),0);const acima80=ativos.filter(p=>p.meta>0&&calcPct(p.real,p.meta)>=80).length;
-        txt=`📊 *RESUMO GERAL — ${mes}*\n📅 ${hoje}\n${'─'.repeat(30)}\n\n🎯 *Meta da equipe:* ${somaMetasAtivos}\n📱 *Realizado:* ${rT} _(${pctEq}%)_\n⚡ *Diária necessária:* ${calcDiaria(somaMetasAtivos,rT,dias)}/dia\n\n🔥 *${cardLabels.reno||'Reno'} vendidos:* ${rnT}/${fenixData.metaReno||69}\n💎 *${cardLabels.a6pro||'A6 Pro'} vendidos:* ${a5T}/${fenixData.metaA5||69}\n📈 *Market Share:* ${calcPct(rT,cT)}%\n\n✅ *Promotores acima de 80%:* ${acima80}\n\n${'─'.repeat(30)}\n_Fênix do Oeste 🦅_`;
+        const _ativosR=ativos.filter(p=>(p.nome||'').trim().toUpperCase()!=='SEM PROMOTOR');
+        const _qtdR=_ativosR.length;
+        const _mediaRealR=_qtdR>0?(rT/_qtdR).toFixed(1).replace('.',','):'0,0';
+        const _metaOverrideR=fenixData.metaMediaOverride;
+        const _metaMediaR=_metaOverrideR&&_metaOverrideR>0 ? _metaOverrideR.toFixed(1).replace('.',',') : (_qtdR>0?(somaMetasAtivos/_qtdR).toFixed(1).replace('.',','):'0,0');
+        txt=`📊 *RESUMO GERAL — ${mes}*\n📅 ${hoje}\n${'─'.repeat(30)}\n\n🎯 *Meta da equipe:* ${somaMetasAtivos}\n📱 *Realizado:* ${rT} _(${pctEq}%)_\n⚡ *Diária necessária:* ${calcDiaria(somaMetasAtivos,rT,dias)}/dia\n📊 *Média por promotor:* ${_mediaRealR} _(meta: ${_metaMediaR})_\n\n🔥 *${cardLabels.reno||'Reno'} vendidos:* ${rnT}/${fenixData.metaReno||69}\n💎 *${cardLabels.a6pro||'A6 Pro'} vendidos:* ${a5T}/${fenixData.metaA5||69}\n📈 *Market Share:* ${calcPct(rT,cT)}%\n\n✅ *Promotores acima de 80%:* ${acima80}\n\n${'─'.repeat(30)}\n_Fênix do Oeste 🦅_`;
     }
     document.getElementById('wppPreview').textContent=txt;
 }
@@ -2779,7 +2833,12 @@ window.salvarPromotor=function(nome,data){
                `   ${barra} ${pct}%\n`+
                `   📱 ${safe(p.real)}/${safe(p.meta)} vendas\n\n`;
       });
-      txt += `${'─'.repeat(30)}\n🎯 *Equipe:* ${rT}/${somaMetasAtivos} (${pctEq}%)\n⚡ *Diária da equipe:* ${calcDiaria(somaMetasAtivos,rT,dias)}/dia\n🔮 *Projeção de fechamento:* ${proj}\n📦 *Faltam:* ${faltamEq}`;
+      const _atR2=ativos.filter(p=>(p.nome||'').trim().toUpperCase()!=='SEM PROMOTOR'&&safe(p.meta)>0);
+      const _qtR2=_atR2.length;
+      const _mRealR2=_qtR2>0?(rT/_qtR2).toFixed(1).replace('.',','):'0,0';
+      const _mOvR2=fenixData.metaMediaOverride;
+      const _mMetaR2=_mOvR2&&_mOvR2>0?_mOvR2.toFixed(1).replace('.',','):(_qtR2>0?(somaMetasAtivos/_qtR2).toFixed(1).replace('.',','):'0,0');
+      txt += `${'─'.repeat(30)}\n🎯 *Equipe:* ${rT}/${somaMetasAtivos} (${pctEq}%)\n⚡ *Diária da equipe:* ${calcDiaria(somaMetasAtivos,rT,dias)}/dia\n📊 *Média por promotor:* ${_mRealR2} (meta: ${_mMetaR2})\n🔮 *Projeção de fechamento:* ${proj}\n📦 *Faltam:* ${faltamEq}`;
     } else if(tipo==='diaria'){
       txt=`⚡ *METAS DIÁRIAS — ${mes}*\n📅 ${hoje} | ${ctx.restantes} dias úteis restantes\n${'─'.repeat(34)}\n\n`;
       [...sorted].sort((a,b)=>calcDiaria(b.meta,b.real,dias)-calcDiaria(a.meta,a.real,dias)).forEach(p=>{
@@ -2787,11 +2846,21 @@ window.salvarPromotor=function(nome,data){
         const emoji=dr===0?'✅':dr<=2?'🟡':dr<=4?'🟠':'🔴';
         txt += `${emoji} *${primeiroNome(p.nome)}*\n   faltam ${faltam} • diária alvo ${Math.ceil(dr)}/dia\n`;
       });
-      txt += `\n${'─'.repeat(34)}\n🎯 Equipe precisa de *${calcDiaria(somaMetasAtivos,rT,dias)} vendas/dia*\n🔮 Projeção no ritmo atual: *${proj}* aparelhos`;
+      const _atD2=ativos.filter(p=>(p.nome||'').trim().toUpperCase()!=='SEM PROMOTOR'&&safe(p.meta)>0);
+      const _qtD2=_atD2.length;
+      const _mRealD2=_qtD2>0?(rT/_qtD2).toFixed(1).replace('.',','):'0,0';
+      const _mOvD2=fenixData.metaMediaOverride;
+      const _mMetaD2=_mOvD2&&_mOvD2>0?_mOvD2.toFixed(1).replace('.',','):(_qtD2>0?(somaMetasAtivos/_qtD2).toFixed(1).replace('.',','):'0,0');
+      txt += `\n${'─'.repeat(34)}\n🎯 Equipe precisa de *${calcDiaria(somaMetasAtivos,rT,dias)} vendas/dia*\n📊 *Média por promotor:* ${_mRealD2} (meta: ${_mMetaD2})\n🔮 Projeção no ritmo atual: *${proj}* aparelhos`;
     } else {
       const rnT=ativos.reduce((a,b)=>a+safe(b.reno),0); const a5T=ativos.reduce((a,b)=>a+safe(b.a5),0); const cT=ativos.reduce((a,b)=>a+safe(b.capa),0);
       const top = [...sorted].sort((a,b)=>safe(b.real)-safe(a.real)).slice(0,3).map((p,i)=>`${i+1}º ${primeiroNome(p.nome)} ${safe(p.real)}v`).join(' | ');
-      txt=`📊 *RESUMO GERAL — ${mes}*\n📅 ${hoje}\n${'─'.repeat(30)}\n\n🎯 *Meta:* ${somaMetasAtivos}\n📱 *Realizado:* ${rT} (${pctEq}%)\n📦 *Faltam:* ${faltamEq}\n⚡ *Diária:* ${calcDiaria(somaMetasAtivos,rT,dias)}/dia\n🔮 *Projeção:* ${proj}\n📈 *Ritmo final:* ${calcRitmoPercentual(rT,somaMetasAtivos)}% da meta\n\n🔥 *${cardLabels.reno||'Reno'}:* ${rnT}/${fenixData.metaReno||69}\n💎 *${cardLabels.a6pro||'A6 Pro'}:* ${a5T}/${fenixData.metaA5||69}\n📊 *Market share:* ${calcPct(rT,cT)}%\n🏆 *Top 3 volume:* ${top}\n\n_Fênix do Oeste • Firebase online_`;
+      const _atS2=ativos.filter(p=>(p.nome||'').trim().toUpperCase()!=='SEM PROMOTOR'&&safe(p.meta)>0);
+      const _qtS2=_atS2.length;
+      const _mRealS2=_qtS2>0?(rT/_qtS2).toFixed(1).replace('.',','):'0,0';
+      const _mOvS2=fenixData.metaMediaOverride;
+      const _mMetaS2=_mOvS2&&_mOvS2>0?_mOvS2.toFixed(1).replace('.',','):(_qtS2>0?(somaMetasAtivos/_qtS2).toFixed(1).replace('.',','):'0,0');
+      txt=`📊 *RESUMO GERAL — ${mes}*\n📅 ${hoje}\n${'─'.repeat(30)}\n\n🎯 *Meta:* ${somaMetasAtivos}\n📱 *Realizado:* ${rT} (${pctEq}%)\n📦 *Faltam:* ${faltamEq}\n⚡ *Diária:* ${calcDiaria(somaMetasAtivos,rT,dias)}/dia\n📊 *Média por promotor:* ${_mRealS2} (meta: ${_mMetaS2})\n🔮 *Projeção:* ${proj}\n📈 *Ritmo final:* ${calcRitmoPercentual(rT,somaMetasAtivos)}% da meta\n\n🔥 *${cardLabels.reno||'Reno'}:* ${rnT}/${fenixData.metaReno||69}\n💎 *${cardLabels.a6pro||'A6 Pro'}:* ${a5T}/${fenixData.metaA5||69}\n📊 *Market share:* ${calcPct(rT,cT)}%\n🏆 *Top 3 volume:* ${top}\n\n_Fênix do Oeste • Firebase online_`;
     }
     document.getElementById('wppPreview').textContent=txt;
   };
@@ -3487,8 +3556,16 @@ window.salvarPromotor=function(nome,data){
       try{
         const cloudRaw = await window._fbGet('fenix2026/mes_'+idx);
         if(cloudRaw){
-          const cloud = normalizeMesData(cloudRaw);
-          fenixData = Number(cloud._updatedAt||0) >= Number(local._updatedAt||0) ? cloud : local;
+          // Só usa dados da nuvem se foram realmente salvos pelo usuário
+          const cloudAtualizado = cloudRaw._updatedAt && cloudRaw._updatedAt > 0;
+          if(cloudAtualizado){
+            // Cloud tem dados reais — compara com local e usa o mais novo
+            const cloud = normalizeMesData(cloudRaw, null);
+            fenixData = Number(cloud._updatedAt||0) >= Number(local._updatedAt||0) ? cloud : local;
+          } else {
+            // Cloud tem dados vazios/default — usa local (que já carregou do mês anterior)
+            fenixData = local;
+          }
           localStorage.setItem(STORAGE_PREFIX+idx, JSON.stringify(fenixData));
         }
       }catch(e){
@@ -3861,13 +3938,32 @@ window.salvarPromotor=function(nome,data){
       setTxt('diariaEquipe', window.calcDiaria(totais.meta, totais.real, dias));
     }
     // MÉDIA POR PROMOTOR (sem arredondamento)
-    const _qtdAtivos = getPromotoresAtuais().filter(p => !p.ferias && (parseInt(p.meta)||0) > 0).length;
-    if(_qtdAtivos > 0){
-      setTxt('mediaRealPromotor', (totais.real / _qtdAtivos).toFixed(1).replace('.', ','));
-      setTxt('mediaMetaPromotor', Math.round(totais.meta / _qtdAtivos));
-    } else {
+    // Exclui SEM PROMOTOR e promotores em férias do denominador
+    const _todosProms = getPromotoresAtuais().filter(p =>
+      !p.ferias && (p.nome||'').trim().toUpperCase() !== 'SEM PROMOTOR'
+    );
+    const _qtdAtivos = _todosProms.length;
+    // Só atualiza se o popup de edição NÃO estiver aberto
+    const _popupAberto = document.getElementById('editMetaMediaPopup')?.style.display === 'flex';
+    if(_qtdAtivos > 0 && !_popupAberto){
+      const _somaReal = _todosProms.reduce((s,p)=>s+(parseInt(p.real)||0),0);
+      const _somaMetaCalc = _todosProms.reduce((s,p)=>s+(parseInt(p.meta)||0),0);
+      // Usa override manual se definido, senão calcula da soma
+      const _metaOverride = window.fenixData?.metaMediaOverride;
+      const _metaFinal = (_metaOverride && _metaOverride > 0)
+        ? _metaOverride
+        : (_somaMetaCalc / _qtdAtivos);
+      setTxt('mediaRealPromotor', (_somaReal / _qtdAtivos).toFixed(1).replace('.', ','));
+      setTxt('mediaMetaPromotor', _metaFinal.toFixed(1).replace('.', ','));
+    } else if(!_popupAberto){
       setTxt('mediaRealPromotor', '0,0');
-      setTxt('mediaMetaPromotor', '0');
+      setTxt('mediaMetaPromotor', '0,0');
+    }
+    // Mostra quantidade de promotores ativos no subtítulo do card
+    const _cardMedia = document.getElementById('cardMediaPromotor');
+    if(_cardMedia){
+      const _subLabel = _cardMedia.querySelector('#labelMediaPromotor');
+      if(_subLabel) _subLabel.textContent = 'MÉDIA/PROMOTOR ('+_qtdAtivos+')';
     }
   }
 
@@ -4895,32 +4991,79 @@ window.salvarPromotor=function(nome,data){
   window.carregarMesDaNuvem = async function(idx){
     const ok = await waitFirebase(5000);
     if(!ok){ status('⚠️ Firebase indisponível','amarelo'); return false; }
+
+    // Helper: verifica se um objeto de dados tem promotores reais salvos pelo usuário
+    function temDadosReais(d){
+      return d && d._updatedAt && d._updatedAt > 0
+          && Array.isArray(d.promotores) && d.promotores.length > 0;
+    }
+
+    // Helper: cria base para mês novo a partir de promotores do mês anterior (zera realizados)
+    function baseMesNovo(promsFonte, dadosBase){
+      const proms = promsFonte.map(p=>({
+        filial: p.filial||'', rede: p.rede||'MAGALU', nome: p.nome||'',
+        capa: parseInt(p.capa)||0, meta: parseInt(p.meta)||0,
+        real:0, reno:0, a5:0, ferias:false
+      }));
+      // Mantém metaMediaOverride do mês anterior se existir
+      const override = dadosBase && dadosBase.metaMediaOverride ? dadosBase.metaMediaOverride : undefined;
+      const base = normalizar({ ...(dadosBase||{}), promotores: proms, _updatedAt: 0 });
+      if(override) base.metaMediaOverride = override;
+      return base;
+    }
+
     try{
       const path = MONTH + idx;
       const cloud = await window._fbGet(path);
-      if(cloud){ aplicarMes(idx,cloud); status('✅ Dados online carregados','verde'); return true; }
-      const local = localGet(idx);
-      if(local){
-        aplicarMes(idx,local);
-        try{ await window._fbSet(path, normalizar(Object.assign({}, local, {_createdInCloudAt: Date.now()}))); status('✅ Mês criado online','verde'); return true; }
-        catch(e){ console.warn('Não foi possível criar mês online:', e); status('⚠️ Salvo local, confira regras','amarelo'); return false; }
+
+      // 1. Cloud tem dados reais → usa direto
+      if(temDadosReais(cloud)){
+        aplicarMes(idx, cloud);
+        status('✅ Dados online carregados','verde');
+        return true;
       }
-      // NOVO: tenta mês anterior na nuvem para carregar estrutura de promotores
-      for(let m=idx-1;m>=0;m--){
+
+      // 2. Local tem dados reais → usa e sobe para nuvem
+      const local = localGet(idx);
+      if(temDadosReais(local)){
+        aplicarMes(idx, local);
+        try{
+          await window._fbSet(path, normalizar(Object.assign({}, local, {_createdInCloudAt: Date.now()})));
+          status('✅ Mês criado online','verde');
+        }catch(e){
+          status('⚠️ Salvo local, confira regras','amarelo');
+        }
+        return true;
+      }
+
+      // 3. Mês sem dados reais → busca mês anterior com dados reais (nuvem primeiro, depois local)
+      for(let m = idx-1; m >= 0; m--){
+        // Tenta nuvem do mês anterior
         try{
           const prevCloud = await window._fbGet(MONTH+m);
-          if(prevCloud&&prevCloud.promotores&&prevCloud.promotores.length>0){
-            const base = normalizar(prevCloud);
-            base.promotores = base.promotores.map(p=>({...p,real:0,reno:0,a5:0,ferias:false}));
-            base._updatedAt=0;
-            aplicarMes(idx,base);
-            status('✅ Estrutura do mês anterior carregada','verde');
+          if(temDadosReais(prevCloud)){
+            aplicarMes(idx, baseMesNovo(prevCloud.promotores, prevCloud));
+            status('✅ Promotores de '+meses[m]+' carregados para '+meses[idx],'verde');
+            return true;
+          }
+        }catch(_){}
+        // Tenta local do mês anterior
+        try{
+          const prevLocal = localGet(m);
+          if(temDadosReais(prevLocal)){
+            aplicarMes(idx, baseMesNovo(prevLocal.promotores, prevLocal));
+            status('✅ Promotores de '+meses[m]+' carregados para '+meses[idx],'verde');
             return true;
           }
         }catch(_){}
       }
-      status('⚠️ Nuvem vazia neste mês','amarelo');
-      return false;
+
+      // 4. Nenhum mês anterior encontrado → usa defaultPromotores atualizados
+      const defaultBase = normalizar(null);
+      aplicarMes(idx, defaultBase);
+      status('⚠️ Nenhum mês anterior — lista padrão carregada','amarelo');
+      return true;
+
     }catch(e){
       window._firebaseLastError = e;
       console.error('Erro ao carregar mês online:', e);
@@ -5068,10 +5211,131 @@ function instalarPwa() {
 // Service Worker para PWA offline
 if('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-      navigator.serviceWorker.register('./sw.js').catch(function() {});
+    const swCode = `
+const CACHE = 'fenix2026-v1';
+const ASSETS = [self.location.href];
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+});
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match(e.request)))
+  );
+});
+    `;
+    const blob = new Blob([swCode], {type: 'application/javascript'});
+    const url = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(url).catch(function() {});
   });
 }
 </script>
+
+
+
+<script id="modal-media-updater">
+// ══ TOGGLE EDIÇÃO META MODAL ══
+function toggleEditMetaModal(){
+  const row = document.getElementById('editMetaModalRow');
+  if(!row) return;
+  const aberto = row.style.display === 'flex';
+  if(aberto){
+    fecharEditMetaModal();
+  } else {
+    // Pré-preenche com valor atual
+    const proms = (typeof getPromotoresAtuais==='function') ? getPromotoresAtuais() : [];
+    const ativos = proms.filter(p=>!p.ferias && (p.nome||'').trim().toUpperCase()!=='SEM PROMOTOR');
+    const qtd = ativos.length;
+    const override = window.fenixData && window.fenixData.metaMediaOverride;
+    const val = override && override > 0 ? override
+      : (qtd > 0 ? (ativos.reduce((s,p)=>s+(parseInt(p.meta)||0),0)/qtd) : 0);
+    const inp = document.getElementById('inputMetaModalEdit');
+    if(inp) inp.value = val.toFixed(1);
+    row.style.display = 'flex';
+    document.getElementById('btnLapisModal').textContent = '✏️✓';
+    if(inp) inp.focus();
+  }
+}
+
+function fecharEditMetaModal(){
+  const row = document.getElementById('editMetaModalRow');
+  if(row) row.style.display = 'none';
+  const btn = document.getElementById('btnLapisModal');
+  if(btn) btn.textContent = '✏️';
+}
+
+function salvarMetaMediaModal(){
+  const inp = document.getElementById('inputMetaModalEdit');
+  const v = parseFloat(inp ? inp.value : 0);
+  if(isNaN(v) || v <= 0){ fecharEditMetaModal(); return; }
+  if(window.fenixData) window.fenixData.metaMediaOverride = v;
+  // Reflete no card da tela principal imediatamente
+  const elMeta = document.getElementById('mediaMetaPromotor');
+  if(elMeta) elMeta.textContent = v.toFixed(1).replace('.',',');
+  // Atualiza exibição no modal
+  const elModalMeta = document.getElementById('modalMediaMeta');
+  if(elModalMeta) elModalMeta.textContent = v.toFixed(1).replace('.',',');
+  // Persiste
+  if(typeof saveMesData === 'function'){
+    try{ saveMesData(window.mesSelecionado != null ? window.mesSelecionado : new Date().getMonth(), window.fenixData); }catch(_){}
+  }
+  fecharEditMetaModal();
+}
+
+// Mantém previewMetaMedia para compatibilidade
+function previewMetaMedia(val){
+  const v = parseFloat(val);
+  if(!isNaN(v) && v > 0){
+    const el = document.getElementById('mediaMetaPromotor');
+    if(el) el.textContent = v.toFixed(1).replace('.',',');
+  }
+}
+
+// ══ Atualiza painel de média no modal equipe em tempo real ══
+function atualizarModalMedia(){
+  try{
+    // Lê direto de fenixData.promotores (fonte de verdade ao abrir o modal)
+    // getPromotoresAtuais() lê inputs do DOM que podem não existir ainda
+    const base = (window.fenixData && Array.isArray(window.fenixData.promotores))
+      ? window.fenixData.promotores : [];
+    const ativos = base.filter(p=>!p.ferias && (p.nome||'').trim().toUpperCase()!=='SEM PROMOTOR' && (parseInt(p.meta)||0) > 0);
+    const qtd = ativos.length;
+    const totalMeta = ativos.reduce((s,p)=>s+(parseInt(p.meta)||0),0);
+    const totalReal = ativos.reduce((s,p)=>s+(parseInt(p.real)||0),0);
+    const qtdComMeta = ativos.length; // já filtrado por meta>0 acima
+    const override = window.fenixData && window.fenixData.metaMediaOverride;
+    const metaDisplay = override && override > 0
+      ? override.toFixed(1).replace('.',',')
+      : (qtd > 0 ? (totalMeta/qtd).toFixed(1).replace('.',',') : '0,0');
+    const el_qtd  = document.getElementById('modalQtdAtivos');
+    const el_meta = document.getElementById('modalMediaMeta');
+    const el_real = document.getElementById('modalMediaReal');
+    if(el_qtd)  el_qtd.textContent  = qtd;
+    if(el_meta) el_meta.textContent = metaDisplay;
+    if(el_real) el_real.textContent = qtd > 0 ? (totalReal/qtd).toFixed(1).replace('.',',') : '0,0';
+  }catch(_){}
+}
+
+// Atualiza ao abrir modal
+const _origOpenModal = window.openModal;
+window.openModal = function(){
+  if(typeof _origOpenModal==='function') _origOpenModal.apply(this,arguments);
+  setTimeout(atualizarModalMedia,100);
+};
+
+// Atualiza ao digitar em campos dentro do modal
+document.addEventListener('input',function(e){
+  if(document.getElementById('editModal')?.style.display!=='none'){
+    const id = e.target?.id||'';
+    if(id.startsWith('m_')||id.startsWith('r_')||id.startsWith('c_')) atualizarModalMedia();
+  }
+});
+
+// Atualiza ao clicar férias
+document.addEventListener('click',function(e){
+  if(e.target?.id?.startsWith('fbtn_')) setTimeout(atualizarModalMedia,50);
+});
+</script>
+
 
 </body>
 </html>
