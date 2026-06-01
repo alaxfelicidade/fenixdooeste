@@ -9,7 +9,17 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+  <!-- PWA META TAGS -->
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Fênix 2026">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Fênix 2026">
+  <link rel="manifest" href="manifest.json">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fênix 2026 – Elite Ranking</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -138,7 +148,7 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
 .month-tab:hover{color:#cbd5e1;border-bottom-color:#334155;}
 .month-tab.active{color:white;border-bottom-color:var(--primary);}
 .container{max-width:1000px;margin:0 auto;padding:0 15px;}
-.alerta-risco{display:none;border-radius:12px;padding:14px 18px;margin:16px 0;display:flex;align-items:center;gap:14px;animation:pulseAlert 2.5s ease-in-out infinite;}
+.alerta-risco{border-radius:12px;padding:14px 18px;margin:16px 0;display:flex;align-items:center;gap:14px;animation:pulseAlert 2.5s ease-in-out infinite;}
 .alerta-risco.critico{background:linear-gradient(135deg,#fef2f2,#fee2e2);border:2px solid #fca5a5;}
 .alerta-risco.atencao{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2px solid #fcd34d;}
 .alerta-risco.otimo{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #86efac;}
@@ -517,6 +527,183 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
 }
 </style>
 
+
+<style id="mobile-v14-melhorias">
+/* ═══ MOBILE V14 — melhorias gerais para todas as abas ═══ */
+@media (max-width: 768px) {
+
+  /* Header compacto */
+  .header-buttons {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 5px !important;
+    width: 100% !important;
+  }
+  .btn-hdr {
+    font-size: 10px !important;
+    padding: 7px 4px !important;
+    min-height: 36px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* Stats grid: 2 colunas mas card duplo ocupa largura cheia se sozinho */
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  #cardMediaPromotor {
+    grid-column: 1 / -1 !important;
+  }
+  .dual-item .d-val {
+    font-size: 20px !important;
+  }
+
+  /* Modais ocupam tela toda */
+  .modal-overlay {
+    padding: 8px !important;
+  }
+  .modal-content,
+  .painel-content,
+  .comp-content,
+  .wpp-content,
+  .graficos-content,
+  .comissao-content,
+  .hist-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 12px !important;
+    padding: 14px 12px !important;
+    max-height: 92vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Tabelas: scroll horizontal suave */
+  #painelTabela,
+  #compTabela,
+  #comissaoConteudo,
+  #comissaoPromotorConteudo,
+  .tabela-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .painel-table,
+  .comp-table,
+  .tabela-comissao,
+  .tabela-sup-detalhe,
+  .prod-table {
+    min-width: 600px !important;
+    font-size: 10px !important;
+  }
+
+  /* Abas de gráficos: 2 por linha */
+  .graficos-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+  .graf-tab {
+    padding: 9px 6px !important;
+    font-size: 10px !important;
+    width: 100% !important;
+  }
+
+  /* Chart */
+  .chart-wrap { height: 220px !important; }
+  .chart-wrap-sm { height: 180px !important; }
+
+  /* Modal detalhe promotor */
+  .prom-detail-box {
+    width: 100% !important;
+    max-width: 100vw !important;
+    padding: 16px 12px !important;
+    border-radius: 14px 14px 0 0 !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    max-height: 92vh !important;
+    overflow-y: auto !important;
+  }
+  .prom-detail-overlay.open {
+    align-items: flex-end !important;
+  }
+
+  /* Histórico: cards em coluna única */
+  .hist-grid {
+    grid-template-columns: 1fr !important;
+  }
+  #histFormWrap > div[style*="grid-template-columns:160px"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Regras popover: full width */
+  .regras-popover {
+    width: calc(100vw - 20px) !important;
+    max-width: 100% !important;
+    top: 50% !important;
+    left: 10px !important;
+    transform: translateY(-50%) !important;
+  }
+  .regras-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Banner */
+  .premium-banner-wrap {
+    margin: 10px 0 !important;
+  }
+  .banner-popover {
+    width: calc(100vw - 32px) !important;
+    left: 0 !important;
+    transform: none !important;
+  }
+
+  /* Modal equipe: scroll horizontal na lista */
+  #formLista {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .edit-row,
+  .equipe-header-row,
+  .equipe-total-row {
+    min-width: 780px !important;
+  }
+
+  /* Botões header painel/comparativo/etc */
+  .painel-header,
+  .comp-header,
+  .graficos-header,
+  .comissao-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  .painel-header > div:last-child,
+  .comp-header > button,
+  .graficos-header > button {
+    width: 100% !important;
+  }
+  .btn-print,
+  .btn-fechar-painel {
+    flex: 1 !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  /* WPP botões */
+  #wppModal .wpp-content > div:nth-child(2) {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+}
+
+/* ═══ Card média promotor: visual compacto no desktop ═══ */
+#cardMediaPromotor .d-val {
+  font-size: 20px !important;
+}
+</style>
 </head>
 <body>
 
@@ -528,8 +715,6 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
         </div>
         <h1>FÊNIX DO OESTE — <span id="mesAtual"></span></h1>
         <div class="header-buttons">
-            <button class="btn-hdr" style="background:#7c3aed;color:white;" onclick="openTv()">📺 TV</button>
-            <button class="btn-hdr" style="background:#0369a1;color:white;" onclick="openHist()">📈 DIAS</button>
             <button class="btn-hdr btn-hdr-wpp" onclick="openWpp()">📲 WPP</button>
             <button class="btn-hdr btn-hdr-chart" onclick="openGraficos()">📊</button>
             <button class="btn-hdr" style="background:#1d4ed8;color:white;" onclick="openComparativo()">📅 HISTÓRICO</button>
@@ -637,27 +822,26 @@ header h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-0.5px;text-ali
             <span id="diariaEquipe" class="big-number" style="color:var(--danger);">0</span>
             <div class="footer-label">Vendas/dia útil restante</div>
         </div>
+        <div class="stat-card-dual" style="border-bottom-color:#8b5cf6;" id="cardMediaPromotor">
+            <div class="label-wrap">
+                <span class="label">MÉDIA/PROMOTOR</span>
+            </div>
+            <div class="dual-row">
+                <div class="dual-item meta-side">
+                    <div class="d-label" style="color:#8b5cf6;">META</div>
+                    <div class="d-val" style="color:#8b5cf6;font-size:18px;" id="mediaMetaPromotor">0</div>
+                </div>
+                <div class="dual-item real-side">
+                    <div class="d-label" style="color:#059669;">REAL</div>
+                    <div class="d-val" style="color:#059669;font-size:18px;" id="mediaRealPromotor">0,0</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="listaPromotores"></div>
 </div>
 
-<!-- TV -->
-<div class="tv-overlay" id="tvOverlay">
-    <button class="tv-close" onclick="closeTv()">✕</button>
-    <div class="tv-header">
-        <div class="tv-title">🦅 <span style="color:#0f172a;">FÊNIX DO OESTE</span> &nbsp;<span id="tvMes" style="color:#6366f1;font-size:15px;font-weight:700;"></span></div>
-        <div class="tv-stats">
-            <div class="tv-stat"><div class="tv-stat-val" id="tvReal" style="color:#6366f1;">0</div><div class="tv-stat-lbl">Realizado</div></div>
-            <div class="tv-stat"><div class="tv-stat-val" id="tvMeta" style="color:#94a3b8;">0</div><div class="tv-stat-lbl">Meta</div></div>
-            <div class="tv-stat"><div class="tv-stat-val" id="tvPct" style="color:#10b981;">0%</div><div class="tv-stat-lbl">Atingimento</div></div>
-            <div class="tv-stat"><div class="tv-stat-val" id="tvDiaria" style="color:#ef4444;">0</div><div class="tv-stat-lbl">Diária/equipe</div></div>
-            <div class="tv-stat"><div class="tv-stat-val" id="tvDiasRest" style="color:#f59e0b;">0</div><div class="tv-stat-lbl">Dias úteis</div></div>
-        </div>
-    </div>
-    <div class="tv-body" id="tvBody"></div>
-    <div class="tv-ticker"><span class="tv-ticker-inner" id="tvTicker"></span></div>
-</div>
 
 <!-- CELEBRAÇÃO -->
 <div class="celebracao-overlay" id="celebracaoOverlay" onclick="fecharCelebracao()">
@@ -1095,12 +1279,38 @@ function normalizeMesData(d){
     return base;
 }
 function loadMesData(mesIdx){
+    // 1. Mês já tem dados salvos → usa direto
     const saved=localStorage.getItem(STORAGE_PREFIX+mesIdx);
     if(saved){return normalizeMesData(JSON.parse(saved));}
+    // 2. Legado (compatibilidade)
     if(mesIdx===new Date().getMonth()){
         const leg=localStorage.getItem('fenixData2026_Final');
         if(leg){return normalizeMesData(JSON.parse(leg));}
     }
+    // 3. NOVO: busca mês anterior mais recente com promotores salvos
+    //    Copia estrutura (promotores, filiais, redes, metas) zerando real/reno/a5
+    for(let m=mesIdx-1;m>=0;m--){
+        const prev=localStorage.getItem(STORAGE_PREFIX+m);
+        if(prev){
+            try{
+                const pd=JSON.parse(prev);
+                if(pd.promotores&&pd.promotores.length>0){
+                    const base=normalizeMesData(pd);
+                    // Zera realizados mas mantém estrutura completa
+                    base.promotores=base.promotores.map(p=>({
+                        ...p,
+                        real:0,
+                        reno:0,
+                        a5:0,
+                        ferias:false
+                    }));
+                    base._updatedAt=0;
+                    return base;
+                }
+            }catch(_){}
+        }
+    }
+    // 4. Fallback: dados padrão
     return normalizeMesData(getDefaultMesData());
 }
 function saveMesData(mesIdx,data){
@@ -2189,34 +2399,11 @@ function verificarMetas(promotores){promotores.forEach(p=>{if(!p.meta||p.meta===
 function mostrarCelebracao(p){tocarSomMeta();document.getElementById('celNome').textContent=primeiroNome(p.nome);document.getElementById('celSub').textContent=`${p.real} vendas — ${calcPct(p.real,p.meta)}% da meta! 🎉`;const box=document.getElementById('celebracaoBox');box.querySelectorAll('.confetti').forEach(c=>c.remove());const cores=['#6366f1','#f97316','#10b981','#f59e0b','#06b6d4','#ef4444','#a855f7'];for(let i=0;i<30;i++){const c=document.createElement('div');c.className='confetti';c.style.cssText=`left:${Math.random()*100}%;top:-10px;background:${cores[i%cores.length]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;animation-delay:${Math.random()*1}s;animation-duration:${1.5+Math.random()}s;`;box.appendChild(c);}document.getElementById('celebracaoOverlay').classList.add('show');setTimeout(fecharCelebracao,5000);}
 function fecharCelebracao(){document.getElementById('celebracaoOverlay').classList.remove('show');}
 
-// ══ TV ══
-function openTv(){document.getElementById('tvMes').textContent=meses[mesSelecionado]+' '+new Date().getFullYear();document.getElementById('tvOverlay').classList.add('active');renderTv();document.addEventListener('keydown',tvKeyHandler);if(tvInterval)clearInterval(tvInterval);tvInterval=setInterval(renderTv,30000);}
-let tvInterval=null;
-function closeTv(){document.getElementById('tvOverlay').classList.remove('active');document.removeEventListener('keydown',tvKeyHandler);if(tvInterval){clearInterval(tvInterval);tvInterval=null;}}
-function tvKeyHandler(e){if(e.key==='Escape')closeTv();}
-function renderTv(){
-    const dias=getDiasUteisRestantes();const ativos=fenixData.promotores.filter(p=>!p.ferias);
-    const rT=ativos.reduce((a,b)=>a+(b.real||0),0);const somaM=ativos.filter(p=>p.meta>0).reduce((a,b)=>a+(b.meta||0),0);
-    const pctEq=calcPct(rT,somaM);const renoT=ativos.reduce((a,b)=>a+(b.reno||0),0);const a5T=ativos.reduce((a,b)=>a+(b.a5||0),0);
-    document.getElementById('tvReal').textContent=rT;document.getElementById('tvMeta').textContent=somaM;document.getElementById('tvPct').textContent=pctEq+'%';document.getElementById('tvDiaria').textContent=calcDiaria(somaM,rT,dias);
-    const drEl=document.getElementById('tvDiasRest');if(drEl)drEl.textContent=dias;
-    const pctEl=document.getElementById('tvPct');pctEl.style.color=pctEq>=100?'#10b981':pctEq>=70?'#6366f1':pctEq>=50?'#f59e0b':'#ef4444';
-    const sorted=[...fenixData.promotores].filter(p=>!p.ferias&&p.meta>0).sort((a,b)=>scoreRanking(b,dias)-scoreRanking(a,dias));
-    const rankEmoji=['🥇','🥈','🥉'];const body=document.getElementById('tvBody');body.innerHTML='';
-    const maxCards=Math.min(sorted.length,9);
-    sorted.slice(0,maxCards).forEach((p,i)=>{
-        const pct=calcPct(p.real,p.meta);const dr=calcDiaria(p.meta,p.real,dias);
-        const cor=pct>=100?'#10b981':pct>=70?'#6366f1':pct>=50?'#f59e0b':'#ef4444';
-        const resultClass=pct>=100?'tv-ótimo':pct>=70?'tv-bom':pct>=50?'tv-alerta':'tv-risco';
-        const posClass=i<3?'tv-pos-'+i:(i%2===0?'tv-par':'tv-impar');
-        const diariaClass=dr===0?'diaria-ok':dr<=3?'diaria-warn':'diaria-bad';
-        const barGrad=pct>=100?'linear-gradient(90deg,#10b981,#34d399)':pct>=70?'linear-gradient(90deg,#6366f1,#818cf8)':pct>=50?'linear-gradient(90deg,#f59e0b,#fbbf24)':'linear-gradient(90deg,#ef4444,#f87171)';
-        const card=document.createElement('div');card.className=`tv-card ${posClass} ${resultClass}`;card.style.animationDelay=(i*0.07)+'s';
-        card.innerHTML=`<div class="tv-rank">${i<3?rankEmoji[i]:`<span style="font-size:18px;color:#94a3b8;font-weight:900;">${i+1}º</span>`}</div><div><div class="tv-name">${p.nome}</div><div class="tv-capa">CAPA ${p.capa}</div></div><div class="tv-bar-wrap"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:10px;font-weight:800;color:#64748b;">Progresso</span><span style="font-size:10px;font-weight:900;color:${cor};">${p.real} / ${p.meta}</span></div><div class="tv-bar-bg"><div class="tv-bar-fill" style="width:${Math.min(pct,100)}%;background:${barGrad}"></div></div><div class="tv-pct" style="color:${cor};">${pct}% da meta${pct>=100?' 🏆':''}</div></div><div class="tv-num"><div class="tv-num-val" style="color:${cor};font-size:24px;">${pct}%</div><div class="tv-num-lbl">Atingimento</div></div><div class="tv-num"><div class="tv-num-val" style="color:#f97316;">${p.reno||0}</div><div class="tv-num-lbl">Reno</div></div><div class="tv-num"><span class="tv-diaria-pill ${diariaClass}">${dr===0?'✅ Meta!':dr+'/dia'}</span><div class="tv-num-lbl" style="margin-top:5px;">Diária</div></div>`;
-        body.appendChild(card);
-    });
-    document.getElementById('tvTicker').textContent=`🦅 FÊNIX DO OESTE   ·   ${meses[mesSelecionado]}   ·   Equipe: ${rT}/${somaM} (${pctEq}%)   ·   🔥 ${cardLabels.reno||'Reno'}: ${renoT}/${fenixData.metaReno||69}   ·   💎 ${cardLabels.a6pro||'A6 Pro'}: ${a5T}/${fenixData.metaA5||69}   ·   ${sorted.slice(0,3).map((p,i)=>`${rankEmoji[i]} ${primeiroNome(p.nome)}: ${calcPct(p.real,p.meta)}%`).join('   ·   ')}   ·   ⚡ Diária: ${calcDiaria(somaM,rT,dias)} vendas/dia   ·   📅 ${dias} dias úteis restantes   ·   `;
-}
+// ══ TV ══ (removido)
+function openTv(){}
+function closeTv(){}
+function renderTv(){}
+function tvKeyHandler(){}
 
 // ══ HISTÓRICO ══
 let histChart=null;
@@ -2390,31 +2577,7 @@ window.salvarPromotor=function(nome,data){
     console.log("salvo:",nome,data);
 };
 
-// cria botão salvar se não existir
-window.addEventListener("DOMContentLoaded",()=>{
-    const modal=document.querySelector(".modal-footer")||document.querySelector(".modal");
-    if(modal && !document.getElementById("btnSalvarPromotor")){
-        const b=document.createElement("button");
-        b.id="btnSalvarPromotor";
-        b.innerText="Salvar";
-        b.style.background="#10b981";
-        b.style.color="white";
-        b.style.padding="10px 16px";
-        b.style.borderRadius="8px";
-        b.style.marginTop="12px";
-        b.onclick=()=>{
-            const nome=document.querySelector(".modal h2")?.innerText||"promotor";
-            const qtd=window.sumModalQuantidades();
-            const base=parseFloat(document.querySelector("#baseTotalValor")?.innerText.replace(/[R$ .]/g,'').replace(',','.')||0);
-            const incentivo=parseFloat(document.querySelector("#incentivoValor")?.innerText.replace(/[R$ .]/g,'').replace(',','.')||0);
-            const total=window.calcTotalFinal(base,incentivo);
-
-            const data={qtd,base,incentivo,total,timestamp:Date.now()};
-            window.salvarPromotor(nome,data);
-        };
-        modal.appendChild(b);
-    }
-});
+// (código legado removido)
 
 </script>
 
@@ -2471,7 +2634,7 @@ window.addEventListener("DOMContentLoaded",()=>{
   .tv-header{padding:10px 14px;}
   .tv-stats{grid-template-columns:repeat(2,minmax(0,1fr));width:100%;}
   .tv-body{padding:10px 14px;overflow:auto;}
-  .tv-card{min-width:900px;}
+  .tv-card{min-width:unset;}
 }
 
 /* ── CORES POR REDE NO MODAL EQUIPE ── */
@@ -3697,6 +3860,15 @@ window.addEventListener("DOMContentLoaded",()=>{
       const dias = typeof window.getDiasUteisRestantes === 'function' ? window.getDiasUteisRestantes() : 1;
       setTxt('diariaEquipe', window.calcDiaria(totais.meta, totais.real, dias));
     }
+    // MÉDIA POR PROMOTOR (sem arredondamento)
+    const _qtdAtivos = getPromotoresAtuais().filter(p => !p.ferias && (parseInt(p.meta)||0) > 0).length;
+    if(_qtdAtivos > 0){
+      setTxt('mediaRealPromotor', (totais.real / _qtdAtivos).toFixed(1).replace('.', ','));
+      setTxt('mediaMetaPromotor', Math.round(totais.meta / _qtdAtivos));
+    } else {
+      setTxt('mediaRealPromotor', '0,0');
+      setTxt('mediaMetaPromotor', '0');
+    }
   }
 
   window.syncTotaisEquipeFinal = syncTotaisEquipeFinal;
@@ -4733,6 +4905,20 @@ window.addEventListener("DOMContentLoaded",()=>{
         try{ await window._fbSet(path, normalizar(Object.assign({}, local, {_createdInCloudAt: Date.now()}))); status('✅ Mês criado online','verde'); return true; }
         catch(e){ console.warn('Não foi possível criar mês online:', e); status('⚠️ Salvo local, confira regras','amarelo'); return false; }
       }
+      // NOVO: tenta mês anterior na nuvem para carregar estrutura de promotores
+      for(let m=idx-1;m>=0;m--){
+        try{
+          const prevCloud = await window._fbGet(MONTH+m);
+          if(prevCloud&&prevCloud.promotores&&prevCloud.promotores.length>0){
+            const base = normalizar(prevCloud);
+            base.promotores = base.promotores.map(p=>({...p,real:0,reno:0,a5:0,ferias:false}));
+            base._updatedAt=0;
+            aplicarMes(idx,base);
+            status('✅ Estrutura do mês anterior carregada','verde');
+            return true;
+          }
+        }catch(_){}
+      }
       status('⚠️ Nuvem vazia neste mês','amarelo');
       return false;
     }catch(e){
@@ -4789,6 +4975,102 @@ window.addEventListener("DOMContentLoaded",()=>{
   document.addEventListener('DOMContentLoaded',()=>setTimeout(start,450));
   window.addEventListener('load',()=>setTimeout(start,900));
 })();
+</script>
+
+
+<!-- PWA INSTALL POPUP -->
+<div id="pwaInstallPopup" style="display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;background:linear-gradient(135deg,#1e293b,#0f172a);border:2px solid #6366f1;border-radius:16px;padding:16px 20px;box-shadow:0 8px 32px rgba(0,0,0,0.5);min-width:280px;max-width:90vw;animation:slideUpPwa 0.4s ease;">
+  <style>
+    @keyframes slideUpPwa{from{opacity:0;transform:translateX(-50%) translateY(30px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+    #pwaTimerBar{height:3px;background:#6366f1;border-radius:2px;transition:width 0.1s linear;}
+  </style>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span style="font-size:28px;">🦅</span>
+    <div style="flex:1;">
+      <div style="font-size:13px;font-weight:900;color:white;">Instalar Fênix 2026</div>
+      <div style="font-size:11px;color:#94a3b8;font-weight:600;margin-top:2px;">Acesso rápido pelo celular, sem browser</div>
+    </div>
+    <button onclick="fecharPwaPopup()" style="background:none;border:none;color:#64748b;font-size:18px;cursor:pointer;padding:0 4px;line-height:1;">×</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px;">
+    <button id="pwaBtnInstalar" onclick="instalarPwa()" style="flex:1;background:#6366f1;color:white;border:none;padding:10px;border-radius:8px;font-weight:800;cursor:pointer;font-family:inherit;font-size:12px;">📲 Instalar</button>
+    <button onclick="fecharPwaPopup()" style="background:rgba(255,255,255,0.08);color:#94a3b8;border:1px solid rgba(255,255,255,0.1);padding:10px 14px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px;">Agora não</button>
+  </div>
+  <div style="margin-top:10px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;">
+    <div id="pwaTimerBar" style="width:100%;"></div>
+  </div>
+</div>
+
+<script>
+// ══ PWA INSTALL ══
+let _pwaPrompt = null;
+let _pwaTimer = null;
+let _pwaSeconds = 5;
+
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  _pwaPrompt = e;
+  // Só mostra uma vez por sessão
+  if(!sessionStorage.getItem('pwaPopupShown')) {
+    setTimeout(mostrarPwaPopup, 1500);
+  }
+});
+
+function mostrarPwaPopup() {
+  const popup = document.getElementById('pwaInstallPopup');
+  if(!popup) return;
+  popup.style.display = 'block';
+  sessionStorage.setItem('pwaPopupShown', '1');
+  // Barra de countdown 5s
+  const bar = document.getElementById('pwaTimerBar');
+  let elapsed = 0;
+  _pwaTimer = setInterval(function() {
+    elapsed += 100;
+    const pct = Math.max(0, 100 - (elapsed / (_pwaSeconds * 1000)) * 100);
+    if(bar) bar.style.width = pct + '%';
+    if(elapsed >= _pwaSeconds * 1000) {
+      fecharPwaPopup();
+    }
+  }, 100);
+}
+
+function fecharPwaPopup() {
+  if(_pwaTimer) { clearInterval(_pwaTimer); _pwaTimer = null; }
+  const popup = document.getElementById('pwaInstallPopup');
+  if(popup) {
+    popup.style.animation = 'none';
+    popup.style.opacity = '0';
+    popup.style.transition = 'opacity 0.3s';
+    setTimeout(function() { popup.style.display = 'none'; }, 300);
+  }
+}
+
+function instalarPwa() {
+  if(_pwaPrompt) {
+    _pwaPrompt.prompt();
+    _pwaPrompt.userChoice.then(function(result) {
+      if(result.outcome === 'accepted') {
+        fecharPwaPopup();
+      }
+    });
+    _pwaPrompt = null;
+  } else {
+    // Fallback: instrução manual
+    const btn = document.getElementById('pwaBtnInstalar');
+    if(btn) {
+      btn.textContent = '📋 Menu do browser → "Adicionar à tela inicial"';
+      btn.style.fontSize = '10px';
+      setTimeout(fecharPwaPopup, 4000);
+    }
+  }
+}
+
+// Service Worker para PWA offline
+if('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+      navigator.serviceWorker.register('./sw.js').catch(function() {});
+  });
+}
 </script>
 
 </body>
