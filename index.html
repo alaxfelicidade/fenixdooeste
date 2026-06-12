@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -3066,6 +3065,9 @@ window.salvarPromotor=function(nome,data){
     let soma = 0;
     let capaTotal = 0;
     for(let i=0;i<fenixData.promotores.length;i++){
+      const nomeEl = document.getElementById('n_'+i);
+      const nomeVal = (nomeEl?.value || '').trim();
+      if(!nomeVal) continue;
       const metaEl = document.getElementById('m_'+i);
       const capaEl = document.getElementById('c_'+i);
       soma += safeNum(metaEl?.value);
@@ -3082,7 +3084,7 @@ window.salvarPromotor=function(nome,data){
 
   window.atualizarTotaisRodapeEquipe = function(){
     const snapshot = window.getSnapshotFenix();
-    const ativos = snapshot.promotores.filter(p=>!p.ferias);
+    const ativos = snapshot.promotores.filter(p=>!p.ferias && (p.nome||'').trim() !== '');
     const totalCapa = ativos.reduce((a,p)=>a + toInt(p.capa),0);
     const totalMeta = ativos.reduce((a,p)=>a + toInt(p.meta),0);
     const totalReal = ativos.reduce((a,p)=>a + toInt(p.real),0);
@@ -3118,7 +3120,39 @@ window.salvarPromotor=function(nome,data){
     fenixData.promotores.forEach((_,i)=>window.updateRedeColor(i));
   };
 
+  window.moverPromotor = function(idx, dir){
+    const arr = fenixData.promotores;
+    if(!arr) return;
+    const dest = idx + dir;
+    if(dest < 0 || dest >= arr.length) return;
+    for(let k = 0; k < arr.length; k++){
+      const fbtn = document.getElementById('fbtn_'+k);
+      arr[k] = {
+        filial:  document.getElementById('fil_'+k)?.value  ?? arr[k].filial,
+        rede:    document.getElementById('rede_'+k)?.value ?? arr[k].rede,
+        nome:    document.getElementById('n_'+k)?.value    ?? arr[k].nome,
+        capa:    parseInt(document.getElementById('c_'+k)?.value)||0,
+        metaPct: parseFloat(document.getElementById('pct_'+k)?.value)||20,
+        meta:    parseInt(document.getElementById('m_'+k)?.value)||0,
+        real:    parseInt(document.getElementById('r_'+k)?.value)||0,
+        reno:    parseInt(document.getElementById('re_'+k)?.value)||0,
+        a5:      parseInt(document.getElementById('a_'+k)?.value)||0,
+        ferias:  fbtn ? fbtn.classList.contains('on') : arr[k].ferias
+      };
+    }
+    const tmp = arr[idx]; arr[idx] = arr[dest]; arr[dest] = tmp;
+    window.renderForm();
+    setTimeout(() => document.getElementById('fil_'+dest)?.focus(), 50);
+  };
+
   window.renderForm = function(){
+    fenixData.promotores.sort((a,b)=>{
+      const nA=(a.nome||'').trim().toLowerCase();
+      const nB=(b.nome||'').trim().toLowerCase();
+      if(!nA&&!nB) return 0; if(!nA) return 1; if(!nB) return -1;
+      return nA.localeCompare(nB,'pt-BR');
+    });
+    const total = fenixData.promotores.length;
     let html = '';
     fenixData.promotores.forEach((p,i)=>{
       const fc = p.ferias ? 'on' : 'off';
@@ -3128,7 +3162,13 @@ window.salvarPromotor=function(nome,data){
       const pct = safeNum(p.metaPct || 20);
       const meta = safeNum(p.meta || calcMetaByPct(capa, pct));
       html += `<div class="edit-row" id="erow_${i}" style="${p.ferias?'opacity:0.68;background:#f0fdf4;border-radius:8px;padding:4px;':''}">
-        <input type="text" value="${p.filial||''}" id="fil_${i}" class="filial-input" inputmode="numeric" placeholder="237">
+        <div class="filial-order-wrap">
+          <input type="text" value="${p.filial||''}" id="fil_${i}" class="filial-input" inputmode="numeric" placeholder="237">
+          <div class="btn-order">
+            <button type="button" onclick="moverPromotor(${i},-1)" ${i===0?'disabled':''} title="Subir">▲</button>
+            <button type="button" onclick="moverPromotor(${i},1)" ${i===total-1?'disabled':''} title="Descer">▼</button>
+          </div>
+        </div>
         <select id="rede_${i}" class="rede-select" onchange="updateRedeColor(${i})">${redeOptions}</select>
         <input type="text" value="${(p.nome||'').replace(/"/g,'&quot;')}" id="n_${i}" class="nome-input" title="${(p.nome||'').replace(/"/g,'&quot;')}">
         <input type="number" value="${capa}" id="c_${i}" min="0" oninput="atualizarLinhaEquipe(${i})">
@@ -3268,7 +3308,7 @@ window.salvarPromotor=function(nome,data){
   };
 
   function getIndicadores(snapshot){
-    const ativos = snapshot.promotores.filter(p=>!p.ferias);
+    const ativos = snapshot.promotores.filter(p=>!p.ferias && (p.nome||'').trim() !== '');
     return {
       ativos,
       rT: ativos.reduce((a,p)=>a+toInt(p.real),0),
@@ -4288,6 +4328,13 @@ window.salvarPromotor=function(nome,data){
   text-align:center;
   white-space:nowrap;
 }
+/* ── botões subir/descer promotor ── */
+#editModal .filial-order-wrap{display:flex;align-items:center;gap:2px;}
+#editModal .filial-order-wrap .filial-input{flex:1;min-width:0;}
+#editModal .btn-order{display:flex;flex-direction:column;gap:1px;flex-shrink:0;}
+#editModal .btn-order button{background:#f1f5f9;border:1px solid #e2e8f0;color:#64748b;width:17px;height:15px;border-radius:3px;cursor:pointer;font-size:7px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;transition:background 0.15s,color 0.15s;}
+#editModal .btn-order button:hover:not([disabled]){background:#e0e7ff;color:#4338ca;border-color:#c7d2fe;}
+#editModal .btn-order button[disabled]{opacity:0.25;cursor:not-allowed;}
 </style>
 
 <script id="mkts-restore-script">
@@ -4338,9 +4385,36 @@ window.salvarPromotor=function(nome,data){
     else if(typeof window.atualizarSomaMeta === 'function') window.atualizarSomaMeta();
   };
 
+  window.moverPromotor = function(idx, dir){
+    const arr = window.fenixData?.promotores;
+    if(!arr) return;
+    const dest = idx + dir;
+    if(dest < 0 || dest >= arr.length) return;
+    // salva valores atuais do DOM antes de reordenar
+    for(let k = 0; k < arr.length; k++){
+      const fbtn = document.getElementById('fbtn_'+k);
+      arr[k] = {
+        filial:   document.getElementById('fil_'+k)?.value   ?? arr[k].filial,
+        rede:     document.getElementById('rede_'+k)?.value  ?? arr[k].rede,
+        nome:     document.getElementById('n_'+k)?.value     ?? arr[k].nome,
+        capa:     i(document.getElementById('c_'+k)?.value),
+        metaPct:  n(document.getElementById('pct_'+k)?.value ?? 20),
+        meta:     i(document.getElementById('m_'+k)?.value),
+        real:     i(document.getElementById('r_'+k)?.value),
+        reno:     i(document.getElementById('re_'+k)?.value),
+        a5:       i(document.getElementById('a_'+k)?.value),
+        ferias:   fbtn ? fbtn.classList.contains('on') : arr[k].ferias
+      };
+    }
+    const tmp = arr[idx]; arr[idx] = arr[dest]; arr[dest] = tmp;
+    window.renderForm();
+    setTimeout(() => document.getElementById('fil_'+dest)?.focus(), 50);
+  };
+
   window.renderForm = function(){
     let rows = '';
     let totalCapa = 0, totalMeta = 0, totalReal = 0, totalReno = 0, totalA6 = 0;
+    const total = (window.fenixData?.promotores || []).length;
 
     (window.fenixData?.promotores || []).forEach((p, idx) => {
       const filial = p.filial || '';
@@ -4359,15 +4433,21 @@ window.salvarPromotor=function(nome,data){
         .map(rede => `<option value="${rede}" ${redeAtual===rede?'selected':''}>${rede}</option>`)
         .join('');
 
-      totalCapa += capa;
-      totalMeta += meta;
-      totalReal += real;
-      totalReno += reno;
-      totalA6 += a6;
+      totalCapa += nome ? capa : 0;
+      totalMeta += nome ? meta : 0;
+      totalReal += nome ? real : 0;
+      totalReno += nome ? reno : 0;
+      totalA6 += nome ? a6 : 0;
 
       rows += `
       <div class="edit-row" id="erow_${idx}" style="${rowStyle}">
-        <input type="text" value="${filial}" id="fil_${idx}" class="filial-input" inputmode="numeric" placeholder="237">
+        <div class="filial-order-wrap">
+          <input type="text" value="${filial}" id="fil_${idx}" class="filial-input" inputmode="numeric" placeholder="237">
+          <div class="btn-order">
+            <button type="button" onclick="moverPromotor(${idx},-1)" ${idx===0?'disabled':''} title="Subir">▲</button>
+            <button type="button" onclick="moverPromotor(${idx},1)" ${idx===total-1?'disabled':''} title="Descer">▼</button>
+          </div>
+        </div>
         <select id="rede_${idx}" class="rede-select" onchange="updateRedeColor(${idx})">${redeOptions}</select>
         <input type="text" value="${nome}" id="n_${idx}" class="nome-input" title="${nome}">
         <input type="number" value="${capa}" id="c_${idx}" min="0" oninput="atualizarLinhaEquipe(${idx})">
@@ -5336,6 +5416,137 @@ document.addEventListener('click',function(e){
 });
 </script>
 
+
+
+<!-- ═══ PATCH PONTUAL: ordem alfabética sempre + layout mobile do modal Equipe ═══ -->
+<style id="patch-equipe-alfa-mobile">
+/* setas de reordenar não fazem mais sentido com ordem alfabética automática */
+#editModal .btn-order{display:none!important;}
+/* wrapper de campo com rótulo (rótulo só aparece no mobile) */
+.fld{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.fld .fld-lab{display:none;}
+@media(max-width:768px){
+  /* remove o scroll horizontal antigo e volta ao layout de cartão */
+  #formLista{overflow-x:visible!important;}
+  #editModal .edit-row,
+  #editModal .equipe-header-row,
+  #editModal .equipe-total-row{min-width:0!important;}
+  #editModal .equipe-header-row{display:none!important;}
+  #editModal .edit-row{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+    padding:12px!important;
+    margin-bottom:12px!important;
+    background:#f8fafc!important;
+    border:1px solid #e2e8f0!important;
+    border-radius:12px!important;
+  }
+  #editModal .edit-row .nome-input{grid-column:1/-1!important;font-weight:800!important;}
+  #editModal .edit-row input,
+  #editModal .edit-row select{height:42px!important;font-size:13px!important;}
+  #editModal .edit-row .btn-ferias-modal{grid-column:1/2!important;width:100%!important;height:42px!important;font-size:12px!important;}
+  #editModal .edit-row .btn-del{grid-column:2/3!important;width:100%!important;height:42px!important;font-size:18px!important;}
+  .fld .fld-lab{display:block;font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.4px;}
+  #editModal .meta-pct-wrap::before{content:"% META";display:block;font-size:9px;font-weight:800;color:#64748b;letter-spacing:.4px;}
+  #editModal .meta-pct-hint{text-align:left!important;}
+  /* linha de TOTAIS compacta com rótulos */
+  #editModal .equipe-total-row{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:6px!important;
+    text-align:center!important;
+    padding:10px!important;
+  }
+  #editModal .equipe-total-row>div:nth-child(1),
+  #editModal .equipe-total-row>div:nth-child(2),
+  #editModal .equipe-total-row>div:nth-child(5),
+  #editModal .equipe-total-row>div:nth-child(10),
+  #editModal .equipe-total-row>div:nth-child(11){display:none!important;}
+  #editModal .equipe-total-row>div:nth-child(3){grid-column:1/-1!important;text-align:center!important;}
+  #editModal .equipe-total-row>div[data-lab]::before{
+    content:attr(data-lab);
+    display:block;font-size:8px;opacity:.7;font-weight:700;letter-spacing:.4px;
+  }
+}
+</style>
+<script id="patch-equipe-alfa-mobile-js">
+(function(){
+  function num(v){const x=parseFloat(v);return isNaN(x)?0:x;}
+
+  /* sincroniza o que está digitado na tela de volta para os dados,
+     apenas quando é seguro (evita corromper após remover linha) */
+  function syncDomSeguro(){
+    const arr=window.fenixData&&window.fenixData.promotores;
+    if(!Array.isArray(arr))return;
+    const domRows=document.querySelectorAll('#formLista .edit-row').length;
+    if(domRows===0)return;
+    if(domRows>arr.length)return; // acabou de remover linha: não sincroniza
+    const limite=Math.min(domRows,arr.length);
+    for(let k=0;k<limite;k++){
+      const nEl=document.getElementById('n_'+k);
+      if(!nEl)continue;
+      const fbtn=document.getElementById('fbtn_'+k);
+      const pctEl=document.getElementById('pct_'+k);
+      arr[k]={
+        filial:(document.getElementById('fil_'+k)||{}).value??arr[k].filial,
+        rede:(document.getElementById('rede_'+k)||{}).value??arr[k].rede,
+        nome:nEl.value,
+        capa:num((document.getElementById('c_'+k)||{}).value),
+        metaPct:pctEl&&pctEl.value!==''?num(pctEl.value):(arr[k].metaPct??20),
+        meta:num((document.getElementById('m_'+k)||{}).value),
+        real:num((document.getElementById('r_'+k)||{}).value),
+        reno:num((document.getElementById('re_'+k)||{}).value),
+        a5:num((document.getElementById('a_'+k)||{}).value),
+        ferias:fbtn?fbtn.classList.contains('on'):!!arr[k].ferias
+      };
+    }
+  }
+
+  /* ordena alfabeticamente (nomes vazios — linha recém-adicionada — ficam no fim) */
+  function ordenarAlfabetico(){
+    const arr=window.fenixData&&window.fenixData.promotores;
+    if(!Array.isArray(arr))return;
+    arr.sort(function(a,b){
+      const na=String((a&&a.nome)||'').trim();
+      const nb=String((b&&b.nome)||'').trim();
+      if(!na&&!nb)return 0;
+      if(!na)return 1;
+      if(!nb)return -1;
+      return na.localeCompare(nb,'pt-BR',{sensitivity:'base'});
+    });
+  }
+
+  /* adiciona rótulos nos campos (visíveis só no mobile) */
+  var LABELS=[['fil_','FILIAL'],['rede_','REDE'],['c_','CAPA'],['m_','META'],['r_','REAL'],['re_','RENO'],['a_','A6 PRO']];
+  function decorarLinhas(){
+    document.querySelectorAll('#formLista .edit-row').forEach(function(row){
+      LABELS.forEach(function(par){
+        var pre=par[0],lab=par[1];
+        var el=row.querySelector('input[id^="'+pre+'"],select[id^="'+pre+'"]');
+        if(pre==='fil_')el=row.querySelector('.filial-order-wrap')||el;
+        if(!el||el.closest('.fld'))return;
+        var w=document.createElement('div');w.className='fld';
+        var s=document.createElement('span');s.className='fld-lab';s.textContent=lab;
+        el.parentNode.insertBefore(w,el);w.appendChild(s);w.appendChild(el);
+      });
+    });
+    var labsTotais={equipeTotalCapa:'CAPA',equipeTotalMeta:'META',equipeTotalReal:'REAL',equipeTotalReno:'RENO',equipeTotalA6:'A6 PRO'};
+    Object.keys(labsTotais).forEach(function(id){
+      var el=document.getElementById(id);
+      if(el)el.setAttribute('data-lab',labsTotais[id]);
+    });
+  }
+
+  var rfAnterior=window.renderForm;
+  window.renderForm=function(){
+    syncDomSeguro();
+    ordenarAlfabetico();
+    if(typeof rfAnterior==='function')rfAnterior();
+    decorarLinhas();
+  };
+})();
+</script>
 
 </body>
 </html>
